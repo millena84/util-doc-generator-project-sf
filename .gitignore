@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.pyc
+*.tmp
+
+# SEGURANÇA — nunca versionar credenciais (CLAUDE.md, regra 7)
+# Raw inalterado de `sf org display --json`: contém accessToken.
+**/org-display.raw.json
+# Raws de erro por execução podem conter respostas com dados de sessão.
+runs/*/errors/
+# External Client App global OAuth (consumerKey/consumerSecret) — tipo excluído do MVP,
+# ignorado aqui como defesa extra.
+**/*.ecaGlblOauth-meta.xml

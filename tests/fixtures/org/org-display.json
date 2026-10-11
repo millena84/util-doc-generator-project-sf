@@ -1,0 +1,13 @@
+{
+  "status": 0,
+  "result": {
+    "id": "00D000000000000AAA",
+    "apiVersion": "67.0",
+    "accessToken": "00DFAKE!TOKEN.SIMULADO.NAO.REAL.1234567890",
+    "instanceUrl": "https://simulado.my.salesforce.com",
+    "username": "usuario.simulado@example.com",
+    "clientId": "PlatformCLI",
+    "connectedStatus": "Connected",
+    "alias": "dev"
+  }
+}

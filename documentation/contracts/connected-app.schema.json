@@ -1,0 +1,55 @@
+{
+  "metadataType": "ConnectedApp",
+  "apiVersion": "67.0",
+  "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+  "xmlFilePattern": "**/*.connectedApp-meta.xml",
+  "template": "modelo-doc-connectedapp-vapi-{apiMajor}.md",
+  "titlePath": "@fullName",
+  "properties": [
+    {
+      "name": "DeveloperName",
+      "placeholder": "developer_name",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação",
+      "notes": "fullName do componente (nome do arquivo XML recuperado pelo retrieve)."
+    },
+    {
+      "name": "Label",
+      "placeholder": "label",
+      "path": "label",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "ApiVersion",
+      "placeholder": "api_version",
+      "path": "apiVersion",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    }
+  ],
+  "tables": [
+    {
+      "markdownSection": "OAuth",
+      "builder": "child_properties",
+      "source": "XML",
+      "args": {
+        "path": "oauthConfig",
+        "keyPlaceholder": "oauth_property",
+        "valuePlaceholder": "value"
+      },
+      "notes": "Elementos em sensitiveXmlElements (ex.: consumerSecret) nunca são renderizados."
+    }
+  ],
+  "relatedMetadataTypes": [],
+  "internalData": {
+    "enabled": false,
+    "source": null,
+    "object": null,
+    "query": null
+  }
+}

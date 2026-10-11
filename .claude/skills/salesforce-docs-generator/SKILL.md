@@ -57,6 +57,14 @@ Desvios são configurados no JSON. Exemplos:
 
 `SUCCESS`, `NO_TEMPLATE`, `NO_COMPONENTS`, `NOT_ENABLED`, `SCHEMA_UNAVAILABLE`, `RETRIEVE_FAILED`, `INTERNAL_DATA_UNAVAILABLE`, `RETRY_REQUIRED`, `MISMATCH`.
 
+## Execução e validação
+
+- Executar: `bin/sf-docs.sh run [--group <Grupo>] [--component <fullName>] [--api-version <N.0>] [--resume latest]`.
+- Regerar derivados e Markdown a partir dos raws (sem org): `bin/sf-docs.sh regenerate --run latest`.
+- Validar configuração/contratos: `bin/sf-docs.sh validate-config`.
+- Testes (somente biblioteca padrão): `python3 -m unittest discover -s tests -t .`.
+- Contratos ficam em `documentation/contracts/<tipo-kebab>.schema.json`; ver README para a sintaxe de `path`, `tables` e `blocks`.
+
 ## Segurança
 
 Nunca versionar ou expor access token, refresh token, senha, chave privada ou segredo.

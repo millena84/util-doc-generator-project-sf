@@ -1,0 +1,113 @@
+#!/usr/bin/env python3
+"""Salesforce CLI SIMULADA para testes. Comportamento controlado por:
+
+FAKE_SF_FIXTURES  diretório tests/fixtures
+FAKE_SF_SCENARIO  lista separada por vírgula: old_cli, no_alias, disconnected,
+                  expire_on_retrieve=<fullName>, fail_retrieve=<fullName>,
+                  mismatch_retrieve=<fullName>, empty=<MetadataType>
+FAKE_SF_STATE     arquivo para contar chamadas (opcional)
+"""
+import json
+import os
+import shutil
+import sys
+from pathlib import Path
+
+FIX = Path(os.environ["FAKE_SF_FIXTURES"])
+SCEN = [s for s in os.environ.get("FAKE_SF_SCENARIO", "").split(",") if s]
+
+
+def scen(key):
+    vals = [s.split("=", 1)[1] for s in SCEN if s.startswith(key + "=")]
+    return vals
+
+
+def out(obj, code=0):
+    print(json.dumps(obj, indent=2))
+    sys.exit(code)
+
+
+def err(name, message, code=1):
+    out({"status": code, "name": name, "message": message, "exitCode": code}, code)
+
+
+def opt(args, name):
+    vals = []
+    for i, a in enumerate(args):
+        if a == name and i + 1 < len(args):
+            vals.append(args[i + 1])
+    return vals
+
+
+args = sys.argv[1:]
+if os.environ.get("FAKE_SF_STATE"):
+    with open(os.environ["FAKE_SF_STATE"], "a") as f:
+        f.write(" ".join(args) + "\n")
+
+if args == ["--version"]:
+    v = "1.99.0" if "old_cli" in SCEN else "2.60.0"
+    print(f"@salesforce/cli/{v} linux-x64 node-v20.11.0")
+    sys.exit(0)
+
+cmd = [a for a in args if not a.startswith("-")][:3]
+
+if cmd[:2] == ["org", "list"] and len(cmd) == 2:
+    data = json.loads((FIX / "org" / "org-list.json").read_text())
+    if "no_alias" in SCEN:
+        data["result"]["nonScratchOrgs"] = []
+    out(data)
+
+if cmd[:2] == ["org", "display"]:
+    data = json.loads((FIX / "org" / "org-display.json").read_text())
+    if "disconnected" in SCEN:
+        data["result"]["connectedStatus"] = "RefreshTokenAuthError"
+    out(data)
+
+if cmd[:3] == ["org", "list", "metadata-types"]:
+    out(json.loads((FIX / "org" / "metadata-types.json").read_text()))
+
+if cmd[:3] == ["org", "list", "metadata"]:
+    mtype = opt(args, "--metadata-type")[0]
+    if mtype in scen("empty"):
+        out({"status": 0, "result": []})
+    p = FIX / "inventory" / f"{mtype}.json"
+    if p.is_file():
+        out({"status": 0, "result": json.loads(p.read_text())})
+    out({"status": 0, "result": []})
+
+if cmd[:3] == ["project", "retrieve", "start"]:
+    spec = opt(args, "--metadata")[0]
+    mtype, name = spec.split(":", 1)
+    if name in scen("expire_on_retrieve"):
+        err("INVALID_SESSION_ID", "INVALID_SESSION_ID: Session expired or invalid")
+    if name in scen("fail_retrieve"):
+        out({"status": 0, "result": {"status": "Succeeded", "success": True, "files": [],
+                                      "messages": [{"problem": f"Entity of type '{mtype}' named '{name}' cannot be found"}]}})
+    manifest = json.loads((FIX / "source" / "manifest.json").read_text())
+    entries = manifest.get(spec)
+    if not entries:
+        err("RetrieveFailed", f"Componente {spec} não encontrado no fixture")
+    cwd = Path.cwd()
+    if not (cwd / "sfdx-project.json").is_file():
+        err("InvalidProjectWorkspaceError", "This directory does not contain a valid Salesforce DX project.")
+    files = []
+    for e in entries:
+        src = FIX / "source" / e["path"]
+        dest = cwd / "force-app" / "main" / "default" / e["path"]
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(src, dest)
+        full = e["fullName"]
+        if name in scen("mismatch_retrieve"):
+            full = full + "_Outro"
+        files.append({"fullName": full, "type": e["type"], "state": "Created", "filePath": str(dest)})
+    out({"status": 0, "result": {"done": True, "status": "Succeeded", "success": True, "files": files}})
+
+if cmd[:2] == ["data", "query"]:
+    q = opt(args, "--query")[0]
+    obj = q.split(" FROM ", 1)[1].split()[0]
+    p = FIX / "query" / f"{obj}.json"
+    if not p.is_file():
+        err("INVALID_TYPE", f"sObject type '{obj}' is not supported.")
+    out({"status": 0, "result": json.loads(p.read_text())})
+
+err("UnknownCommand", f"Comando não simulado: {' '.join(args)}")

@@ -1,0 +1,72 @@
+{
+  "metadataType": "CustomObject",
+  "apiVersion": "67.0",
+  "documentStrategy": "SINGLE_DOCUMENT_PER_OBJECT_WITH_RELATED_COMPONENTS",
+  "xmlFilePattern": "**/*.object-meta.xml",
+  "template": "modelo-doc-custom-object-vapi-{apiMajor}.md",
+  "titlePath": "@fullName",
+  "properties": [
+    {
+      "name": "DeveloperName",
+      "placeholder": "developer_name",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação",
+      "notes": "fullName do componente (nome do arquivo XML recuperado pelo retrieve)."
+    },
+    {
+      "name": "Label",
+      "placeholder": "label",
+      "path": "label",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "PluralLabel",
+      "placeholder": "plural_label",
+      "path": "pluralLabel",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    }
+  ],
+  "tables": [
+    {
+      "markdownSection": "Custom Fields",
+      "builder": "related_rows",
+      "source": "XML",
+      "args": {
+        "metadataType": "CustomField",
+        "columns": {
+          "field": "fullName",
+          "label": "label",
+          "type": "type"
+        }
+      }
+    },
+    {
+      "markdownSection": "Componentes relacionados",
+      "builder": "related_components",
+      "source": "XML",
+      "args": {
+        "excludeTypes": [
+          "CustomField"
+        ]
+      }
+    }
+  ],
+  "relatedMetadataTypes": [
+    "CustomField",
+    "RecordType",
+    "ValidationRule",
+    "WebLink"
+  ],
+  "internalData": {
+    "enabled": false,
+    "source": null,
+    "object": null,
+    "query": null
+  }
+}

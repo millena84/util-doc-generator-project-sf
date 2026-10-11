@@ -1,0 +1,66 @@
+{
+  "metadataType": "ExternalClientApplication",
+  "apiVersion": "67.0",
+  "documentStrategy": "SINGLE_DOCUMENT_PER_APP_WITH_RELATED_COMPONENTS",
+  "xmlFilePattern": "**/*.eca-meta.xml",
+  "template": "modelo-doc-cea-vapi-{apiMajor}.md",
+  "titlePath": "@fullName",
+  "properties": [
+    {
+      "name": "DeveloperName",
+      "placeholder": "developer_name",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação",
+      "notes": "fullName do componente (nome do arquivo XML recuperado pelo retrieve)."
+    },
+    {
+      "name": "Label",
+      "placeholder": "label",
+      "path": "label",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "ApiVersion",
+      "placeholder": "api_version",
+      "path": "apiVersion",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação",
+      "notes": "Se o describeValueType não listar o campo, é renderizado 'Não aplicável'."
+    }
+  ],
+  "tables": [
+    {
+      "markdownSection": "Componentes relacionados",
+      "builder": "related_components",
+      "source": "XML"
+    },
+    {
+      "markdownSection": "Pastas relacionadas",
+      "builder": "related_folders",
+      "source": "XML",
+      "notes": "Pasta (formato source) de cada XML recuperado; finalidade = metadata type armazenado na pasta."
+    }
+  ],
+  "relatedMetadataTypes": [
+    "ExtlClntAppOauthSettings",
+    "ExtlClntAppConfigurablePolicies",
+    "ExtlClntAppOauthConfigurablePolicies",
+    "ExternalCredential",
+    "NamedCredential",
+    "ConnectedApp",
+    "RemoteSiteSetting",
+    "CorsWhitelistOrigin",
+    "CspTrustedSite"
+  ],
+  "internalData": {
+    "enabled": false,
+    "source": null,
+    "object": null,
+    "query": null
+  }
+}

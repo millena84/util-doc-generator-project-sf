@@ -1,0 +1,22 @@
+{
+  "done": true,
+  "totalSize": 2,
+  "records": [
+    {
+      "attributes": {
+        "type": "Flow"
+      },
+      "Id": "301000000000001AAA",
+      "VersionNumber": 1,
+      "Status": "Obsolete"
+    },
+    {
+      "attributes": {
+        "type": "Flow"
+      },
+      "Id": "301000000000002AAA",
+      "VersionNumber": 2,
+      "Status": "Active"
+    }
+  ]
+}

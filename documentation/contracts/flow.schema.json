@@ -1,0 +1,77 @@
+{
+  "metadataType": "Flow",
+  "apiVersion": "67.0",
+  "documentStrategy": "SINGLE_DOCUMENT_PER_FLOW_WITH_RELATED_COMPONENTS",
+  "xmlFilePattern": "**/*.flow-meta.xml",
+  "template": "modelo-doc-flow-vapi-{apiMajor}.md",
+  "titlePath": "@fullName",
+  "properties": [
+    {
+      "name": "DeveloperName",
+      "placeholder": "developer_name",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação",
+      "notes": "fullName do componente (nome do arquivo XML recuperado pelo retrieve)."
+    },
+    {
+      "name": "MasterLabel",
+      "placeholder": "master_label",
+      "path": "label",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação",
+      "notes": "Elemento <label> do Flow (Metadata API Flow.label)."
+    },
+    {
+      "name": "ApiVersion",
+      "placeholder": "api_version",
+      "path": "apiVersion",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Status",
+      "placeholder": "status",
+      "path": "internal:records",
+      "source": "Objeto interno",
+      "required": false,
+      "markdownSection": "Identificação",
+      "format": "v{VersionNumber}: {Status}",
+      "notes": "Status de cada versão do Flow (Tooling API, objeto Flow)."
+    }
+  ],
+  "blocks": [
+    {
+      "placeholder": "flow_definition",
+      "markdownSection": "Definição",
+      "builder": "related_properties_table",
+      "args": {
+        "metadataType": "FlowDefinition"
+      },
+      "source": "XML"
+    }
+  ],
+  "tables": [
+    {
+      "markdownSection": "Componentes relacionados",
+      "builder": "related_components",
+      "source": "XML",
+      "emptyValue": "Não aplicável"
+    }
+  ],
+  "relatedMetadataTypes": [
+    "FlowDefinition"
+  ],
+  "internalData": {
+    "enabled": true,
+    "source": "Tooling API",
+    "object": "Flow",
+    "useToolingApi": true,
+    "query": "SELECT Id, VersionNumber, Status FROM Flow WHERE Definition.DeveloperName = '{developerName}' ORDER BY VersionNumber",
+    "blocking": false,
+    "validationPending": "Confirmar no piloto que o filtro Definition.DeveloperName é aceito pela Tooling API da org."
+  }
+}
