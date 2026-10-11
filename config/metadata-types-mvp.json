@@ -1,0 +1,50 @@
+{
+  "mvp": true,
+  "orgAlias": "dev",
+  "apiVersion": "67.0",
+  "metadataTypeGroups": [
+    {
+      "group": "Flow",
+      "primaryMetadataType": "Flow",
+      "relatedMetadataTypes": ["FlowDefinition"],
+      "documentStrategy": "SINGLE_DOCUMENT_PER_FLOW_WITH_RELATED_COMPONENTS"
+    },
+    {
+      "group": "ExternalClientApp",
+      "primaryMetadataType": "ExternalClientApp",
+      "relatedMetadataTypes": [
+        "ExternalCredential",
+        "NamedCredential",
+        "ConnectedApp",
+        "RemoteSiteSetting",
+        "CorsWhitelistOrigin",
+        "CspTrustedSite"
+      ],
+      "documentStrategy": "SINGLE_DOCUMENT_PER_APP_WITH_RELATED_COMPONENTS"
+    },
+    {
+      "group": "ExternalCredential",
+      "primaryMetadataType": "ExternalCredential",
+      "relatedMetadataTypes": [],
+      "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT"
+    },
+    {
+      "group": "ConnectedApp",
+      "primaryMetadataType": "ConnectedApp",
+      "relatedMetadataTypes": [],
+      "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT"
+    },
+    {
+      "group": "CustomObject",
+      "primaryMetadataType": "CustomObject",
+      "relatedMetadataTypes": ["CustomField", "RecordType", "ValidationRule", "WebLink"],
+      "documentStrategy": "SINGLE_DOCUMENT_PER_OBJECT_WITH_RELATED_COMPONENTS"
+    },
+    {
+      "group": "CustomMetadata",
+      "primaryMetadataType": "CustomMetadata",
+      "relatedMetadataTypes": [],
+      "documentStrategy": "ONE_DOCUMENT_PER_TYPE_AND_RECORDS"
+    }
+  ]
+}

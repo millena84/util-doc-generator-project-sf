@@ -1,0 +1,21 @@
+{
+  "projectName": "util-doc-generator-project-sf",
+  "orgAlias": "dev",
+  "salesforceCli": {
+    "minimumVersion": "2.0.0"
+  },
+  "defaultApiVersion": "67.0",
+  "paths": {
+    "catalog": "catalog",
+    "inventory": "inventory",
+    "models": "documentation/models",
+    "contracts": "documentation/contracts",
+    "runs": "runs",
+    "outputDocs": "saida/docs"
+  },
+  "execution": {
+    "mode": "MVP_MOCKED_METADATA_TYPES",
+    "saveRawResponses": true,
+    "allowPartialSuccess": true
+  }
+}
