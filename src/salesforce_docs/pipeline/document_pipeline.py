@@ -70,7 +70,7 @@ class DocumentPipeline:
                                           save_raw=self.app.save_raw_responses, masker=self.masker)
         self.runner.masker = self.masker
         self.metadata_client_factory = metadata_client_factory or (
-            lambda s: MetadataApiClient(s.instance_url, s.access_token, s.api_version,
+            lambda s: MetadataApiClient(s.instance_url, lambda: s.access_token, s.api_version,
                                         timeout=self.app.http_timeout_seconds))
         self.stream = stream
         self.renderer = MarkdownRenderer()
@@ -124,6 +124,10 @@ class DocumentPipeline:
             state.finish(st.FAILED, {"code": "CONFIG_ERROR", "message": str(exc)})
             log.error(f"Configuração inválida: {exc}")
             return EXIT_FAILURE, state
+        finally:
+            # O token só vive durante a execução, inclusive em caso de exceção não tratada.
+            if p.session is not None:
+                p.session.clear()
         final = self._final_status(state)
         state.data["commands"] = self.runner.history
         state.finish(final)
@@ -162,7 +166,7 @@ class DocumentPipeline:
         p.masker.add(display.get("accessToken"))
         if not (result.ok and display.get("apiVersion") and display.get("connectedStatus") == "Connected"):
             if self.app.save_raw_responses and result.stdout.strip():
-                write_text_raw(p.errors_dir / "org-display.raw.json", result.stdout)
+                write_text_raw(p.errors_dir / "org-display.raw.json", result.stdout, private=True)
             org_session_validator.validate_display(result, alias)
             raise GlobalFailure("ORG_DISPLAY_INCOMPLETE", "`sf org display` sem apiVersion",
                                 org_session_validator.login_suggestion(alias))
@@ -170,7 +174,8 @@ class DocumentPipeline:
         p.bind_session(session)
         raw_path = p.catalog_dir / "org-display.raw.json"
         if self.app.save_raw_responses:
-            write_text_raw(raw_path, result.stdout)  # bruto, inalterado (contém token: .gitignore)
+            # bruto, inalterado; contém token: .gitignore + permissão restrita ao dono (0600)
+            write_text_raw(raw_path, result.stdout, private=True)
         org_session_validator.validate_display(result, alias)
         p.run_state.data["apiVersion"] = session.api_version
         p.run_state.set("session", session.describe())

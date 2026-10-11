@@ -1,5 +1,6 @@
 import io
 import json
+import pickle
 import unittest
 import urllib.error
 
@@ -42,6 +43,20 @@ class _Opener:
 class MetadataApiClientTest(unittest.TestCase):
     def client(self, opener):
         return MetadataApiClient("https://x.my.salesforce.com/", FAKE_TOKEN, "67.0", opener=opener)
+
+    def test_token_provider_and_masked_repr(self):
+        token = {"value": FAKE_TOKEN}
+        opener = _Opener(body=describe_body("Flow"))
+        client = MetadataApiClient("https://x.my.salesforce.com/", lambda: token["value"], "67.0",
+                                   opener=opener)
+        client.Flow.describe()
+        self.assertIn(FAKE_TOKEN, opener.requests[0].data.decode())
+        self.assertNotIn(FAKE_TOKEN, repr(client))
+        with self.assertRaises(TypeError):
+            pickle.dumps(client)
+        token["value"] = None  # token descartado: cliente não guarda cópia própria
+        client.Flow.describe()
+        self.assertNotIn(FAKE_TOKEN, opener.requests[1].data.decode())
 
     def test_describe_request_and_raw_without_token(self):
         opener = _Opener(body=describe_body("Flow"))

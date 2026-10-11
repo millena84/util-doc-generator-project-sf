@@ -1,8 +1,10 @@
+import copy
 import json
+import pickle
 import unittest
 
 from tests.helpers import FAKE_TOKEN, FakeRunner
-from salesforce_docs.errors import GlobalFailure
+from salesforce_docs.errors import GlobalFailure, SessionExpiredError
 from salesforce_docs.salesforce.cli_runner import CliResult
 from salesforce_docs.salesforce.org_session import OrgSession
 from salesforce_docs.validation.org_session_validator import (validate_alias_present,
@@ -54,6 +56,24 @@ class OrgSessionValidatorTest(unittest.TestCase):
         self.assertEqual(s2.detected_api_version, "67.0")
         self.assertNotIn(FAKE_TOKEN, repr(s2))
         self.assertNotIn(FAKE_TOKEN, json.dumps(s2.describe()))
+
+    def test_session_token_not_exposed_nor_serializable(self):
+        s = OrgSession.from_display_result("dev", DISPLAY["result"])
+        self.assertNotIn(FAKE_TOKEN, str(s))
+        self.assertNotIn(FAKE_TOKEN, f"{s!r} {s}")
+        with self.assertRaises(TypeError):
+            pickle.dumps(s)
+        with self.assertRaises(TypeError):
+            copy.deepcopy(s)
+
+    def test_session_clear_discards_token(self):
+        s = OrgSession.from_display_result("dev", DISPLAY["result"])
+        self.assertEqual(s.access_token, FAKE_TOKEN)
+        s.clear()
+        self.assertTrue(s.cleared)
+        self.assertNotIn(FAKE_TOKEN, json.dumps(vars(s)))
+        with self.assertRaises(SessionExpiredError):
+            s.access_token
 
 
 if __name__ == "__main__":
