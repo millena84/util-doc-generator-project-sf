@@ -98,7 +98,9 @@ class FullRunTest(PipelineTestBase):
         self.assertNotIn("Outra_ECA_oauth", doc)
         self.assertIn("| extlClntAppOauthSettings | ExtlClntAppOauthSettings | XML |", doc)
         types = {(t["metadataType"], t.get("stage")): t["status"] for t in state.data["metadataTypes"]}
-        self.assertEqual(types[("CorsWhitelistOrigin", "enabled")], st.NOT_ENABLED)
+        # ExternalCredential/ConnectedApp têm documento próprio; NamedCredential etc. não são do MVP
+        self.assertNotIn(("NamedCredential", "enabled"), types)
+        self.assertNotIn(("CorsWhitelistOrigin", "enabled"), types)
 
     def test_custom_object_and_custom_metadata(self):
         code, state = self.run_pipeline(groups=["CustomObject", "CustomMetadata"])

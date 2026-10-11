@@ -1,25 +1,4 @@
 {
-  "RemoteSiteSetting:Parceiro_API": [
-    {
-      "type": "RemoteSiteSetting",
-      "fullName": "Parceiro_API",
-      "path": "remoteSiteSettings/Parceiro_API.remoteSite-meta.xml"
-    }
-  ],
-  "CspTrustedSite:Parceiro_CDN": [
-    {
-      "type": "CspTrustedSite",
-      "fullName": "Parceiro_CDN",
-      "path": "cspTrustedSites/Parceiro_CDN.cspTrustedSite-meta.xml"
-    }
-  ],
-  "CorsWhitelistOrigin:Parceiro_Portal": [
-    {
-      "type": "CorsWhitelistOrigin",
-      "fullName": "Parceiro_Portal",
-      "path": "corsWhitelistOrigins/Parceiro_Portal.corsWhitelistOrigin-meta.xml"
-    }
-  ],
   "ExtlClntAppConfigurablePolicies:Minha_ECA_plcy": [
     {
       "type": "ExtlClntAppConfigurablePolicies",

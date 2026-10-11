@@ -5,7 +5,7 @@
     <displayType>button</displayType>
     <linkType>url</linkType>
     <masterLabel>Imprimir Pedido</masterLabel>
-    <openType>newWindow</openType>
+    <openType>replace</openType>
     <protected>false</protected>
     <url>/apex/ImprimirPedido?id={!Pedido__c.Id}</url>
 </WebLink>

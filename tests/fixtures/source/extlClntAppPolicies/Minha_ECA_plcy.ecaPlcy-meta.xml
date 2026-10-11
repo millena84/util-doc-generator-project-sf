@@ -2,5 +2,7 @@
 <ExtlClntAppConfigurablePolicies xmlns="http://soap.sforce.com/2006/04/metadata">
     <externalClientApplication>Minha_ECA</externalClientApplication>
     <isEnabled>true</isEnabled>
-    <label>Minha ECA plcy</label>
+    <isOauthPluginEnabled>true</isOauthPluginEnabled>
+    <label>Minha_ECA_plcy</label>
+    <startPage>None</startPage>
 </ExtlClntAppConfigurablePolicies>

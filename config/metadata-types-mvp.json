@@ -12,10 +12,6 @@
     },
     "ExternalCredential": { "folder": "external-credentials" },
     "ConnectedApp": { "folder": "connected-apps" },
-    "NamedCredential": { "folder": "named-credentials" },
-    "RemoteSiteSetting": { "folder": "remote-site-settings" },
-    "CspTrustedSite": { "folder": "csp-trusted-sites" },
-    "CorsWhitelistOrigin": { "folder": "cors-whitelist-origins" },
     "CustomObject": { "folder": "custom-objects" },
     "CustomMetadata": { "folder": "custom-metadata" },
     "CustomField": { "retrievedWith": "CustomObject" },
@@ -67,25 +63,13 @@
       "relatedMetadataTypes": [
         "ExtlClntAppOauthSettings",
         "ExtlClntAppConfigurablePolicies",
-        "ExtlClntAppOauthConfigurablePolicies",
-        "ExternalCredential",
-        "NamedCredential",
-        "ConnectedApp",
-        "RemoteSiteSetting",
-        "CorsWhitelistOrigin",
-        "CspTrustedSite"
+        "ExtlClntAppOauthConfigurablePolicies"
       ],
       "documentStrategy": "SINGLE_DOCUMENT_PER_APP_WITH_RELATED_COMPONENTS",
       "relations": [
         { "metadataType": "ExtlClntAppOauthSettings", "match": "FIELD_EQUALS_PRIMARY", "field": "externalClientApplication" },
         { "metadataType": "ExtlClntAppConfigurablePolicies", "match": "FIELD_EQUALS_PRIMARY", "field": "externalClientApplication" },
-        { "metadataType": "ExtlClntAppOauthConfigurablePolicies", "match": "FIELD_EQUALS_PRIMARY", "field": "externalClientApplication" },
-        { "metadataType": "ExternalCredential", "match": "REFERENCE_SCAN" },
-        { "metadataType": "NamedCredential", "match": "REFERENCE_SCAN" },
-        { "metadataType": "ConnectedApp", "match": "REFERENCE_SCAN" },
-        { "metadataType": "RemoteSiteSetting", "match": "REFERENCE_SCAN" },
-        { "metadataType": "CorsWhitelistOrigin", "match": "REFERENCE_SCAN" },
-        { "metadataType": "CspTrustedSite", "match": "REFERENCE_SCAN" }
+        { "metadataType": "ExtlClntAppOauthConfigurablePolicies", "match": "FIELD_EQUALS_PRIMARY", "field": "externalClientApplication" }
       ]
     },
     {

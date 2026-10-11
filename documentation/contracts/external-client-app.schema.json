@@ -49,13 +49,7 @@
   "relatedMetadataTypes": [
     "ExtlClntAppOauthSettings",
     "ExtlClntAppConfigurablePolicies",
-    "ExtlClntAppOauthConfigurablePolicies",
-    "ExternalCredential",
-    "NamedCredential",
-    "ConnectedApp",
-    "RemoteSiteSetting",
-    "CorsWhitelistOrigin",
-    "CspTrustedSite"
+    "ExtlClntAppOauthConfigurablePolicies"
   ],
   "internalData": {
     "enabled": false,

@@ -8,6 +8,20 @@ Nenhum dado aqui veio de uma org real e nenhum deve ser usado como documentaçã
 - `inventory/<Tipo>.json`: respostas simuladas de `sf org list metadata`.
 - `source/`: XMLs em formato source usados pelo retrieve simulado.
 - `query/<Objeto>.json`: respostas simuladas de `sf data query`.
-- `mvp-complete/`: camada usada no cenário `mvp_complete` (`FAKE_SF_SCENARIO=mvp_complete`). Tem prioridade sobre as fixtures base e acrescenta componentes para os tipos que, na base, ficam sem componentes ou desabilitados (CorsWhitelistOrigin, RemoteSiteSetting, CspTrustedSite, ExtlClntApp*Policies, WebLink e dados internos de ExternalCredential). Os campos dos XMLs novos foram escolhidos de forma mínima e **ainda precisam ser conferidos na documentação oficial da Metadata API**.
+- `mvp-complete/`: camada usada no cenário `mvp_complete` (`FAKE_SF_SCENARIO=mvp_complete`). Tem prioridade sobre as fixtures base e acrescenta componentes para os tipos do MVP que, na base, ficam sem componentes: ExtlClntAppConfigurablePolicies, ExtlClntAppOauthConfigurablePolicies, WebLink e dados internos de ExternalCredential.
+
+### Origem dos campos dos XMLs simulados novos
+
+O acesso direto a developer.salesforce.com não estava disponível no ambiente da verificação (2026-10-11). Por isso os campos foram conferidos em trechos da Metadata API Developer Guide retornados pela busca e em arquivos reais recuperados de orgs, publicados no GitHub:
+
+| Arquivo | Campos | Referência |
+|---|---|---|
+| `extlClntAppPolicies/Minha_ECA_plcy.ecaPlcy-meta.xml` | `externalClientApplication` e `isEnabled` (obrigatórios), `isOauthPluginEnabled`, `label`, `startPage` | Metadata API: [ExtlClntAppConfigurablePolicies](https://developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_extlclntappconfigurablepolicies.htm); arquivo real em [lorranmonteiro/my-salesforce-playground#9](https://github.com/lorranmonteiro/my-salesforce-playground/pull/9) |
+| `extlClntAppOauthPolicies/Minha_ECA_oauthPlcy.ecaOauthPlcy-meta.xml` | `permittedUsersPolicyType` (`AllSelfAuthorized` / `AdminApprovedPreAuthorized`); demais campos iguais ao exemplo `default` do guia | Metadata API: [ExtlClntAppOauthConfigurablePolicies](https://developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_extlclntappoauthconfigurablepolicies.htm); exemplo em [flxbl-io/external-client-apps-guide](https://github.com/flxbl-io/external-client-apps-guide) (fonte não oficial) |
+| `objects/Pedido__c/webLinks/Imprimir_Pedido.webLink-meta.xml` | `availability`, `openType` e `protected` (obrigatórios), `displayType`, `linkType`, `masterLabel`, `url`. `openType=replace`, porque `newWindow` exige `height`. | Metadata API: [WebLink](https://developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_weblink.htm) |
+
+Os XMLs base `Minha_ECA.eca-meta.xml` e `Minha_ECA_oauth.ecaOauth-meta.xml` usam campos que também aparecem em um arquivo real ([onyx-dot-app/onyx#14953](https://github.com/onyx-dot-app/onyx/pull/14953)).
+
+**Pendente:** abrir as três páginas da Metadata API linkadas acima e conferir a tabela completa de campos da API 67.0, principalmente os campos de `ExtlClntAppOauthConfigurablePolicies` que vieram só da fonte não oficial.
 
 O token em `org/org-display.json` é um valor fictício.

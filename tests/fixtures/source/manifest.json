@@ -48,13 +48,6 @@
       "path": "externalCredentials/Minha_EC.externalCredential-meta.xml"
     }
   ],
-  "NamedCredential:Minha_NC": [
-    {
-      "type": "NamedCredential",
-      "fullName": "Minha_NC",
-      "path": "namedCredentials/Minha_NC.namedCredential-meta.xml"
-    }
-  ],
   "ConnectedApp:Meu_App": [
     {
       "type": "ConnectedApp",

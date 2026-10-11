@@ -4,7 +4,6 @@ Usa a Salesforce CLI SIMULADA com a camada tests/fixtures/mvp-complete, em que t
 metadata type declarado em config/metadata-types-mvp.json tem ao menos um componente.
 """
 
-import re
 import unittest
 
 from tests.test_document_pipeline import PipelineTestBase
@@ -51,9 +50,7 @@ LISTED_TYPES = {
     "ExtlClntAppOauthSettings": "extl-clnt-app-oauth-settings",
     "ExtlClntAppConfigurablePolicies": "extl-clnt-app-configurable-policies",
     "ExtlClntAppOauthConfigurablePolicies": "extl-clnt-app-oauth-configurable-policies",
-    "ExternalCredential": "external-credentials", "NamedCredential": "named-credentials",
-    "ConnectedApp": "connected-apps", "RemoteSiteSetting": "remote-site-settings",
-    "CorsWhitelistOrigin": "cors-whitelist-origins", "CspTrustedSite": "csp-trusted-sites",
+    "ExternalCredential": "external-credentials", "ConnectedApp": "connected-apps",
     "CustomObject": "custom-objects", "CustomMetadata": "custom-metadata",
 }
 # Tipos que só chegam pelo retrieve do CustomObject (passo 7).
@@ -121,12 +118,13 @@ class MvpCompleteSimulationTest(PipelineTestBase):
             for row in rows:
                 self.assertIn(row, text, name)
 
-    def test_reference_scan_candidates_retrieved_but_not_linked(self):
-        """Sem citação exata no XML da ECA, REFERENCE_SCAN não relaciona (nada é suposto)."""
+    def test_eca_document_has_only_eca_components(self):
+        """ExternalCredential e ConnectedApp têm documento próprio e não entram no da ECA."""
         text = self.read(self.all_documents()["doc-minha-eca-external-client-app.md"]["document"])
-        for name in ("Minha_NC", "Parceiro_API", "Parceiro_CDN", "Parceiro_Portal"):
-            self.assertNotIn(name, text)
-            self.assertTrue(re.search(rf"--metadata \w+:{name} ", self.calls_file.read_text()), name)
+        for name in ("Minha_EC", "Meu_App", "Outra_ECA_oauth"):
+            self.assertNotIn(f"| {name} |", text)
+        types = {t["metadataType"] for t in self.state.data["metadataTypes"]}
+        self.assertEqual(types, set(LISTED_TYPES) | set(CHILD_TYPES))
 
     def test_regenerate_is_identical_and_offline(self):
         before = {d: self.read(c["document"]) for d, c in self.all_documents().items()}

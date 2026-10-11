@@ -1,8 +1,9 @@
+import json
 import unittest
 
 from tests.helpers import ROOT
 from salesforce_docs import status as st
-from salesforce_docs.config.metadata_types_loader import load_metadata_types
+from salesforce_docs.config.metadata_types_loader import MetadataTypesConfig, load_metadata_types
 from salesforce_docs.pipeline import deviation_handler as dh
 from salesforce_docs.pipeline.component_pipeline import ComponentRecord
 
@@ -30,6 +31,15 @@ class FakeProcessor:
 
 def inv(*names):
     return [{"fullName": n} for n in names]
+
+
+def mvp_with_reference_scan(*types):
+    """Config do MVP com relações REFERENCE_SCAN extras no grupo ExternalClientApp (só para teste)."""
+    data = json.loads((ROOT / "config" / "metadata-types-mvp.json").read_text(encoding="utf-8"))
+    group = next(g for g in data["metadataTypeGroups"] if g["group"] == "ExternalClientApp")
+    group["relatedMetadataTypes"] += list(types)
+    group["relations"] += [{"metadataType": t, "match": "REFERENCE_SCAN"} for t in types]
+    return MetadataTypesConfig(data)
 
 
 class DeviationHandlerTest(unittest.TestCase):
@@ -61,37 +71,63 @@ class DeviationHandlerTest(unittest.TestCase):
         self.assertEqual(related, [])
 
     def test_external_client_app_related_components(self):
+        """Só ExtlClntApp* ligados por externalClientApplication; os demais tipos não são da ECA."""
         g = self.mvp.group("ExternalClientApp")
         invs = {
             "ExternalClientApplication": inv("Minha_ECA"),
             "ExtlClntAppOauthSettings": inv("Minha_ECA_oauth", "Outra_oauth"),
-            "NamedCredential": inv("NC_Referenciada", "NC_Solta"),
+            "ExtlClntAppConfigurablePolicies": inv("Minha_ECA_plcy"),
+            "ExtlClntAppOauthConfigurablePolicies": inv("Minha_ECA_oauthPlcy"),
+            "NamedCredential": inv("NC_Referenciada"),
             "ConnectedApp": inv("App_Que_Cita_ECA"),
         }
         data = {
-            ("ExternalClientApplication", "Minha_ECA"): {"label": "x", "description": "usa NC_Referenciada"},
+            ("ExternalClientApplication", "Minha_ECA"): {"label": "x", "description": "NC_Referenciada"},
             ("ExtlClntAppOauthSettings", "Minha_ECA_oauth"): {"externalClientApplication": "Minha_ECA"},
             ("ExtlClntAppOauthSettings", "Outra_oauth"): {"externalClientApplication": "Outra"},
-            ("NamedCredential", "NC_Solta"): {"label": "NC"},
+            ("ExtlClntAppConfigurablePolicies", "Minha_ECA_plcy"): {"externalClientApplication": "Minha_ECA"},
+            ("ExtlClntAppOauthConfigurablePolicies", "Minha_ECA_oauthPlcy"):
+                {"externalClientApplication": "Minha_ECA"},
             ("ConnectedApp", "App_Que_Cita_ECA"): {"plugin": {"name": "Minha_ECA"}},
         }
         proc = FakeProcessor(data)
         unit = dh.build_units(g, invs, self.mvp)[0]
         primary = proc.process("ExternalClientApplication", "Minha_ECA")
-        enabled = set(g.all_types)
+        enabled = set(g.all_types) | {"NamedCredential", "ConnectedApp"}
         related, failures = dh.resolve_related(unit, primary, g, proc, invs, enabled, _Log())
         found = sorted((r["metadataType"], r["fullName"]) for r in related)
-        self.assertEqual(found, [("ConnectedApp", "App_Que_Cita_ECA"),
+        self.assertEqual(found, [("ExtlClntAppConfigurablePolicies", "Minha_ECA_plcy"),
+                                 ("ExtlClntAppOauthConfigurablePolicies", "Minha_ECA_oauthPlcy"),
                                  ("ExtlClntAppOauthSettings", "Minha_ECA_oauth")])
         self.assertEqual(failures, [])
+        self.assertNotIn(("NamedCredential", "NC_Referenciada"), proc.calls)
+        self.assertNotIn(("ConnectedApp", "App_Que_Cita_ECA"), proc.calls)
+
+    def test_reference_scan_engine(self):
+        """REFERENCE_SCAN segue disponível no motor para quem configurar (fora do MVP)."""
+        mvp = mvp_with_reference_scan("NamedCredential", "ConnectedApp")
+        g = mvp.group("ExternalClientApp")
+        invs = {"ExternalClientApplication": inv("Minha_ECA"),
+                "NamedCredential": inv("NC_Referenciada", "NC_Solta"),
+                "ConnectedApp": inv("App_Que_Cita_ECA")}
+        data = {("ExternalClientApplication", "Minha_ECA"): {"description": "NC_Referenciada"},
+                ("NamedCredential", "NC_Solta"): {"label": "NC"},
+                ("ConnectedApp", "App_Que_Cita_ECA"): {"plugin": {"name": "Minha_ECA"}}}
+        proc = FakeProcessor(data)
+        unit = dh.build_units(g, invs, mvp)[0]
+        related, _ = dh.resolve_related(unit, proc.process("ExternalClientApplication", "Minha_ECA"), g,
+                                        proc, invs, set(g.all_types), _Log())
+        self.assertEqual(sorted((r["metadataType"], r["fullName"]) for r in related),
+                         [("ConnectedApp", "App_Que_Cita_ECA"), ("NamedCredential", "NC_Referenciada")])
 
     def test_reference_scan_requires_exact_value(self):
-        g = self.mvp.group("ExternalClientApp")
+        mvp = mvp_with_reference_scan("NamedCredential")
+        g = mvp.group("ExternalClientApp")
         invs = {"ExternalClientApplication": inv("App"), "NamedCredential": inv("App_NC")}
         data = {("ExternalClientApplication", "App"): {"description": "App_NC_outro"},
                 ("NamedCredential", "App_NC"): {"label": "App plus"}}
         proc = FakeProcessor(data)
-        unit = dh.build_units(g, invs, self.mvp)[0]
+        unit = dh.build_units(g, invs, mvp)[0]
         related, _ = dh.resolve_related(unit, proc.process("ExternalClientApplication", "App"), g,
                                         proc, invs, set(g.all_types), _Log())
         self.assertEqual(related, [])
