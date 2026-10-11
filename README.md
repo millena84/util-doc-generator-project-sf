@@ -77,7 +77,7 @@ Registro da auditoria de segurança de 2026-10-11 (10 riscos: 1 crítico, 2 alto
 | Grupo | `documentStrategy` | Como os relacionados são encontrados (`relations`) |
 |---|---|---|
 | Flow | `SINGLE_DOCUMENT_PER_FLOW_WITH_RELATED_COMPONENTS` | `FlowDefinition` com mesmo fullName (`SAME_FULL_NAME`); subdocumentos de trigger/tela via `subDocuments` |
-| ExternalClientApp | `SINGLE_DOCUMENT_PER_APP_WITH_RELATED_COMPONENTS` | `ExtlClntApp*` cujo `externalClientApplication` = app (`FIELD_EQUALS_PRIMARY`); demais tipos por valor exato citado em um dos XMLs (`REFERENCE_SCAN`) |
+| ExternalClientApp | `SINGLE_DOCUMENT_PER_APP_WITH_RELATED_COMPONENTS` | `ExtlClntAppOauthSettings`, `ExtlClntAppConfigurablePolicies` e `ExtlClntAppOauthConfigurablePolicies` cujo `externalClientApplication` = app (`FIELD_EQUALS_PRIMARY`). ExternalCredential e ConnectedApp têm documento próprio e não fazem parte da ECA. |
 | CustomObject | `SINGLE_DOCUMENT_PER_OBJECT_WITH_RELATED_COMPONENTS` | filhos retornados no retrieve do objeto (`CHILD_OF_PRIMARY`) |
 | CustomMetadata | `ONE_DOCUMENT_PER_TYPE_AND_RECORDS` | records `Tipo.Record` agrupados no tipo `Tipo__mdt` (`typeDefinition`) |
 | ExternalCredential, ConnectedApp | `ONE_DOCUMENT_PER_COMPONENT` | — |
@@ -107,6 +107,24 @@ python3 -m unittest discover -s tests -t .
 ```
 
 Os testes usam uma Salesforce CLI **simulada** (`tests/fixtures/bin/sf`) e respostas SOAP simuladas. Nenhuma credencial real é usada.
+
+### Simulação de todas as documentações do MVP
+
+```bash
+python3 -m unittest tests.test_mvp_simulation        # verifica os 8 modelos e os 14 metadata types
+python3 -m tests.simulate_mvp --out /tmp/sim-mvp     # executa e gera o relatório passo a passo
+```
+
+O cenário `mvp_complete` da CLI simulada sobrepõe `tests/fixtures/mvp-complete/` às fixtures base, de modo que todo metadata type do MVP tenha ao menos um componente. O relatório versionado em `documentation/simulacao/relatorio-simulacao-mvp.md` mostra, para essa simulação, a saída no terminal, os comandos por passo, a situação de cada tipo, a árvore de arquivos e o conteúdo dos 9 documentos gerados.
+
+| Grupo | Documento(s) / modelo | Tipos que aparecem dentro do documento |
+|---|---|---|
+| Flow | `modelo-doc-flow` + subdocumentos `modelo-doc-flow-trigger` e `modelo-doc-flow-screen` | FlowDefinition |
+| ExternalClientApp | `modelo-doc-cea` | ExtlClntAppOauthSettings, ExtlClntAppConfigurablePolicies, ExtlClntAppOauthConfigurablePolicies |
+| ExternalCredential | `modelo-doc-external-credential` | — |
+| ConnectedApp | `modelo-doc-connectedapp` | — |
+| CustomObject | `modelo-doc-custom-object` | CustomField, RecordType, ValidationRule, WebLink |
+| CustomMetadata | `modelo-doc-custom-metadata` | records do tipo `__mdt` |
 
 ## Estrutura
 
