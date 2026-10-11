@@ -56,11 +56,21 @@ Estado da execução: `runs/run-<AAAAMMDD-HHMMSS>.json`. Respostas de erro ficam
 ## Decisões de implementação
 
 - **Raw do `describeValueType`**: a Metadata API responde em XML (SOAP). O raw é um envelope JSON (`rawFormat: metadata-api-soap-capture/v1`) com `request` (endpoint, tipo, data — **sem token**) e `response.body` contendo o **XML exatamente como recebido**. O `.schema.json` é derivado desse corpo e pode ser regenerado.
-- **Token**: lido em tempo de execução de `sf org display`, mantido só em memória e mascarado em logs. O `org-display.raw.json` é salvo inalterado (regra do raw), por isso está no `.gitignore`.
+- **Token**: lido em tempo de execução de `sf org display`, mantido só em memória, mascarado em logs/`repr`/`str`, não serializável (pickle/deepcopy) e descartado (`OrgSession.clear()`) ao fim de cada execução. O `org-display.raw.json` é salvo inalterado (regra do raw), com permissão `0600` e no `.gitignore`.
 - **Retrieve**: roda em um projeto SFDX temporário; o XML é copiado byte a byte, preservando as pastas do formato source (ex.: `objects/Obj__c/fields/...`).
 - **Valores ausentes**: `Não aplicável` quando o `describeValueType` comprova que o campo não existe no tipo; `Não informado` quando existe mas não veio no XML/dado interno.
 - **Dados sensíveis**: elementos listados em `sensitiveXmlElements` (ex.: `consumerSecret`) nunca são renderizados; o run log avisa quando um XML recuperado os contém. `ExtlClntAppGlobalOauthSettings` é tipo excluído (contém consumer secret).
 - **External Client App**: o nome correto do metadata type é `ExternalClientApplication` (Metadata API). O grupo continua chamado `ExternalClientApp`.
+
+## Riscos conhecidos (tratar futuramente, se necessário)
+
+Registro da auditoria de segurança de 2026-10-11 (10 riscos: 1 crítico, 2 altos, 5 médios, 2 baixos). Só o risco crítico foi detalhado e tratado até agora; os demais ainda precisam ser descritos aqui quando o relatório completo estiver disponível.
+
+| # | Risco | Situação | Possível tratamento futuro |
+|---|---|---|---|
+| 1 | 🔴 `accessToken` mantido em memória durante a execução | **Mitigado**: mascarado em `repr`/`str`, serialização bloqueada, descartado em `finally` ao fim da execução; `MetadataApiClient` obtém o token da sessão a cada chamada (sem cópia própria). | Risco residual: Python não permite zerar uma `str` na memória; um dump do processo durante a execução ainda expõe o token. Aceitável para uso local. |
+| 1a | 🔴 `accessToken` gravado em disco em `catalog/.../org-display.raw.json` (e em `runs/*/errors/`) | **Parcialmente mitigado**: `.gitignore` + permissão `0600`. O token fica no arquivo até expirar. | Há conflito entre as regras 2/3 (salvar raw inalterado) e 7 (credenciais) do `CLAUDE.md`. Opções: tratar `sf org display` como dado local da CLI e não persistir (como já ocorre com `sf org list`), ou apagar o arquivo ao fim da execução. Exige decisão sobre as regras. |
+| 2–10 | Demais riscos da auditoria (2 altos, 5 médios, 2 baixos) | **Não detalhados** neste registro. | Incluir descrição, localização e decisão quando o relatório completo estiver disponível. |
 
 ## Desvios (configuráveis em `config/metadata-types-mvp.json`)
 
