@@ -1,0 +1,41 @@
+{
+  "metadataType": "CustomField",
+  "apiVersion": "67.0",
+  "documentStrategy": "CHILD_OF_CUSTOM_OBJECT",
+  "xmlFilePattern": "**/fields/*.field-meta.xml",
+  "template": null,
+  "notes": "Sem modelo próprio: linhas da tabela 'Custom Fields' do documento do objeto.",
+  "properties": [
+    {
+      "name": "Field",
+      "placeholder": "field",
+      "path": "fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Custom Fields"
+    },
+    {
+      "name": "Label",
+      "placeholder": "label",
+      "path": "label",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Custom Fields"
+    },
+    {
+      "name": "Type",
+      "placeholder": "type",
+      "path": "type",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Custom Fields"
+    }
+  ],
+  "relatedMetadataTypes": [],
+  "internalData": {
+    "enabled": false,
+    "source": null,
+    "object": null,
+    "query": null
+  }
+}

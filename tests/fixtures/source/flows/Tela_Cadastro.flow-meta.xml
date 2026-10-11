@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>67.0</apiVersion>
+    <label>Tela Cadastro</label>
+    <processType>Flow</processType>
+    <screens>
+        <name>Dados_Cliente</name>
+        <label>Dados do Cliente</label>
+        <fields>
+            <name>Nome</name>
+            <fieldType>InputField</fieldType>
+            <isRequired>true</isRequired>
+        </fields>
+        <fields>
+            <name>Observacao</name>
+            <fieldType>LargeTextArea</fieldType>
+        </fields>
+    </screens>
+    <status>Draft</status>
+</Flow>

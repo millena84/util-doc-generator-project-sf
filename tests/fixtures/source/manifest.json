@@ -1,0 +1,113 @@
+{
+  "Flow:Meu_Flow": [
+    {
+      "type": "Flow",
+      "fullName": "Meu_Flow",
+      "path": "flows/Meu_Flow.flow-meta.xml"
+    }
+  ],
+  "Flow:Tela_Cadastro": [
+    {
+      "type": "Flow",
+      "fullName": "Tela_Cadastro",
+      "path": "flows/Tela_Cadastro.flow-meta.xml"
+    }
+  ],
+  "FlowDefinition:Meu_Flow": [
+    {
+      "type": "FlowDefinition",
+      "fullName": "Meu_Flow",
+      "path": "flowDefinitions/Meu_Flow.flowDefinition-meta.xml"
+    }
+  ],
+  "ExternalClientApplication:Minha_ECA": [
+    {
+      "type": "ExternalClientApplication",
+      "fullName": "Minha_ECA",
+      "path": "externalClientApps/Minha_ECA.eca-meta.xml"
+    }
+  ],
+  "ExtlClntAppOauthSettings:Minha_ECA_oauth": [
+    {
+      "type": "ExtlClntAppOauthSettings",
+      "fullName": "Minha_ECA_oauth",
+      "path": "extlClntAppOauthSettings/Minha_ECA_oauth.ecaOauth-meta.xml"
+    }
+  ],
+  "ExtlClntAppOauthSettings:Outra_ECA_oauth": [
+    {
+      "type": "ExtlClntAppOauthSettings",
+      "fullName": "Outra_ECA_oauth",
+      "path": "extlClntAppOauthSettings/Outra_ECA_oauth.ecaOauth-meta.xml"
+    }
+  ],
+  "ExternalCredential:Minha_EC": [
+    {
+      "type": "ExternalCredential",
+      "fullName": "Minha_EC",
+      "path": "externalCredentials/Minha_EC.externalCredential-meta.xml"
+    }
+  ],
+  "NamedCredential:Minha_NC": [
+    {
+      "type": "NamedCredential",
+      "fullName": "Minha_NC",
+      "path": "namedCredentials/Minha_NC.namedCredential-meta.xml"
+    }
+  ],
+  "ConnectedApp:Meu_App": [
+    {
+      "type": "ConnectedApp",
+      "fullName": "Meu_App",
+      "path": "connectedApps/Meu_App.connectedApp-meta.xml"
+    }
+  ],
+  "CustomObject:Pedido__c": [
+    {
+      "type": "CustomObject",
+      "fullName": "Pedido__c",
+      "path": "objects/Pedido__c/Pedido__c.object-meta.xml"
+    },
+    {
+      "type": "CustomField",
+      "fullName": "Pedido__c.Valor__c",
+      "path": "objects/Pedido__c/fields/Valor__c.field-meta.xml"
+    },
+    {
+      "type": "CustomField",
+      "fullName": "Pedido__c.Status__c",
+      "path": "objects/Pedido__c/fields/Status__c.field-meta.xml"
+    },
+    {
+      "type": "RecordType",
+      "fullName": "Pedido__c.Padrao",
+      "path": "objects/Pedido__c/recordTypes/Padrao.recordType-meta.xml"
+    },
+    {
+      "type": "ValidationRule",
+      "fullName": "Pedido__c.Valor_Positivo",
+      "path": "objects/Pedido__c/validationRules/Valor_Positivo.validationRule-meta.xml"
+    }
+  ],
+  "CustomObject:Config__mdt": [
+    {
+      "type": "CustomObject",
+      "fullName": "Config__mdt",
+      "path": "objects/Config__mdt/Config__mdt.object-meta.xml"
+    }
+  ],
+  "CustomMetadata:Config.Padrao": [
+    {
+      "type": "CustomMetadata",
+      "fullName": "Config.Padrao",
+      "path": "customMetadata/Config.Padrao.md-meta.xml"
+    }
+  ],
+  "CustomMetadata:Config.Secundario": [
+    {
+      "type": "CustomMetadata",
+      "fullName": "Config.Secundario",
+      "path": "customMetadata/Config.Secundario.md-meta.xml"
+    }
+  ]
+}

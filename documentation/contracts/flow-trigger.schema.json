@@ -1,0 +1,50 @@
+{
+  "metadataType": "Flow",
+  "apiVersion": "67.0",
+  "documentStrategy": "SUB_DOCUMENT_OF_FLOW",
+  "xmlFilePattern": "**/*.flow-meta.xml",
+  "template": "modelo-doc-flow-trigger-vapi-{apiMajor}.md",
+  "titlePath": "@fullName",
+  "properties": [
+    {
+      "name": "DeveloperName",
+      "placeholder": "developer_name",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação",
+      "notes": "fullName do componente (nome do arquivo XML recuperado pelo retrieve)."
+    },
+    {
+      "name": "TriggerType",
+      "placeholder": "trigger_type",
+      "path": "start.triggerType",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Object",
+      "placeholder": "object",
+      "path": "start.object",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    }
+  ],
+  "blocks": [
+    {
+      "placeholder": "conditions",
+      "markdownSection": "Condições",
+      "builder": "flow_trigger_conditions",
+      "source": "XML"
+    }
+  ],
+  "relatedMetadataTypes": [],
+  "internalData": {
+    "enabled": false,
+    "source": null,
+    "object": null,
+    "query": null
+  }
+}

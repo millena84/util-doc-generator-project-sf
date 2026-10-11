@@ -1,0 +1,19 @@
+{
+  "status": 0,
+  "result": {
+    "other": [],
+    "sandboxes": [],
+    "nonScratchOrgs": [
+      {
+        "alias": "dev",
+        "username": "usuario.simulado@example.com",
+        "orgId": "00D000000000000AAA",
+        "instanceUrl": "https://simulado.my.salesforce.com",
+        "connectedStatus": "Connected",
+        "isDefaultUsername": true
+      }
+    ],
+    "devHubs": [],
+    "scratchOrgs": []
+  }
+}

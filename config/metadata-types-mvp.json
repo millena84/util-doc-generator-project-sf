@@ -2,17 +2,68 @@
   "mvp": true,
   "orgAlias": "dev",
   "apiVersion": "67.0",
+  "metadataTypeSettings": {
+    "Flow": { "folder": "flows" },
+    "FlowDefinition": { "folder": "flow-definitions" },
+    "ExternalClientApplication": {
+      "folder": "external-client-apps",
+      "contract": "external-client-app.schema.json",
+      "documentSlug": "external-client-app"
+    },
+    "ExternalCredential": { "folder": "external-credentials" },
+    "ConnectedApp": { "folder": "connected-apps" },
+    "CustomObject": { "folder": "custom-objects" },
+    "CustomMetadata": { "folder": "custom-metadata" },
+    "CustomField": { "retrievedWith": "CustomObject" },
+    "RecordType": { "retrievedWith": "CustomObject" },
+    "ValidationRule": { "retrievedWith": "CustomObject" },
+    "WebLink": { "retrievedWith": "CustomObject" }
+  },
+  "excludedMetadataTypes": [
+    {
+      "metadataType": "ExtlClntAppGlobalOauthSettings",
+      "reason": "Contém consumerKey/consumerSecret. A documentação oficial (Metadata API, ExtlClntAppGlobalOauthSettings) indica que não deve ser adicionado a controle de versão."
+    }
+  ],
+  "sensitiveXmlElements": [
+    "consumerSecret",
+    "privateKey",
+    "password",
+    "secret",
+    "accessToken",
+    "refreshToken",
+    "oauthToken"
+  ],
   "metadataTypeGroups": [
     {
       "group": "Flow",
       "primaryMetadataType": "Flow",
       "relatedMetadataTypes": ["FlowDefinition"],
-      "documentStrategy": "SINGLE_DOCUMENT_PER_FLOW_WITH_RELATED_COMPONENTS"
+      "documentStrategy": "SINGLE_DOCUMENT_PER_FLOW_WITH_RELATED_COMPONENTS",
+      "relations": [
+        { "metadataType": "FlowDefinition", "match": "SAME_FULL_NAME" }
+      ],
+      "subDocuments": [
+        {
+          "contract": "flow-trigger.schema.json",
+          "when": { "path": "start.triggerType", "present": true },
+          "documentSuffix": "flow-trigger"
+        },
+        {
+          "contract": "flow-screen.schema.json",
+          "forEach": "screens",
+          "itemName": "name",
+          "documentSuffix": "flow-screen"
+        }
+      ]
     },
     {
       "group": "ExternalClientApp",
-      "primaryMetadataType": "ExternalClientApp",
+      "primaryMetadataType": "ExternalClientApplication",
       "relatedMetadataTypes": [
+        "ExtlClntAppOauthSettings",
+        "ExtlClntAppConfigurablePolicies",
+        "ExtlClntAppOauthConfigurablePolicies",
         "ExternalCredential",
         "NamedCredential",
         "ConnectedApp",
@@ -20,7 +71,18 @@
         "CorsWhitelistOrigin",
         "CspTrustedSite"
       ],
-      "documentStrategy": "SINGLE_DOCUMENT_PER_APP_WITH_RELATED_COMPONENTS"
+      "documentStrategy": "SINGLE_DOCUMENT_PER_APP_WITH_RELATED_COMPONENTS",
+      "relations": [
+        { "metadataType": "ExtlClntAppOauthSettings", "match": "FIELD_EQUALS_PRIMARY", "field": "externalClientApplication" },
+        { "metadataType": "ExtlClntAppConfigurablePolicies", "match": "FIELD_EQUALS_PRIMARY", "field": "externalClientApplication" },
+        { "metadataType": "ExtlClntAppOauthConfigurablePolicies", "match": "FIELD_EQUALS_PRIMARY", "field": "externalClientApplication" },
+        { "metadataType": "ExternalCredential", "match": "REFERENCE_SCAN" },
+        { "metadataType": "NamedCredential", "match": "REFERENCE_SCAN" },
+        { "metadataType": "ConnectedApp", "match": "REFERENCE_SCAN" },
+        { "metadataType": "RemoteSiteSetting", "match": "REFERENCE_SCAN" },
+        { "metadataType": "CorsWhitelistOrigin", "match": "REFERENCE_SCAN" },
+        { "metadataType": "CspTrustedSite", "match": "REFERENCE_SCAN" }
+      ]
     },
     {
       "group": "ExternalCredential",
@@ -38,13 +100,25 @@
       "group": "CustomObject",
       "primaryMetadataType": "CustomObject",
       "relatedMetadataTypes": ["CustomField", "RecordType", "ValidationRule", "WebLink"],
-      "documentStrategy": "SINGLE_DOCUMENT_PER_OBJECT_WITH_RELATED_COMPONENTS"
+      "documentStrategy": "SINGLE_DOCUMENT_PER_OBJECT_WITH_RELATED_COMPONENTS",
+      "componentFilter": { "includeRegex": "__c$" },
+      "relations": [
+        { "metadataType": "CustomField", "match": "CHILD_OF_PRIMARY" },
+        { "metadataType": "RecordType", "match": "CHILD_OF_PRIMARY" },
+        { "metadataType": "ValidationRule", "match": "CHILD_OF_PRIMARY" },
+        { "metadataType": "WebLink", "match": "CHILD_OF_PRIMARY" }
+      ]
     },
     {
       "group": "CustomMetadata",
       "primaryMetadataType": "CustomMetadata",
       "relatedMetadataTypes": [],
-      "documentStrategy": "ONE_DOCUMENT_PER_TYPE_AND_RECORDS"
+      "documentStrategy": "ONE_DOCUMENT_PER_TYPE_AND_RECORDS",
+      "typeDefinition": {
+        "metadataType": "CustomObject",
+        "typeNameSuffix": "__mdt",
+        "recordSeparator": "."
+      }
     }
   ]
 }

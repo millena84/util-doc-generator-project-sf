@@ -1,0 +1,61 @@
+{
+  "metadataType": "CustomMetadata",
+  "apiVersion": "67.0",
+  "documentStrategy": "ONE_DOCUMENT_PER_TYPE_AND_RECORDS",
+  "xmlFilePattern": "**/*.md-meta.xml",
+  "typeDefinition": {
+    "metadataType": "CustomObject",
+    "xmlFilePattern": "**/*__mdt.object-meta.xml"
+  },
+  "template": "modelo-doc-custom-metadata-vapi-{apiMajor}.md",
+  "titlePath": "@fullName",
+  "notes": "Identificação vem do XML do tipo (CustomObject __mdt); Records vêm dos XMLs CustomMetadata.",
+  "properties": [
+    {
+      "name": "DeveloperName",
+      "placeholder": "developer_name",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação",
+      "notes": "fullName do tipo (ex.: Config__mdt)."
+    },
+    {
+      "name": "Label",
+      "placeholder": "label",
+      "path": "label",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Visibility",
+      "placeholder": "visibility",
+      "path": "visibility",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    }
+  ],
+  "tables": [
+    {
+      "markdownSection": "Records",
+      "builder": "related_rows",
+      "source": "XML",
+      "args": {
+        "metadataType": "CustomMetadata",
+        "columns": {
+          "record": "@fullName",
+          "label": "label"
+        }
+      }
+    }
+  ],
+  "relatedMetadataTypes": [],
+  "internalData": {
+    "enabled": false,
+    "source": null,
+    "object": null,
+    "query": null
+  }
+}

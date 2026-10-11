@@ -1,0 +1,50 @@
+{
+  "metadataType": "FlowDefinition",
+  "apiVersion": "67.0",
+  "documentStrategy": "RELATED_TO_FLOW",
+  "xmlFilePattern": "**/*.flowDefinition-meta.xml",
+  "template": null,
+  "notes": "Sem modelo próprio: propriedades renderizadas na seção 'Definição' do documento do Flow.",
+  "properties": [
+    {
+      "name": "DeveloperName",
+      "placeholder": "developer_name",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Definição",
+      "notes": "fullName do componente (nome do arquivo XML recuperado pelo retrieve)."
+    },
+    {
+      "name": "MasterLabel",
+      "placeholder": "master_label",
+      "path": "masterLabel",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Definição"
+    },
+    {
+      "name": "ActiveVersionNumber",
+      "placeholder": "active_version_number",
+      "path": "activeVersionNumber",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Definição"
+    },
+    {
+      "name": "Description",
+      "placeholder": "description",
+      "path": "description",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Definição"
+    }
+  ],
+  "relatedMetadataTypes": [],
+  "internalData": {
+    "enabled": false,
+    "source": null,
+    "object": null,
+    "query": null
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "metadataType": "Flow",
+  "apiVersion": "67.0",
+  "documentStrategy": "SUB_DOCUMENT_OF_FLOW",
+  "xmlFilePattern": "**/*.flow-meta.xml",
+  "template": "modelo-doc-flow-screen-vapi-{apiMajor}.md",
+  "titlePath": "name",
+  "notes": "Contexto = um elemento <screens> do Flow.",
+  "properties": [
+    {
+      "name": "Name",
+      "placeholder": "name",
+      "path": "name",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Label",
+      "placeholder": "label",
+      "path": "label",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Flow",
+      "placeholder": "flow_name",
+      "path": "@parent.fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação"
+    }
+  ],
+  "tables": [
+    {
+      "markdownSection": "Campos da tela",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "fields",
+        "columns": {
+          "field": "name",
+          "type": "fieldType",
+          "required": "isRequired"
+        }
+      }
+    }
+  ],
+  "relatedMetadataTypes": [],
+  "internalData": {
+    "enabled": false,
+    "source": null,
+    "object": null,
+    "query": null
+  }
+}
