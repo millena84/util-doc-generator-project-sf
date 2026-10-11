@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WebLink xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Imprimir_Pedido</fullName>
+    <availability>online</availability>
+    <displayType>button</displayType>
+    <linkType>url</linkType>
+    <masterLabel>Imprimir Pedido</masterLabel>
+    <openType>newWindow</openType>
+    <protected>false</protected>
+    <url>/apex/ImprimirPedido?id={!Pedido__c.Id}</url>
+</WebLink>

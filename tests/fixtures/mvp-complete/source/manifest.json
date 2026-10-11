@@ -1,0 +1,69 @@
+{
+  "RemoteSiteSetting:Parceiro_API": [
+    {
+      "type": "RemoteSiteSetting",
+      "fullName": "Parceiro_API",
+      "path": "remoteSiteSettings/Parceiro_API.remoteSite-meta.xml"
+    }
+  ],
+  "CspTrustedSite:Parceiro_CDN": [
+    {
+      "type": "CspTrustedSite",
+      "fullName": "Parceiro_CDN",
+      "path": "cspTrustedSites/Parceiro_CDN.cspTrustedSite-meta.xml"
+    }
+  ],
+  "CorsWhitelistOrigin:Parceiro_Portal": [
+    {
+      "type": "CorsWhitelistOrigin",
+      "fullName": "Parceiro_Portal",
+      "path": "corsWhitelistOrigins/Parceiro_Portal.corsWhitelistOrigin-meta.xml"
+    }
+  ],
+  "ExtlClntAppConfigurablePolicies:Minha_ECA_plcy": [
+    {
+      "type": "ExtlClntAppConfigurablePolicies",
+      "fullName": "Minha_ECA_plcy",
+      "path": "extlClntAppPolicies/Minha_ECA_plcy.ecaPlcy-meta.xml"
+    }
+  ],
+  "ExtlClntAppOauthConfigurablePolicies:Minha_ECA_oauthPlcy": [
+    {
+      "type": "ExtlClntAppOauthConfigurablePolicies",
+      "fullName": "Minha_ECA_oauthPlcy",
+      "path": "extlClntAppOauthPolicies/Minha_ECA_oauthPlcy.ecaOauthPlcy-meta.xml"
+    }
+  ],
+  "CustomObject:Pedido__c": [
+    {
+      "type": "CustomObject",
+      "fullName": "Pedido__c",
+      "path": "objects/Pedido__c/Pedido__c.object-meta.xml"
+    },
+    {
+      "type": "CustomField",
+      "fullName": "Pedido__c.Valor__c",
+      "path": "objects/Pedido__c/fields/Valor__c.field-meta.xml"
+    },
+    {
+      "type": "CustomField",
+      "fullName": "Pedido__c.Status__c",
+      "path": "objects/Pedido__c/fields/Status__c.field-meta.xml"
+    },
+    {
+      "type": "RecordType",
+      "fullName": "Pedido__c.Padrao",
+      "path": "objects/Pedido__c/recordTypes/Padrao.recordType-meta.xml"
+    },
+    {
+      "type": "ValidationRule",
+      "fullName": "Pedido__c.Valor_Positivo",
+      "path": "objects/Pedido__c/validationRules/Valor_Positivo.validationRule-meta.xml"
+    },
+    {
+      "type": "WebLink",
+      "fullName": "Pedido__c.Imprimir_Pedido",
+      "path": "objects/Pedido__c/webLinks/Imprimir_Pedido.webLink-meta.xml"
+    }
+  ]
+}

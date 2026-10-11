@@ -108,6 +108,24 @@ python3 -m unittest discover -s tests -t .
 
 Os testes usam uma Salesforce CLI **simulada** (`tests/fixtures/bin/sf`) e respostas SOAP simuladas. Nenhuma credencial real é usada.
 
+### Simulação de todas as documentações do MVP
+
+```bash
+python3 -m unittest tests.test_mvp_simulation        # verifica os 8 modelos e os 18 metadata types
+python3 -m tests.simulate_mvp --out /tmp/sim-mvp     # executa e gera o relatório passo a passo
+```
+
+O cenário `mvp_complete` da CLI simulada sobrepõe `tests/fixtures/mvp-complete/` às fixtures base, de modo que todo metadata type do MVP tenha ao menos um componente. O relatório versionado em `documentation/simulacao/relatorio-simulacao-mvp.md` mostra, para essa simulação, a saída no terminal, os comandos por passo, a situação de cada tipo, a árvore de arquivos e o conteúdo dos 9 documentos gerados.
+
+| Grupo | Documento(s) / modelo | Tipos que aparecem dentro do documento |
+|---|---|---|
+| Flow | `modelo-doc-flow` + subdocumentos `modelo-doc-flow-trigger` e `modelo-doc-flow-screen` | FlowDefinition |
+| ExternalClientApp | `modelo-doc-cea` | ExtlClntAppOauthSettings, ExtlClntAppConfigurablePolicies, ExtlClntAppOauthConfigurablePolicies; ExternalCredential, NamedCredential, ConnectedApp, RemoteSiteSetting, CorsWhitelistOrigin, CspTrustedSite (só se citados por valor exato — `REFERENCE_SCAN`) |
+| ExternalCredential | `modelo-doc-external-credential` | — |
+| ConnectedApp | `modelo-doc-connectedapp` | — |
+| CustomObject | `modelo-doc-custom-object` | CustomField, RecordType, ValidationRule, WebLink |
+| CustomMetadata | `modelo-doc-custom-metadata` | records do tipo `__mdt` |
+
 ## Estrutura
 
 - `/catalog`: listagens, schemas e respostas brutas da org.

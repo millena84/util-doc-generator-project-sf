@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ExtlClntAppOauthConfigurablePolicies xmlns="http://soap.sforce.com/2006/04/metadata">
+    <externalClientApplication>Minha_ECA</externalClientApplication>
+    <label>Minha ECA oauthPlcy</label>
+</ExtlClntAppOauthConfigurablePolicies>

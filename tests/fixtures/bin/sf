@@ -4,7 +4,9 @@
 FAKE_SF_FIXTURES  diretório tests/fixtures
 FAKE_SF_SCENARIO  lista separada por vírgula: old_cli, no_alias, disconnected,
                   expire_on_retrieve=<fullName>, fail_retrieve=<fullName>,
-                  mismatch_retrieve=<fullName>, empty=<MetadataType>
+                  mismatch_retrieve=<fullName>, empty=<MetadataType>,
+                  mvp_complete (usa a camada tests/fixtures/mvp-complete por cima
+                  das fixtures base: todos os metadata types do MVP com componentes)
 FAKE_SF_STATE     arquivo para contar chamadas (opcional)
 """
 import json
@@ -15,6 +17,23 @@ from pathlib import Path
 
 FIX = Path(os.environ["FAKE_SF_FIXTURES"])
 SCEN = [s for s in os.environ.get("FAKE_SF_SCENARIO", "").split(",") if s]
+
+
+OVERLAY = FIX / "mvp-complete"
+
+
+def fx(rel):
+    """Arquivo de fixture; no cenário mvp_complete a camada sobreposta tem prioridade."""
+    if "mvp_complete" in SCEN and (OVERLAY / rel).is_file():
+        return OVERLAY / rel
+    return FIX / rel
+
+
+def manifest():
+    data = json.loads((FIX / "source" / "manifest.json").read_text())
+    if "mvp_complete" in SCEN:
+        data.update(json.loads((OVERLAY / "source" / "manifest.json").read_text()))
+    return data
 
 
 def scen(key):
@@ -64,13 +83,13 @@ if cmd[:2] == ["org", "display"]:
     out(data)
 
 if cmd[:3] == ["org", "list", "metadata-types"]:
-    out(json.loads((FIX / "org" / "metadata-types.json").read_text()))
+    out(json.loads(fx("org/metadata-types.json").read_text()))
 
 if cmd[:3] == ["org", "list", "metadata"]:
     mtype = opt(args, "--metadata-type")[0]
     if mtype in scen("empty"):
         out({"status": 0, "result": []})
-    p = FIX / "inventory" / f"{mtype}.json"
+    p = fx(f"inventory/{mtype}.json")
     if p.is_file():
         out({"status": 0, "result": json.loads(p.read_text())})
     out({"status": 0, "result": []})
@@ -83,8 +102,7 @@ if cmd[:3] == ["project", "retrieve", "start"]:
     if name in scen("fail_retrieve"):
         out({"status": 0, "result": {"status": "Succeeded", "success": True, "files": [],
                                       "messages": [{"problem": f"Entity of type '{mtype}' named '{name}' cannot be found"}]}})
-    manifest = json.loads((FIX / "source" / "manifest.json").read_text())
-    entries = manifest.get(spec)
+    entries = manifest().get(spec)
     if not entries:
         err("RetrieveFailed", f"Componente {spec} não encontrado no fixture")
     cwd = Path.cwd()
@@ -105,7 +123,7 @@ if cmd[:3] == ["project", "retrieve", "start"]:
 if cmd[:2] == ["data", "query"]:
     q = opt(args, "--query")[0]
     obj = q.split(" FROM ", 1)[1].split()[0]
-    p = FIX / "query" / f"{obj}.json"
+    p = fx(f"query/{obj}.json")
     if not p.is_file():
         err("INVALID_TYPE", f"sObject type '{obj}' is not supported.")
     out({"status": 0, "result": json.loads(p.read_text())})
