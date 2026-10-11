@@ -55,12 +55,23 @@ def sha256_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
-def write_text_raw(path, text: str) -> None:
-    """Grava resposta bruta exatamente como recebida (sem reformatar)."""
+def write_text_raw(path, text: str, private: bool = False) -> None:
+    """Grava resposta bruta exatamente como recebida (sem reformatar).
+
+    private=True cria o arquivo com permissão 0600 (somente o dono lê), para raws
+    que contêm credenciais, como `sf org display --json`.
+    """
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_name(path.name + ".tmp")
-    with open(tmp, "w", encoding="utf-8", newline="") as f:
+    if private:
+        if tmp.exists():
+            tmp.unlink()
+        fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        f = os.fdopen(fd, "w", encoding="utf-8", newline="")
+    else:
+        f = open(tmp, "w", encoding="utf-8", newline="")
+    with f:
         f.write(text)
     os.replace(tmp, path)
 

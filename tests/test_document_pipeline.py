@@ -121,6 +121,27 @@ class FullRunTest(PipelineTestBase):
         self.assertEqual(leaks, [])
         self.assertNotIn(FAKE_TOKEN, self.log.getvalue())
 
+    def test_session_token_cleared_after_run(self):
+        sessions = []
+        fake_sf_env("")
+        self.log = io.StringIO()
+
+        def factory(session):
+            sessions.append(session)
+            return FakeMetadataClient(session)
+
+        pipeline = DocumentPipeline(self.root, runner=CliRunner(executable=str(FAKE_SF)),
+                                    metadata_client_factory=factory, stream=self.log)
+        code, _ = pipeline.run(groups=["Flow"])
+        self.assertEqual(code, EXIT_OK, self.log.getvalue())
+        self.assertTrue(sessions and all(s.cleared for s in sessions))
+
+    @unittest.skipIf(os.name != "posix", "permissões POSIX")
+    def test_org_display_raw_is_private(self):
+        self.run_pipeline(groups=["Flow"])
+        raw = self.root / "catalog" / "org-dev" / "api-v67" / "org-display.raw.json"
+        self.assertEqual(raw.stat().st_mode & 0o777, 0o600)
+
     def test_sensitive_xml_warning_and_not_rendered(self):
         code, state = self.run_pipeline(groups=["ConnectedApp"])
         app = self.primary(state, "Meu_App")

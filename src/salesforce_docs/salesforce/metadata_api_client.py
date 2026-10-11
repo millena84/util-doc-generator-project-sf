@@ -96,11 +96,22 @@ class MetadataApiClient:
     """Uso: `mdapi.Flow.describe()` equivale a describeValueType('{ns}Flow')."""
 
     def __init__(self, instance_url, access_token, api_version, timeout=120, opener=None):
+        """access_token: str ou callable sem argumentos que devolve o token no momento
+        da chamada (preferível: o cliente não guarda cópia própria do token)."""
         self._instance_url = instance_url.rstrip("/")
         self._token = access_token
         self.api_version = api_version
         self.timeout = timeout
         self._opener = opener or urllib.request.build_opener()
+
+    def __repr__(self):
+        return f"MetadataApiClient(endpoint={self.endpoint!r}, accessToken='***')"
+
+    def __getstate__(self):
+        raise TypeError("MetadataApiClient contém token de acesso e não pode ser serializado")
+
+    def _current_token(self):
+        return self._token() if callable(self._token) else self._token
 
     @property
     def endpoint(self) -> str:
@@ -117,7 +128,7 @@ class MetadataApiClient:
         return self._call("describeValueType", {"type": qname}, body)
 
     def _call(self, operation, args, body_xml) -> MetadataApiResponse:
-        payload = _ENVELOPE.format(session=escape(self._token or ""), body=body_xml).encode("utf-8")
+        payload = _ENVELOPE.format(session=escape(self._current_token() or ""), body=body_xml).encode("utf-8")
         req = urllib.request.Request(
             self.endpoint,
             data=payload,
