@@ -11,11 +11,22 @@
     "models": "documentation/models",
     "contracts": "documentation/contracts",
     "runs": "runs",
-    "outputDocs": "saida/docs"
+    "outputDocs": "saida/docs",
+    "metadataTypesConfig": "config/metadata-types-mvp.json"
+  },
+  "selection": {
+    "mode": "ALL"
+  },
+  "approvedOrgs": [],
+  "dataProtection": {
+    "privateFiles": true,
+    "orgDisplayRaw": "KEEP_PRIVATE"
   },
   "execution": {
     "mode": "MVP_MOCKED_METADATA_TYPES",
     "saveRawResponses": true,
-    "allowPartialSuccess": true
+    "allowPartialSuccess": true,
+    "outputLayout": "BY_RUN",
+    "strictCoverage": false
   }
 }

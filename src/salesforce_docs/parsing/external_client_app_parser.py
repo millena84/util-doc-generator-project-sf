@@ -29,5 +29,23 @@ def reference_scan(primary_full_name, primary_data, related_full_name, related_d
             or primary_full_name in leaf_values(related_data or {}))
 
 
+def values_at(data, path):
+    """Valores-folha em `path` pontuado, atravessando listas (ex.: params.externalCredential)."""
+    current = [data]
+    for part in path.split("."):
+        nxt = []
+        for c in current:
+            for item in (c if isinstance(c, list) else [c]):
+                if isinstance(item, dict) and part in item:
+                    nxt.append(item[part])
+        current = nxt
+    out = set()
+    for c in current:
+        for v in (c if isinstance(c, list) else [c]):
+            if isinstance(v, str) and v:
+                out.add(v)
+    return out
+
+
 TABLE_BUILDERS = {}
 BLOCK_BUILDERS = {}

@@ -7,6 +7,21 @@
 | DeveloperName | {{ developer_name }} | XML |
 | Label | {{ label }} | XML |
 | ApiVersion | {{ api_version }} | XML |
+| Description | {{ description }} | XML |
+| DistributionState | {{ distribution_state }} | XML |
+| IsProtected | {{ is_protected }} | XML |
+
+## Configuração OAuth
+
+{{ oauth_settings }}
+
+## Políticas OAuth
+
+{{ oauth_policies }}
+
+## Políticas do app
+
+{{ app_policies }}
 
 ## Componentes relacionados
 

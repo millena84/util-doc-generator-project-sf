@@ -1,0 +1,47 @@
+{
+  "metadataType": "ExtlClntAppOauthConfigurablePolicies",
+  "apiVersion": "67.0",
+  "documentStrategy": "RELATED_TO_EXTERNAL_CLIENT_APP",
+  "xmlFilePattern": "**/*.ecaOauthPlcy-meta.xml",
+  "template": null,
+  "referenceDoc": "_sf_utilities/ajudAI/sf-eca.md",
+  "properties": [
+    {
+      "name": "DeveloperName",
+      "placeholder": "developer_name",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Políticas OAuth"
+    },
+    {
+      "name": "Label",
+      "placeholder": "label",
+      "path": "label",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Políticas OAuth"
+    },
+    {
+      "name": "ExternalClientApplication",
+      "placeholder": "external_client_application",
+      "path": "externalClientApplication",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Políticas OAuth"
+    }
+  ],
+  "evidence": [
+    "Metadata API ExtlClntAppOauthConfigurablePolicies (.ecaOauthPlcy, extlClntAppOauthPolicies, API 59+)"
+  ],
+  "pendingVerification": [
+    "permittedUsersPolicyType, ipRelaxationPolicyType, refreshTokenPolicyType, refreshTokenValidityPeriod/Unit, requiredSessionLevel, sessionTimeoutInMinutes, startUrl: listados no sf-eca.md, não confirmados na página oficial da API 67.0 — não renderizados"
+  ],
+  "relatedMetadataTypes": [],
+  "internalData": {
+    "enabled": false,
+    "source": null,
+    "object": null,
+    "query": null
+  }
+}

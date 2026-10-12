@@ -6,7 +6,10 @@
 |---|---|---|
 | DeveloperName | {{ developer_name }} | XML |
 | MasterLabel | {{ master_label }} | XML |
+| ProcessType | {{ process_type }} | XML |
 | ApiVersion | {{ api_version }} | XML |
+| Description | {{ description }} | XML |
+| Status (versão recuperada) | {{ status_xml }} | XML |
 | Status | {{ status }} | Objeto interno |
 
 ## Definição

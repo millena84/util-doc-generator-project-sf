@@ -29,6 +29,22 @@
       "markdownSection": "Identificação"
     },
     {
+      "name": "PluralLabel",
+      "placeholder": "plural_label",
+      "path": "pluralLabel",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Description",
+      "placeholder": "description",
+      "path": "description",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
       "name": "Visibility",
       "placeholder": "visibility",
       "path": "visibility",
@@ -39,6 +55,19 @@
   ],
   "tables": [
     {
+      "markdownSection": "Campos do tipo",
+      "builder": "related_rows",
+      "source": "XML",
+      "args": {
+        "metadataType": "CustomField",
+        "columns": {
+          "field": "fullName",
+          "label": "label",
+          "type": "type"
+        }
+      }
+    },
+    {
       "markdownSection": "Records",
       "builder": "related_rows",
       "source": "XML",
@@ -46,7 +75,8 @@
         "metadataType": "CustomMetadata",
         "columns": {
           "record": "@fullName",
-          "label": "label"
+          "label": "label",
+          "protected": "protected"
         }
       }
     }
@@ -57,5 +87,14 @@
     "source": null,
     "object": null,
     "query": null
-  }
+  },
+  "referenceDoc": "_sf_utilities/ajudAI/contexto-custommetadata.md",
+  "evidence": [
+    "Metadata API CustomMetadata: records em customMetadata/, sufixo .md (o ajudAI cita .mdt — divergente)"
+  ],
+  "security": "Valores dos records (<values>) NÃO são renderizados: podem conter tokens, API keys ou URLs internas.",
+  "notSupported": [
+    "fieldManageability (SubscriberEditable/DeveloperEditable no ajudAI): enum oficial pendente",
+    "Tipo de campo EntityDefinition do ajudAI: não confirmado"
+  ]
 }

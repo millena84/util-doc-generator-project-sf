@@ -1,0 +1,57 @@
+{
+  "metadataType": "ExtlClntAppOauthSettings",
+  "apiVersion": "67.0",
+  "documentStrategy": "RELATED_TO_EXTERNAL_CLIENT_APP",
+  "xmlFilePattern": "**/*.ecaOauth-meta.xml",
+  "template": null,
+  "referenceDoc": "_sf_utilities/ajudAI/sf-eca.md",
+  "notes": "Sem modelo próprio: renderizado na seção 'Configuração OAuth' do documento da ECA, com arquivo e sha256 de origem.",
+  "properties": [
+    {
+      "name": "DeveloperName",
+      "placeholder": "developer_name",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Configuração OAuth"
+    },
+    {
+      "name": "Label",
+      "placeholder": "label",
+      "path": "label",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Configuração OAuth"
+    },
+    {
+      "name": "ExternalClientApplication",
+      "placeholder": "external_client_application",
+      "path": "externalClientApplication",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Configuração OAuth"
+    },
+    {
+      "name": "CommaSeparatedOauthScopes",
+      "placeholder": "oauth_scopes",
+      "path": "commaSeparatedOauthScopes",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Configuração OAuth"
+    }
+  ],
+  "evidence": [
+    "Metadata API ExtlClntAppOauthSettings (.ecaOauth, API 59+): externalClientApplication obrigatório; commaSeparatedOauthScopes no exemplo oficial"
+  ],
+  "notSupported": [
+    "callbackUrl/PKCE/certificate: pertencem a ExtlClntAppGlobalOauthSettings (excluído), não a este tipo",
+    "trustedIpRanges, customAttributes, assetToken*: pendentes de decisão de exibição"
+  ],
+  "relatedMetadataTypes": [],
+  "internalData": {
+    "enabled": false,
+    "source": null,
+    "object": null,
+    "query": null
+  }
+}

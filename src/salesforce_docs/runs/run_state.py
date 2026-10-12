@@ -12,6 +12,8 @@ class RunState:
     def __init__(self, path: Path, data: dict):
         self.path = Path(path)
         self.data = data
+        # Máscara aplicada a TODO texto do estado antes de gravar (token, segredos do XML).
+        self.masker = None
 
     # Criação / carga ---------------------------------------------------
     @classmethod
@@ -59,7 +61,8 @@ class RunState:
 
     # Persistência -------------------------------------------------------
     def save(self):
-        write_json(self.path, self.data)
+        data = _mask_tree(self.data, self.masker) if self.masker else self.data
+        write_json(self.path, data, private=True)
 
     @property
     def run_id(self):
@@ -83,7 +86,8 @@ class RunState:
         self.data["metadataTypes"] = [
             t for t in self.data["metadataTypes"]
             if not (t["metadataType"] == metadata_type and t.get("group") == group
-                    and t.get("stage") == extra.get("stage"))
+                    and t.get("stage") == extra.get("stage")
+                    and t.get("component") == extra.get("component"))
         ]
         self.data["metadataTypes"].append(entry)
         self.save()
@@ -110,9 +114,14 @@ class RunState:
         return {c["unitId"]: c for c in self.data["components"]
                 if c.get("role") == "primary" and c.get("status") == st.SUCCESS}
 
-    def carry_successes_from(self, previous: "RunState"):
-        """Retomada: herda unidades SUCCESS (não serão reprocessadas)."""
+    def carry_successes_from(self, previous: "RunState", only=None):
+        """Retomada: herda unidades SUCCESS (não serão reprocessadas).
+
+        `only` restringe às unidades verificadas como compatíveis com esta execução.
+        """
         done = previous.successful_units()
+        if only is not None:
+            done = {k: v for k, v in done.items() if k in only}
         for c in previous.data["components"]:
             if c.get("unitId") in done:
                 self.data["components"].append(dict(c, carriedFrom=previous.run_id))
@@ -132,3 +141,13 @@ class RunState:
                 continue
             counts[c.get("status")] = counts.get(c.get("status"), 0) + 1
         return counts
+
+
+def _mask_tree(value, masker):
+    if isinstance(value, str):
+        return masker(value)
+    if isinstance(value, dict):
+        return {k: _mask_tree(v, masker) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_mask_tree(v, masker) for v in value]
+    return value

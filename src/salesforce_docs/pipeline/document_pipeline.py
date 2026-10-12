@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from salesforce_docs import status as st
 from salesforce_docs.config.config_loader import load_config
 from salesforce_docs.config.metadata_types_loader import load_metadata_types
+from salesforce_docs import __version__
+from salesforce_docs.config.scope import WILDCARD, describe_effective, resolve_scope
 from salesforce_docs.errors import ConfigError, GlobalFailure, SessionExpiredError
 from salesforce_docs.extraction import inventory_extractor, metadata_types_extractor, schema_extractor
 from salesforce_docs.extraction.internal_data_extractor import developer_name, extract_internal_data
@@ -17,16 +20,19 @@ from salesforce_docs.rendering.markdown_renderer import MarkdownRenderer
 from salesforce_docs.rendering.template_loader import ContractStore, TemplateLoader
 from salesforce_docs.runs.run_logger import RunLogger
 from salesforce_docs.runs.run_state import RunState
-from salesforce_docs.salesforce.cli_runner import CliRunner
+from salesforce_docs.salesforce.cli_runner import CliRunner, sanitized_error_path
 from salesforce_docs.salesforce.metadata_api_client import MetadataApiClient
 from salesforce_docs.salesforce.org_session import OrgSession
 from salesforce_docs.salesforce.tooling_api_client import ToolingApiClient
-from salesforce_docs.utils import Masker, now_local, read_json, rel, slugify, write_text, write_text_raw
+from salesforce_docs.pipeline.output_writer import OutputWriter
+from salesforce_docs.utils import (Masker, now_local, read_json, rel, set_private_files, sha256_file,
+                                   sha256_text, slugify, write_json, write_text_raw)
 from salesforce_docs.validation import cli_validator, org_session_validator
 from salesforce_docs.validation.metadata_type_validator import check_enabled
+from salesforce_docs.validation.git_guard import check_git
 from salesforce_docs.validation.project_validator import validate_project
 
-EXIT_OK, EXIT_FAILURE, EXIT_SESSION = 0, 1, 2
+EXIT_OK, EXIT_FAILURE, EXIT_SESSION, EXIT_GAPS = 0, 1, 2, 3
 
 
 class PipelineContext:
@@ -46,6 +52,9 @@ class PipelineContext:
         self.inventory_dir = None
         self.errors_dir = None
         self.docs_dir = None
+        self.writer = None
+        self.discovered_types = None   # passo 4 (None = listagem não executada)
+        self.processed_types = set()   # retrieve + normalização com sucesso
         self.contracts = ContractStore(app.contracts_dir, mvp)
         self.templates = None
         self.tooling = None
@@ -65,7 +74,7 @@ class DocumentPipeline:
         self.root = Path(root).resolve()
         self.masker = Masker()
         self.app = load_config(self.root, config_path)
-        self.mvp = load_metadata_types(self.root, metadata_types_path)
+        self.mvp = load_metadata_types(self.root, metadata_types_path or self.app.metadata_types_path)
         self.runner = runner or CliRunner(timeout=self.app.cli_timeout_seconds,
                                           save_raw=self.app.save_raw_responses, masker=self.masker)
         self.runner.masker = self.masker
@@ -77,6 +86,7 @@ class DocumentPipeline:
 
     # ==================================================================
     def run(self, org_alias=None, api_version=None, groups=None, components=None, resume=None):
+        # Precedência do alias: --target-org > config.json (orgAlias).
         alias = org_alias or self.app.org_alias
         previous = None
         if resume:
@@ -84,25 +94,30 @@ class DocumentPipeline:
             if prev_path is None:
                 raise ConfigError(f"Execução para retomar não encontrada: {resume}")
             previous = RunState.load(prev_path)
+        set_private_files(self.app.private_files)
         state = RunState.create(self.app.runs_dir, alias, resumed_from=previous.run_id if previous else None)
+        state.masker = self.masker
         log = RunLogger(self.masker, stream=self.stream, run_state=state)
         p = PipelineContext(self.root, self.app, self.mvp, self.runner, state, log, self.masker)
         p.errors_dir = self.app.runs_dir / state.run_id / "errors"
-        skip_units = state.carry_successes_from(previous) if previous else set()
-        if skip_units:
-            log.info(f"Retomando {previous.run_id}: {len(skip_units)} unidade(s) SUCCESS não serão reprocessadas")
         current_unit = {"entry": None}
         try:
             warnings = validate_project(self.app, self.mvp, p.contracts)
             for w in warnings:
                 log.warn(w)
+            effective = self._resolve_scope(p, alias, org_alias, groups, components)
+            self._git_guard(p)
             self._step1_cli(p)
             self._step2_org_list(p, alias)
             self._step3_org_display(p, alias, api_version)
-            enabled = self._step4_metadata_types(p, groups)
+            self._check_org_approval(p, alias)  # nenhuma coleta antes de aprovar a org
+            fingerprint = self._fingerprint(p, alias, effective)
+            state.set("fingerprint", fingerprint)
+            skip_units = self._carry_compatible(p, previous, fingerprint, effective) if previous else set()
+            enabled = self._step4_metadata_types(p, effective)
             self._step5_schemas(p, enabled)
             inventories = self._step6_inventories(p, enabled)
-            self._steps7_to_10(p, enabled, inventories, skip_units, components, current_unit)
+            self._steps7_to_10(p, enabled, inventories, skip_units, effective, current_unit)
         except SessionExpiredError as exc:
             if current_unit["entry"] is not None:
                 state.upsert_component(dict(current_unit["entry"], status=st.RETRY_REQUIRED,
@@ -128,21 +143,303 @@ class DocumentPipeline:
             # O token só vive durante a execução, inclusive em caso de exceção não tratada.
             if p.session is not None:
                 p.session.clear()
+            self._apply_org_display_policy(p)
+            state.set("coverage", self._coverage(state, p))
         final = self._final_status(state)
         state.data["commands"] = self.runner.history
         state.finish(final)
+        cov = state.data["coverage"]
         log.info(f"Execução {state.run_id} finalizada: {final} {state.summary()}")
+        line = (f"Cobertura: {cov['status']} — {cov['documented']} documentada(s) de {cov['inScope']} "
+                f"no escopo; lacunas bloqueantes: {cov['blockingGapCount']}; avisos: {cov['warningCount']}")
+        (log.info if cov["status"] == "COMPLETE" else log.warn)(line)
+        types = cov["types"]
+        log.info(f"Tipos: configurados {len(types['configured'])}, processados {len(types['processed'])}, "
+                 f"documentados {len(types['documented'])}, sem modelo {len(types['withoutModel'])}, "
+                 f"fora do escopo {len(types['excluded']['outOfScope'])}, "
+                 f"não habilitados {len(types['excluded']['notEnabledInOrg'])}"
+                 + (f", descobertos e não configurados {len(types['discoveredNotConfigured'])}"
+                    if types["discoveredNotConfigured"] is not None else ""))
         log.info(f"Log: {rel(state.path, self.root)}")
-        return (EXIT_OK if final in (st.SUCCESS, st.PARTIAL_SUCCESS) else EXIT_FAILURE), state
+        if final == st.COMPLETED_WITH_GAPS and self.app.strict_coverage:
+            return EXIT_GAPS, state
+        return (EXIT_OK if final in (st.SUCCESS, st.PARTIAL_SUCCESS, st.COMPLETED_WITH_GAPS)
+                else EXIT_FAILURE), state
+
+    def _git_guard(self, p):
+        """O .gitignore não basta: arquivo sensível já rastreado bloqueia a execução
+        antes de qualquer chamada à org; caminho sensível não ignorado gera aviso."""
+        result = check_git(self.app)
+        p.run_state.set("gitGuard", result)
+        if not result["available"]:
+            p.log.warn(f"Verificação de Git indisponível ({result['reason']}): proteção de versionamento "
+                       "não verificada")
+            return
+        if result["tracked"]:
+            raise GlobalFailure(
+                "SENSITIVE_FILES_TRACKED",
+                f"{len(result['tracked'])} arquivo(s) sensível(is) rastreado(s) pelo Git: "
+                f"{', '.join(result['tracked'][:5])}{' ...' if len(result['tracked']) > 5 else ''}",
+                "Remova do índice (git rm --cached <arquivo>) e avalie expurgo do histórico.")
+        for path in result["notIgnored"]:
+            p.log.warn(f"Caminho sensível não ignorado pelo .gitignore: {path}")
+
+    # Aprovação da org (Prioridade 3) -----------------------------------
+    def _check_org_approval(self, p, alias):
+        s = p.session
+        identity = {"orgId": s.org_id, "alias": alias, "username": s.username, "instanceUrl": s.instance_url}
+        shown = ", ".join(f"{k}={v}" for k, v in identity.items())
+        if not self.app.approved_orgs:
+            raise GlobalFailure(
+                "ORG_NOT_APPROVED",
+                f"Nenhuma org aprovada em config.json (approvedOrgs). Org detectada: {shown}.",
+                f'Confirme que é a org pretendida e adicione {{"orgId": "{s.org_id}", "alias": "{alias}"}} '
+                "em approvedOrgs do config.json.")
+        candidates = [e for e in self.app.approved_orgs
+                      if s.org_id and e["orgId"][:15] == s.org_id[:15]]
+        if not candidates:
+            raise GlobalFailure("ORG_NOT_APPROVED",
+                                f"Org {s.org_id} não está em approvedOrgs. Org detectada: {shown}.",
+                                "Use uma org aprovada ou inclua esta após confirmação.")
+        mismatches = []
+        for entry in candidates:
+            diff = []
+            if entry.get("alias") and entry["alias"] != alias:
+                diff.append(f"alias ({entry['alias']} ≠ {alias})")
+            if entry.get("username") and entry["username"].lower() != (s.username or "").lower():
+                diff.append(f"username ({entry['username']} ≠ {s.username})")
+            if entry.get("instanceUrl") and entry["instanceUrl"].rstrip("/").lower() != s.instance_url.lower():
+                diff.append(f"instanceUrl ({entry['instanceUrl']} ≠ {s.instance_url})")
+            if not diff:
+                p.run_state.set("orgApproval", {"approved": True, "entry": entry, "detected": identity})
+                p.run_state.step("3b-org-approval", st.SUCCESS, f"orgId {s.org_id}")
+                p.log.info(f"Passo 3b: org {s.org_id} aprovada (approvedOrgs)")
+                return
+            mismatches.append("; ".join(diff))
+        raise GlobalFailure("ORG_NOT_APPROVED",
+                            f"Org {s.org_id} aprovada, mas a identidade diverge: {' | '.join(mismatches)}.",
+                            "Revise approvedOrgs ou o alias usado.")
+
+    def _apply_org_display_policy(self, p):
+        if self.app.org_display_raw_policy != "DELETE_AFTER_RUN":
+            return
+        removed = []
+        for path in ([p.catalog_dir / "org-display.raw.json"] if p.catalog_dir else []) + \
+                [sanitized_error_path(p.errors_dir / "org-display.raw.json")]:
+            if path.is_file():
+                path.unlink()
+                removed.append(rel(path, self.root))
+        p.run_state.data["dataProtection"] = {"orgDisplayRaw": "DELETE_AFTER_RUN", "removed": removed}
+
+    # Retomada compatível (Prioridade 3) --------------------------------
+    def _group_files(self, group, contracts_store, templates):
+        """Contratos e modelos que influenciam os documentos de um grupo."""
+        contracts = [group.contract_file] + [s.get("contract") for s in group.sub_documents]
+        contracts += [self.mvp.contract_file(t) for t in group.related_types]
+        models = []
+        for name in contracts:
+            c = contracts_store.get_file(name)
+            if c and c.get("template"):
+                models.append(templates.resolve_name(c["template"]))
+        return sorted(set(x for x in contracts if x)), sorted(set(models))
+
+    def _fingerprint(self, p, alias, effective):
+        contracts = {f.name: sha256_file(f) for f in sorted(self.app.contracts_dir.glob("*.schema.json"))}
+        models_dir = p.templates.models_dir
+        models = {f.name: sha256_file(f) for f in sorted(models_dir.glob("*.md"))} if models_dir.is_dir() else {}
+        policy = {"sensitive": sorted(self.mvp.sensitive_elements),
+                  "omit": sorted(self.mvp.omit_from_documentation)}
+        return {"orgId": p.session.org_id, "orgAlias": alias, "apiVersion": p.session.api_version,
+                "utilVersion": __version__, "selection": describe_effective(effective),
+                "contracts": contracts, "models": models,
+                "policySha256": sha256_text(json.dumps(policy, sort_keys=True))}
+
+    def _carry_compatible(self, p, previous, fp, effective):
+        prev_fp = previous.data.get("fingerprint")
+        report = {"from": previous.run_id, "reused": [], "reprocessed": []}
+        p.run_state.data["resume"] = report
+        global_reasons = []
+        if not prev_fp:
+            global_reasons.append("execução anterior sem fingerprint (formato antigo)")
+        else:
+            for key, label in (("orgId", "org"), ("apiVersion", "API version"),
+                               ("policySha256", "política de dados sensíveis"),
+                               ("utilVersion", "versão do utilitário")):
+                if prev_fp.get(key) != fp.get(key):
+                    global_reasons.append(f"{label} mudou ({prev_fp.get(key)} → {fp.get(key)})")
+        candidates = previous.successful_units()
+        if global_reasons:
+            for unit_id in sorted(candidates):
+                report["reprocessed"].append({"unitId": unit_id, "reasons": global_reasons})
+            p.log.warn(f"Retomada de {previous.run_id}: nada reaproveitado — {'; '.join(global_reasons)}")
+            p.run_state.save()
+            return set()
+        allowed = set()
+        for unit_id, entry in sorted(candidates.items()):
+            reasons = []
+            group = self.mvp.group(entry.get("group"))
+            comps = effective.get(entry.get("group"), "OUT")
+            if group is None or comps == "OUT" or (comps is not None and entry.get("component") not in comps):
+                reasons.append("fora do escopo atual")
+            else:
+                contracts, models = self._group_files(group, p.contracts, p.templates)
+                for name in contracts:
+                    if prev_fp["contracts"].get(name) != fp["contracts"].get(name):
+                        reasons.append(f"contrato {name} mudou")
+                for name in models:
+                    if prev_fp["models"].get(name) != fp["models"].get(name):
+                        reasons.append(f"modelo {name} mudou")
+            doc = entry.get("document")
+            if doc and not (self.root / doc).is_file():
+                reasons.append(f"documento {doc} não existe mais")
+            if reasons:
+                report["reprocessed"].append({"unitId": unit_id, "reasons": reasons})
+            else:
+                allowed.add(unit_id)
+                report["reused"].append(unit_id)
+        p.run_state.carry_successes_from(previous, only=allowed)
+        p.log.info(f"Retomando {previous.run_id}: {len(allowed)} unidade(s) reaproveitada(s), "
+                   f"{len(report['reprocessed'])} reprocessada(s)")
+        for item in report["reprocessed"]:
+            p.log.warn(f"{item['unitId']}: reprocessado — {'; '.join(item['reasons'])}")
+        return allowed
+
+    # Cobertura (Prioridade 3) ------------------------------------------
+    # Lacunas que impedem cobertura completa x avisos que só degradam o conteúdo.
+    BLOCKING_GAPS = ("noTemplate", "failed", "subDocuments", "notFound")
+    WARNING_GAPS = ("internalDataUnavailable", "notEnabled", "schemaUnavailable", "relatedNotResolved")
+
+    def _coverage(self, state, p=None):
+        prim = [c for c in state.data["components"] if c.get("role") == "primary"]
+        gaps = {"noTemplate": [], "failed": [], "subDocuments": [], "internalDataUnavailable": [],
+                "notFound": list((state.data.get("selection") or {}).get("notFound") or []),
+                "notEnabled": [], "schemaUnavailable": [], "relatedNotResolved": []}
+        documented = 0
+        documented_types, related_types, no_template_types = set(), set(), set()
+        for c in prim:
+            key = f"{c.get('metadataType')}:{c.get('component')}"
+            if c.get("status") == st.SUCCESS and c.get("document"):
+                documented += 1
+                documented_types.add(c.get("metadataType"))
+                related_types.update(r["metadataType"] for r in c.get("relatedComponents") or [])
+            elif c.get("status") == st.NO_TEMPLATE:
+                gaps["noTemplate"].append(key)
+                no_template_types.add(c.get("metadataType"))
+            else:
+                gaps["failed"].append({"component": key, "status": c.get("status")})
+            for sub in c.get("subDocuments") or []:
+                if sub.get("status") != st.SUCCESS:
+                    gaps["subDocuments"].append({"component": sub.get("component"), "status": sub.get("status")})
+                    if sub.get("status") == st.NO_TEMPLATE:
+                        no_template_types.add(f"{c.get('metadataType')} (subdocumento)")
+            if c.get("internalDataStatus") == st.INTERNAL_DATA_UNAVAILABLE:
+                gaps["internalDataUnavailable"].append(key)
+            for u in c.get("relatedNotResolved") or []:
+                gaps["relatedNotResolved"].append(f"{key} → {u.get('metadataType')}")
+        not_enabled, out_of_scope_groups = set(), set()
+        for t in state.data.get("metadataTypes") or []:
+            if t.get("stage") == "enabled" and t.get("status") == st.NOT_ENABLED:
+                gaps["notEnabled"].append(f"{t.get('group')}/{t.get('metadataType')}")
+                not_enabled.add(t.get("metadataType"))
+            if t.get("stage") == "schema" and t.get("status") == st.SCHEMA_UNAVAILABLE:
+                gaps["schemaUnavailable"].append(t.get("metadataType"))
+            if t.get("stage") == "scope":
+                out_of_scope_groups.add(t.get("group"))
+        blocking = sum(len(gaps[k]) for k in self.BLOCKING_GAPS)
+        warnings = sum(len(gaps[k]) for k in self.WARNING_GAPS)
+        finished = state.data.get("failure") is None
+        if not finished or blocking:
+            status = "INCOMPLETE"
+        elif warnings:
+            status = "COMPLETE_WITH_WARNINGS"
+        else:
+            status = "COMPLETE"
+        return {
+            "status": status,
+            "executionFinished": finished,
+            "inScope": len(prim) + len(gaps["notFound"]),
+            "documented": documented,
+            "gapCount": blocking + warnings,
+            "blockingGapCount": blocking,
+            "warningCount": warnings,
+            "gaps": gaps,
+            "outOfScopeGroups": sorted(out_of_scope_groups),
+            "types": self._type_coverage(p, out_of_scope_groups, not_enabled, documented_types,
+                                         related_types, no_template_types),
+        }
+
+    def _type_coverage(self, p, out_of_scope_groups, not_enabled, documented, related, no_template):
+        """Cobertura por metadata type: descobertos, configurados, excluídos, processados,
+        documentados e sem modelo."""
+        configured = set()
+        for g in self.mvp.groups:
+            configured.update(g.all_types)
+            if g.type_definition:
+                configured.add(g.type_definition["metadataType"])
+        out_of_scope = set()
+        for g in self.mvp.groups:
+            if g.name in out_of_scope_groups:
+                out_of_scope.add(g.primary_type)
+        discovered = getattr(p, "discovered_types", None) if p is not None else None
+        processed = set(getattr(p, "processed_types", set())) if p is not None else set()
+        missing_model = set(no_template)
+        for g in self.mvp.groups:
+            contract = p.contracts.get_file(g.contract_file) if p is not None else None
+            if contract is None or (p is not None and p.templates is not None
+                                    and p.templates.load(contract.get("template")) is None):
+                missing_model.add(f"{g.primary_type} (estático: contrato/modelo ausente)")
+        return {
+            "discovered": {"count": len(discovered) if discovered is not None else None,
+                           "available": discovered is not None},
+            "configured": sorted(configured),
+            "discoveredNotConfigured": sorted(discovered - configured) if discovered is not None else None,
+            "excluded": {
+                "byConfig": sorted(self.mvp.excluded),
+                "outOfScope": sorted(out_of_scope),
+                "notEnabledInOrg": sorted(not_enabled),
+            },
+            "processed": sorted(processed),
+            "documented": sorted(documented),
+            "documentedAsRelated": sorted(related - documented),
+            "withoutModel": sorted(missing_model),
+        }
+
+    def _resolve_scope(self, p, alias, cli_alias, groups, components):
+        """Valida e registra o escopo antes de qualquer chamada à org."""
+        effective = resolve_scope(self.app.selection, self.mvp, groups, components)
+        if self.mvp.org_alias and self.mvp.org_alias != self.app.org_alias:
+            p.log.warn(f"orgAlias de metadata-types-mvp.json ({self.mvp.org_alias}) difere do config.json "
+                       f"({self.app.org_alias}); vale o config.json")
+        p.run_state.set("selection", {
+            "mode": self.app.selection.mode,
+            "requested": self.app.selection.describe(),
+            "cli": {"targetOrg": cli_alias, "groups": groups or [], "components": components or []},
+            "orgAlias": alias,
+            "orgAliasSource": "--target-org" if cli_alias else "config.json",
+            "effective": describe_effective(effective),
+            "notFound": [],
+            "relatedNotResolved": [],
+        })
+        p.log.info(f"Seleção {self.app.selection.mode}: {describe_effective(effective)}")
+        return effective
 
     def _final_status(self, state):
+        """SUCCESS só com cobertura sem lacunas bloqueantes.
+
+        - componentes com falha => PARTIAL_SUCCESS (ou FAILED);
+        - execução sem falhas, mas com modelo ausente, subdocumento sem modelo ou
+          componente pedido não encontrado => COMPLETED_WITH_GAPS (nunca SUCCESS).
+        """
         statuses = [c.get("status") for c in state.data["components"] if c.get("role") == "primary"]
-        bad = [s for s in statuses if s not in (st.SUCCESS, st.NO_TEMPLATE)]
-        if not bad:
-            return st.SUCCESS
-        if self.app.allow_partial_success and len(bad) < len(statuses):
-            return st.PARTIAL_SUCCESS
-        return st.FAILED
+        failed = [s for s in statuses if s not in (st.SUCCESS, st.NO_TEMPLATE)]
+        if failed:
+            if self.app.allow_partial_success and len(failed) < len(statuses):
+                return st.PARTIAL_SUCCESS
+            return st.FAILED
+        coverage = state.data.get("coverage") or {}
+        if coverage.get("blockingGapCount"):
+            return st.COMPLETED_WITH_GAPS
+        return st.SUCCESS
 
     # Passo 1 ------------------------------------------------------------
     def _step1_cli(self, p):
@@ -165,8 +462,12 @@ class DocumentPipeline:
         display = result.result if isinstance(result.result, dict) else {}
         p.masker.add(display.get("accessToken"))
         if not (result.ok and display.get("apiVersion") and display.get("connectedStatus") == "Connected"):
-            if self.app.save_raw_responses and result.stdout.strip():
-                write_text_raw(p.errors_dir / "org-display.raw.json", result.stdout, private=True)
+            if self.app.save_raw_responses and (result.stdout.strip() or result.stderr.strip()):
+                # Erro de `org display` pode conter token: só envelope sanitizado.
+                write_json(sanitized_error_path(p.errors_dir / "org-display.raw.json"), {
+                    "sanitized": True, "note": "Resposta de erro mascarada; não é raw intacto.",
+                    "returncode": result.returncode, "stdout": self.masker(result.stdout),
+                    "stderr": self.masker(result.stderr)}, private=True)
             org_session_validator.validate_display(result, alias)
             raise GlobalFailure("ORG_DISPLAY_INCOMPLETE", "`sf org display` sem apiVersion",
                                 org_session_validator.login_suggestion(alias))
@@ -184,13 +485,18 @@ class DocumentPipeline:
                    f"(detectada {session.detected_api_version}, fonte: {session.api_version_source})")
 
     # Passo 4 ------------------------------------------------------------
-    def _step4_metadata_types(self, p, group_filter):
+    def _step4_metadata_types(self, p, effective):
+        group_filter = set(effective)
         index, raw_path, _ = metadata_types_extractor.extract_metadata_types(
             p.runner, p.session, p.catalog_dir, p.errors_dir)
+        p.discovered_types = set(index.get("metadataTypes", {})) | set(index.get("childMetadataTypes", {}))
         p.run_state.step("4-metadata-types", st.SUCCESS, rel(raw_path, self.root))
         enabled = {}
         for group in self.mvp.groups:
-            if group_filter and group.name not in group_filter:
+            if group.name not in group_filter:
+                # Configurado, mas fora do escopo desta execução (≠ NOT_ENABLED / NO_TEMPLATE).
+                p.run_state.type_status(group.primary_type, st.OUT_OF_SCOPE, group=group.name,
+                                        stage="scope", detail=f"selection.mode={self.app.selection.mode}")
                 continue
             types = list(group.all_types)
             if group.type_definition:
@@ -254,18 +560,22 @@ class DocumentPipeline:
         return inventories
 
     # Passos 7–10 --------------------------------------------------------
-    def _steps7_to_10(self, p, enabled, inventories, skip_units, component_filter, current_unit):
+    def _steps7_to_10(self, p, enabled, inventories, skip_units, effective, current_unit):
         p.docs_dir = self.app.output_docs_dir / f"doc-org-{now_local().strftime('%m%d%y')}"
+        p.writer = OutputWriter(p.docs_dir, p.run_state.run_id, self.app.output_layout, self.root,
+                                p.run_state, p.log)
         processor = ComponentProcessor(p)
         for group_name, types in enabled.items():
             group = self.mvp.group(group_name)
             units = deviation_handler.build_units(group, inventories, self.mvp)
+            component_filter = effective.get(group_name)
+            self._report_not_found(p, group, units, inventories, component_filter)
             if not units:
                 p.run_state.type_status(group.primary_type, st.NO_COMPONENTS, group=group.name, stage="units")
                 continue
             for unit in units:
-                if component_filter and unit["fullName"] not in component_filter:
-                    continue
+                if component_filter is not None and unit["fullName"] not in component_filter:
+                    continue  # fora do escopo: não é recuperado
                 if unit["unitId"] in skip_units:
                     p.log.info(f"{unit['unitId']}: SUCCESS em execução anterior, ignorado")
                     continue
@@ -283,6 +593,34 @@ class DocumentPipeline:
                     p.log.error(f"{unit['unitId']}: FAILED {exc}")
                 p.run_state.upsert_component(entry)
                 current_unit["entry"] = None
+                self._record_processed(p, processor)
+
+    def _report_not_found(self, p, group, units, inventories, component_filter):
+        """Componentes pedidos em selection.metadataTypes que não viraram unidade de documento."""
+        if self.app.selection.mode != "SELECTED" or component_filter is None:
+            return
+        requested = next((set(i["components"]) for i in self.app.selection.selection
+                          if i["metadataType"] == group.primary_type), set())
+        requested -= {WILDCARD}
+        listed = {i["fullName"] for i in inventories.get(group.primary_type) or []}
+        built = {u["fullName"] for u in units}
+        for name in sorted((requested & component_filter) - built):
+            reason = ("existe no inventário, mas foi excluído por componentFilter do grupo"
+                      if name in listed else "não encontrado no inventário da org")
+            p.run_state.data["selection"]["notFound"].append(
+                {"group": group.name, "metadataType": group.primary_type, "component": name,
+                 "reason": reason})
+            p.run_state.type_status(group.primary_type, st.NOT_FOUND, group=group.name,
+                                    stage="selection", component=name, detail=reason)
+            p.log.warn(f"{group.primary_type}:{name} pedido em selection.metadataTypes: NOT_FOUND ({reason})")
+
+    def _record_processed(self, p, processor):
+        types = set()
+        for rec in processor._cache.values():
+            if rec.get("status") == st.SUCCESS:
+                types.add(rec["metadataType"])
+                types.update(c["metadataType"] for c in rec.get("children") or [])
+        p.processed_types |= types
 
     def _process_unit(self, p, group, unit, types, inventories, processor):
         log = p.log
@@ -293,8 +631,14 @@ class DocumentPipeline:
                 "metadataType": unit["documentType"], "component": unit["fullName"]}
         if primary["status"] != st.SUCCESS:
             return dict(base, **_entry_fields(primary), status=primary["status"])
+        unresolved = []
         related, failures = deviation_handler.resolve_related(
-            unit, primary, group, processor, inventories, set(types), log)
+            unit, primary, group, processor, inventories, set(types), log,
+            restrict_candidates=self.app.selection.mode == "SELECTED", unresolved=unresolved)
+        for u in unresolved:
+            p.run_state.data["selection"]["relatedNotResolved"].append(dict(u, unitId=unit["unitId"]))
+            log.warn(f"{unit['unitId']}: relacionados {u['metadataType']} não verificados "
+                     f"({u['candidates']} candidato(s) fora da seleção não recuperados)")
         for rec in related + [dict(f) for f in failures]:
             p.run_state.upsert_component({
                 "unitId": unit["unitId"], "group": group.name, "role": "related",
@@ -305,8 +649,12 @@ class DocumentPipeline:
             })
         contract = p.contracts.get_file(group.contract_file)
         internal = self._internal_data(p, unit, primary, contract)
-        result = self.render_unit(p, group, unit, primary, related, internal, contract)
+        result = self.render_unit(p, group, unit, primary, related, internal, contract,
+                                  unresolved_types={u["metadataType"] for u in unresolved})
         warnings = list(primary.get("warnings", [])) + result.pop("warnings", [])
+        if unresolved:
+            warnings.append("Relacionados não verificados na seleção: " + ", ".join(
+                f"{u['metadataType']} ({u['candidates']} candidato(s))" for u in unresolved))
         if failures:
             warnings.append("Relacionados candidatos com falha: " + ", ".join(
                 f"{f['metadataType']}:{f['fullName']} ({f['status']})" for f in failures))
@@ -318,6 +666,7 @@ class DocumentPipeline:
                      internalDataStatus=internal.get("status"),
                      relatedComponents=[{"metadataType": r["metadataType"], "fullName": r["fullName"]}
                                         for r in related],
+                     relatedNotResolved=unresolved,
                      warnings=[self.masker(w) for w in warnings])
         log.info(f"{unit['unitId']}: {entry['status']}"
                  + (f" -> {entry.get('document')}" if entry.get("document") else ""))
@@ -339,32 +688,63 @@ class DocumentPipeline:
         return res
 
     # Passo 10 -----------------------------------------------------------
-    def render_unit(self, p, group, unit, primary, related, internal, contract):
+    def render_unit(self, p, group, unit, primary, related, internal, contract, unresolved_types=()):
         doc_slug = self.mvp.document_slug(unit["documentType"])
         if contract is None:
-            return {"status": st.NO_TEMPLATE, "document": None,
-                    "warnings": [f"Contrato {group.contract_file} ausente: documento não gerado"]}
+            msg = self._missing_message(p, unit["documentType"], unit["fullName"],
+                                        group.contract_file, None, group.data.get("referenceDoc"))
+            p.log.warn(msg)
+            return {"status": st.NO_TEMPLATE, "document": None, "warnings": [msg]}
         template = p.templates.load(contract.get("template"))
         if template is None:
-            name = p.templates.resolve_name(contract.get("template") or "(sem template)")
-            return {"status": st.NO_TEMPLATE, "document": None,
-                    "warnings": [f"Modelo {name} ausente em {rel(p.templates.models_dir, self.root)}"]}
+            msg = self._missing_message(p, unit["documentType"], unit["fullName"], group.contract_file,
+                                        contract.get("template"), contract.get("referenceDoc"))
+            p.log.warn(msg)
+            return {"status": st.NO_TEMPLATE, "document": None, "warnings": [msg]}
         ctx = RenderContext(unit["metadataType"], unit["fullName"], primary.get("data"),
                             schema_fields=primary.get("schemaFields"), internal=internal,
                             related=related, files=primary.get("files"), contracts=p.contracts,
-                            sensitive=self.mvp.sensitive_elements,
+                            sensitive=self.mvp.render_blocked_elements,
                             developer_name=developer_name(unit["fullName"], primary.get("namespacePrefix")))
+        ctx.unresolved_related = set(unresolved_types)
         result = self.renderer.render(template, contract, ctx)
         if not result.ok:
             p.log.error(f"{unit['unitId']}: documento inválido: {result.errors}")
             return {"status": st.FAILED, "document": None, "warnings": result.warnings,
                     "error": "; ".join(result.errors)}
-        doc_path = p.docs_dir / f"doc-{slugify(unit['fullName'])}-{doc_slug}.md"
-        write_text(doc_path, result.text)
+        leak = self._sensitive_leak(result.text)
+        if leak:
+            p.log.error(f"{unit['unitId']}: {leak}")
+            return {"status": st.FAILED, "document": None, "warnings": result.warnings, "error": leak}
+        doc_path = p.writer.write(f"doc-{slugify(unit['fullName'])}-{doc_slug}.md", result.text,
+                                  f"{unit['documentType']}:{unit['fullName']}")
         subdocs = self._render_subdocuments(p, group, unit, primary, ctx)
+        warnings = list(result.warnings) + [w for s in subdocs for w in s.pop("warnings", [])]
         return {"status": st.SUCCESS, "document": rel(doc_path, self.root),
                 "template": p.templates.resolve_name(contract["template"]),
-                "subDocuments": subdocs, "warnings": result.warnings}
+                "contract": group.contract_file,
+                "subDocuments": subdocs, "warnings": warnings,
+                "omittedProperties": sorted(ctx.omitted)}
+
+    def _sensitive_leak(self, text):
+        """Barreira final: o Markdown não pode conter token nem valor de elemento sensível
+        visto no XML (mesmo que chegue por outro campo, ex.: description)."""
+        if self.masker(text) != text:
+            return ("conteúdo sensível conhecido detectado no documento (token ou valor de elemento "
+                    "sensível); documento NÃO gravado")
+        return None
+
+    def _missing_message(self, p, metadata_type, component, contract_file, template, reference):
+        """Aviso de NO_TEMPLATE: tipo, componente, referência ajudAI, contrato e modelo esperados."""
+        contract_path = rel(self.app.contracts_dir / contract_file, self.root) if contract_file else "(nenhum)"
+        if template:
+            model = rel(p.templates.path(template), self.root)
+            what = f"modelo ausente: {model}"
+        else:
+            what = f"contrato ausente: {contract_path}"
+        return (f"NO_TEMPLATE {metadata_type}:{component} — {what}; contrato {contract_path}; "
+                f"referência {reference or 'não declarada'}. Dados extraídos preservados; "
+                "documento não gerado.")
 
     def _render_subdocuments(self, p, group, unit, primary, ctx):
         out = []
@@ -375,15 +755,25 @@ class DocumentPipeline:
             suffix = sub.get("documentSuffix") or slugify(sub.get("contract", "sub"))
             name = unit["fullName"] if item_name is None else f"{unit['fullName']}.{item_name}"
             if contract is None or template is None:
-                out.append({"component": name, "status": st.NO_TEMPLATE, "document": None})
+                msg = self._missing_message(p, unit["documentType"], name, sub.get("contract"),
+                                            (contract or {}).get("template"),
+                                            (contract or {}).get("referenceDoc") or sub.get("referenceDoc"))
+                p.log.warn(msg)
+                out.append({"component": name, "status": st.NO_TEMPLATE, "document": None,
+                            "warnings": [msg]})
                 continue
             sctx = ctx if item is None else ctx.child(item, full_name=item_name)
             res = self.renderer.render(template, contract, sctx)
             if not res.ok:
                 out.append({"component": name, "status": st.FAILED, "error": "; ".join(res.errors)})
                 continue
-            path = p.docs_dir / f"doc-{slugify(name)}-{suffix}.md"
-            write_text(path, res.text)
+            leak = self._sensitive_leak(res.text)
+            if leak:
+                p.log.error(f"{unit['unitId']} ({name}): {leak}")
+                out.append({"component": name, "status": st.FAILED, "error": leak})
+                continue
+            path = p.writer.write(f"doc-{slugify(name)}-{suffix}.md", res.text,
+                                  f"{unit['documentType']}:{name}:{suffix}")
             out.append({"component": name, "status": st.SUCCESS, "document": rel(path, self.root),
                         "template": p.templates.resolve_name(contract["template"])})
         return out
@@ -399,10 +789,14 @@ class DocumentPipeline:
                              source.data.get("apiVersion") or self.app.default_api_version)
         state = RunState.create(self.app.runs_dir, session.alias, resumed_from=source.run_id)
         state.data["mode"] = "REGENERATE"
+        state.masker = self.masker
+        set_private_files(self.app.private_files)
         log = RunLogger(self.masker, stream=self.stream, run_state=state)
         p = PipelineContext(self.root, self.app, self.mvp, self.runner, state, log, self.masker)
         p.bind_session(session)
         p.docs_dir = self.app.output_docs_dir / f"doc-org-{now_local().strftime('%m%d%y')}"
+        p.writer = OutputWriter(p.docs_dir, p.run_state.run_id, self.app.output_layout, self.root,
+                                p.run_state, p.log)
         state.set("apiVersion", session.api_version)
         if (p.catalog_dir / "metadata-types.raw.json").is_file():
             metadata_types_extractor.regenerate_index(p.catalog_dir)
@@ -442,15 +836,19 @@ class DocumentPipeline:
             unit = {"unitId": unit_id, "metadataType": _record_type(group),
                     "documentType": group.primary_type, "fullName": primary_entry["component"]}
             contract = p.contracts.get_file(group.contract_file)
-            result = self.render_unit(p, group, unit, primary, related, internal, contract)
+            result = self.render_unit(
+                p, group, unit, primary, related, internal, contract,
+                unresolved_types={u["metadataType"] for u in primary_entry.get("relatedNotResolved") or []})
             entry = dict(primary_entry, **_entry_fields(primary))
             entry.update(result)
             entry["regeneratedFrom"] = source.run_id
             state.upsert_component(entry)
             log.info(f"{unit_id}: regenerado {entry['status']} {entry.get('document') or ''}")
+        state.set("coverage", self._coverage(state, p))
         final = self._final_status(state)
         state.finish(final)
-        return (EXIT_OK if final in (st.SUCCESS, st.PARTIAL_SUCCESS) else EXIT_FAILURE), state
+        return (EXIT_OK if final in (st.SUCCESS, st.PARTIAL_SUCCESS, st.COMPLETED_WITH_GAPS)
+                else EXIT_FAILURE), state
 
 
 def _record_type(group):

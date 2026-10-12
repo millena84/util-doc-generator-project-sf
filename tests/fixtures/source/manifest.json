@@ -87,6 +87,16 @@
       "type": "CustomObject",
       "fullName": "Config__mdt",
       "path": "objects/Config__mdt/Config__mdt.object-meta.xml"
+    },
+    {
+      "type": "CustomField",
+      "fullName": "Config__mdt.Ativo__c",
+      "path": "objects/Config__mdt/fields/Ativo__c.field-meta.xml"
+    },
+    {
+      "type": "CustomField",
+      "fullName": "Config__mdt.Chave_API__c",
+      "path": "objects/Config__mdt/fields/Chave_API__c.field-meta.xml"
     }
   ],
   "CustomMetadata:Config.Padrao": [
@@ -101,6 +111,46 @@
       "type": "CustomMetadata",
       "fullName": "Config.Secundario",
       "path": "customMetadata/Config.Secundario.md-meta.xml"
+    }
+  ],
+  "Flow:Processa_Pedido": [
+    {
+      "type": "Flow",
+      "fullName": "Processa_Pedido",
+      "path": "flows/Processa_Pedido.flow-meta.xml"
+    }
+  ],
+  "NamedCredential:Minha_NC": [
+    {
+      "type": "NamedCredential",
+      "fullName": "Minha_NC",
+      "path": "namedCredentials/Minha_NC.namedCredential-meta.xml"
+    }
+  ],
+  "NamedCredential:NC_Legada": [
+    {
+      "type": "NamedCredential",
+      "fullName": "NC_Legada",
+      "path": "namedCredentials/NC_Legada.namedCredential-meta.xml"
+    }
+  ],
+  "RemoteSiteSetting:Meu_Site": [
+    {
+      "type": "RemoteSiteSetting",
+      "fullName": "Meu_Site",
+      "path": "remoteSiteSettings/Meu_Site.remoteSite-meta.xml"
+    }
+  ],
+  "Certificate:Meu_Certificado": [
+    {
+      "type": "Certificate",
+      "fullName": "Meu_Certificado",
+      "path": "certs/Meu_Certificado.crt"
+    },
+    {
+      "type": "Certificate",
+      "fullName": "Meu_Certificado",
+      "path": "certs/Meu_Certificado.crt-meta.xml"
     }
   ]
 }

@@ -1,0 +1,116 @@
+# Refatoração 1 — adaptação dos modelos `ajudAI` ao utilitário
+
+> Prioridade 1 do roadmap (`documentation/proximos-passos.md`): modelos, contratos, renderização e testes.
+> Referências analisadas: `millena84/_sf_utilities`, diretório `ajudAI/` (commit `b5b3d49`).
+> Base do utilitário: `main` em `d15bb12`. **Nenhuma org real foi acessada** nesta refatoração.
+
+## Como ler este documento
+
+- Os arquivos `ajudAI/` são **material de referência** (gerado com apoio de LLM). Não são fonte normativa de campos, enums, sufixos, pastas, cobertura, relacionamentos ou segurança.
+- Precedência das fontes: documentação oficial Salesforce → Metadata Coverage Report → XML real autorizado → fixtures simuladas → `ajudAI`.
+- **Limitação da verificação**: neste ambiente a leitura direta de `developer.salesforce.com` falhou (DNS). As confirmações abaixo vieram do índice de busca das páginas oficiais. Tudo que o índice não mostrou está marcado como **pendente**. A correspondência "doc `262.0` ≈ API 67.0" é inferência pela numeração e também está pendente.
+
+## 1. Matriz de rastreabilidade
+
+| Arquivo `ajudAI` | Modelo/conceito recomendado | Metadata type confirmado | Situação antes do Lote A | Componentes/arquivos | Campos e seções candidatos | Afirmações não confirmadas/conflitos | Risco sensível | Mudança proposta |
+|---|---|---|---|---|---|---|---|---|
+| `contexto-flow-trigger.md` | Doc de Flow disparado (registro/agendado/evento) | `Flow` (`start`, API 47+) | Parcial: subdoc `flow-trigger` (DeveloperName, TriggerType, Object, condições) | `flows/*.flow-meta.xml` (+ FlowDefinition no doc principal) | `recordTriggerType`, `status`, `description`, `runInMode`, `start.filters/filterLogic/filterFormula`, `start.schedule`, `scheduledPaths` | `<fullName>` não existe no XML source (vem do nome do arquivo); OptimizationMode via `start.elementSubtype`, `runAsynchronously`, campos de `scheduledPaths`/`FlowSchedule` não confirmados; seção 7 (`$Record`, `$User`…) é inferência; enums ilustrativos | Literais em filtros/ações | Ampliar com campos confirmados; scheduledPaths/schedule após confirmação; rejeitar seção 7 e OptimizationMode |
+| `contexto-flow-screen.md` | Screen Flow: telas e campos | `Flow` (`processType=Flow`) | Parcial: subdoc por tela | idem | Por tela: `allowBack/allowFinish/allowPause/showHeader/showFooter`; por campo: `dataType`, `fieldText`, `helpText`, `extensionName` | `LargeTextField` errado (fixture usa `LargeTextArea`; enum oficial pendente); `isReadOnly`, `nextOrFinishButtonLabel`, `dynamicChoiceSets`, `stages`, `visibilityRule` pendentes; flags de tela só com indício na doc Field Service | `fieldText`/`helpText`, valores padrão | Manter subdoc por tela; acrescentar campos com indício |
+| `contexto-flow-autolaunched.md` | Contrato de interface (variáveis entrada/saída) | `Flow` (`AutoLaunchedFlow` sem `start.triggerType`) | Não coberto | idem | `variables` (`name`, `dataType`, `objectType`, `isCollection`, `isInput`, `isOutput`); `formulas`, `decisions`, `actionCalls`, `subflows` | "Obrigatório?" não é propriedade de variável (rejeitado); "Origem de invocação" não está no metadata (NOT_SUPPORTED); classificação exige `processType` + ausência de `start.triggerType` | Valor padrão de variáveis | Novo subdocumento `flow-autolaunched` |
+| `contexto-named-credential.md` | NC com EC embutida | `NamedCredential` (`namedCredentialParameters` API 56+; `namedCredentialType`: Legacy, PrivateEndpoint, SecuredEndpoint, Standard) | Não configurado | `namedCredentials/*` | `label`, `namedCredentialType`, `generateAuthorizationHeader`, `allowMergeFieldsIn*`, `namedCredentialParameters` | `<endpoint>`, `<externalCredential>`, `<customHeaders>` como topo **conflitam** com o modelo de parâmetros (enum `parameterType` pendente); enum omite PrivateEndpoint; seção 3 duplica a EC; seção 5 (Apex) ilustrativa; permission sets vêm de PermissionSet | Valores de header; campos legados (`password`, `oauthToken`) | Lote B |
+| `contexto-external-credential.md` | EC com parâmetros, principais e dados internos | `ExternalCredential` | Parcial | XML + SOQL | `description`, `externalCredentialParameters` (`parameterName/Type/sequenceNumber`) | Principais são parâmetros `NamedPrincipal/PerUserPrincipal`, não `<principals>`; `authenticationFlowType` não confirmado; enum de protocolo incompleto; dependentes exigem outros tipos | `parameterValue`; `principal` → permission set | Lote B (parâmetros sem `parameterValue`) |
+| `contexto-certificate.md` | Certificado: validade e uso | `Certificate` (`certs/`, `.crt`, API 36+); separados: `PublicKeyCertificate` (API 62+), `PublicKeyCertificateSet` | Não configurado | `.crt` + `.crt-meta.xml` | `masterLabel`, `caSigned`, `keySize`, `expirationDate`, `privateKeyExportable`, `encryptedWithPlatformEncryption` | `encryptedWithPassword` não existe; issuer/subject/fingerprint exigem ler o `.crt` (fora do escopo); "onde é usado" NOT_SUPPORTED; conteúdo devolvido pelo retrieve não confirmado | Material criptográfico | Lote B: só o `-meta.xml` |
+| `contexto-remote-site-settings.md` | Site remoto + análise de segurança | `RemoteSiteSetting` (`remoteSiteSettings/`, `.remoteSite`, API 19+) | Não configurado | XML | `url`, `isActive`, `disableProtocolSecurity`, `description` | "MasterLabel = fullName" não confirmado; seções 2/3 são recomendações; 4.2 tem dependências inventadas | URL interna | Lote B; análise de protocolo só como `Derivado`, se aprovada |
+| `contexto-connected-app.md` | Connected App com OAuth/políticas/SAML/Canvas | `ConnectedApp` (API 29+) | Parcial: OAuth via `child_properties` (publicava `consumerKey`) | `connectedApps/*` | `contactEmail`, `description`, `oauthConfig.callbackUrl/scopes/certificate` | `isCodeExchangeWithPKCERequired`, `isRefreshTokenSecretRequired`, `ConnectedAppPolicies` (Tooling), políticas, `samlConfig`/`canvasConfig` pendentes | `consumerKey`, contato, `callbackUrl`, `certificate` (PEM) | Lote A: lista `allow` |
+| `contexto-external-client-app.md` | ECA consolidada | `ExternalClientApplication` + `ExtlClntApp*` | Parcial | 4 tipos | ver `sf-eca.md` | Sufixos errados (oficiais `.eca`, `.ecaOauth`, `.ecaOauthPlcy`, `.ecaPlcy`, `.ecaGlblOauth`); pasta `extlClntAppGlobalOauthSettings` errada (`extlClntAppGlobalOauthSets`); `Packageable` vs `Packaged`; `isIntegratorDriven` não confirmado; callback/PKCE/certificado atribuídos ao tipo errado; `permittedUsers` vs `*PolicyType`; `permissionSetNames/profileNames` não confirmados | "consumerKey pode ser listado" rejeitado | **Rejeitado como fonte estrutural** |
+| `sf-eca.md` | ECA: documento único, XMLs separados, proveniência por arquivo | idem; `ExtlClntAppConfigurablePolicies` (`.ecaPlcy`, API 60+, `isEnabled`) | idem | idem | OauthSettings: `commaSeparatedOauthScopes`…; OauthPolicies: `*PolicyType`…; Policies: `isEnabled`, flags de plugin | `isOauthPluginEnabled` some na versão mais recente; Mobile/Push em preview (API 64+); Canvas/Saml policies não confirmados; relação "por convenção de nomes" rejeitada | `commaSeparatedPermissionSet`, `clientCredentialsFlowUser`, `executeHandlerAs` | Lote A: seções por componente com proveniência |
+| `contexto-object.md` | Doc consolidado da pasta do objeto | `CustomObject` (decomposto em source format) | Parcial | `objects/X__c/**` | `sharingModel`, `deploymentStatus`, `enable*`; VR e RT | Arquivo tem **4 versões repetidas** com divergências; `enableStreamingApi` como CDC não confirmado; FieldSet/ListView/CompactLayout/BusinessProcess/SharingReason/Index: retrieve com o pai não confirmado | Fórmulas, URLs/JS de WebLinks | Lote A: tabelas VR e RT |
+| `contexto-custommetadata.md` | Tipo + campos + records | `CustomObject (__mdt)` + `CustomField` + `CustomMetadata` (`.md`, `customMetadata/`) | Parcial | `objects/X__mdt/**` + `customMetadata/*.md-meta.xml` | `description`, campos do tipo, `protected` | Sufixo `.mdt-meta.xml` **errado**; `fieldManageability` e tipo `EntityDefinition` não confirmados; seção 5 ilustrativa | Valores de records (ex.: `Chave_API__c`) | Lote A: campos `__mdt` + `protected`, sem valores |
+
+Categorias:
+
+- **Consolidados (vários metadata types num documento):** ECA, CustomObject, CustomMetadata, Flow (+FlowDefinition).
+- **Documentos separados:** subdocumentos de Flow (trigger, tela, autolaunched); Certificate × PublicKeyCertificate.
+- **Exigem dado interno/API:** Status de Flow (Tooling `Flow`), EC (SOQL), políticas de Connected App, permission sets.
+- **Relações ainda não resolvidas:** NC → EC (parâmetro), EC → PermissionSet, Certificate → consumidores, RSS → Apex.
+- **Exemplos/recomendações/inferências (não são propriedades da API):** exemplos Apex/Flow, origem de invocação, matriz RSS × NC, fluxos OAuth suportados, cofre/rotação de segredos, variáveis globais.
+
+## 2. Divergências
+
+- **`ajudAI` × `ajudAI`:** `contexto-external-client-app.md` contradiz `sf-eca.md` (sufixos, pastas, campos, enums); `contexto-object.md` repete o modelo quatro vezes com conteúdos diferentes.
+- **`ajudAI` × Salesforce:** `<fullName>` tratado como tag; sufixo de records de CMDT; campo de criptografia do Certificate; estrutura de NC/EC (topo × parâmetros); `fieldType` `LargeTextField`.
+- **Utilitário × segurança (antes do Lote A):** Connected App publicava `consumerKey`; normalizados guardavam `consumerSecret` em claro; XMLs/normalizados de `inventory/` fora do `.gitignore`.
+- **Utilitário × prompt (antes do Lote A):** `validate-config` não cruzava placeholders do modelo com o contrato; aviso de `NO_TEMPLATE` sem referência nem caminhos; "fora de escopo" não registrado.
+- **Validação encontrada durante a implementação:** o validador de documento proibia a palavra `None` em células; ela é valor legítimo de enum (`startPage=None` em `ExtlClntAppConfigurablePolicies`). A regra passou a proibir só `N/A` (o formatador nunca converte `None` do Python em texto).
+
+## 3. Classificação das propriedades
+
+- **Aprovadas/aplicadas (fonte oficial via índice, ou já presentes no contrato):** RemoteSiteSetting (4 campos) e Certificate (6 campos) — para o Lote B; ECA `externalClientApplication`, `isEnabled`, `label`, `startPage`, `startUrl`, `commaSeparatedOauthScopes`, `description`, `distributionState`, `isProtected`; CMDT sufixo/pasta; Flow `start`.
+- **Aplicadas com verificação oficial pendente (marcadas em `evidence` do contrato):** Flow `processType`, `description`, `status`, `start.recordTriggerType`, `variables.*`; flags de tela (`allowBack`… — indício Field Service); `isOauthPluginEnabled`; CustomObject `sharingModel`, `deploymentStatus`; RecordType `label/active`; ValidationRule `active/errorConditionFormula/errorMessage`.
+- **Não confirmadas — não aplicadas:** enum `fieldType`, `scheduledPaths`/`FlowSchedule`, `runInMode`, `doesRequireRecordChangedToMeetCriteria`, `isReadOnly`, campos do `oauthConfig` além de `scopes`, campos de `ExtlClntAppOauthConfigurablePolicies` além de `label`/`externalClientApplication`, `fieldManageability`, filhos adicionais de CustomObject, enum de `NamedCredentialParameter.parameterType`, objeto Tooling ExternalCredential.
+- **Sensíveis:** segredos (`sensitiveXmlElements`: `consumerSecret`, `password`, `privateKey`, tokens…) → redigidos no normalizado e nunca renderizados; decisão de segurança (`omitFromDocumentation`: `consumerKey`, `callbackUrl`, `contactEmail/Phone`, `certificate`, `jsonWebKey`, `parameterValue`, `commaSeparatedPermissionSet/Profile`, `clientCredentialsFlowUser`, `executeHandlerAs`) → nunca renderizados; valores de records CMDT → nunca renderizados.
+- **Não suportadas:** origem de invocação de Flow, variáveis globais, dependentes Apex/Flow de RSS, uso de certificado, issuer/fingerprint, permission sets autorizados, políticas de Connected App via Tooling.
+
+## 4. Decisões aplicadas (aprovadas pela usuária: "Os dois")
+
+1. Criado o modelo novo `modelo-doc-flow-autolaunched-vapi-67.md`. Modelos de NamedCredential, RemoteSiteSetting e Certificate ficam para o Lote B.
+2. Dado sensível/bloqueado: a **linha é omitida** e o nome da propriedade vai para `omittedProperties` no run state (sem terceiro valor além de `Não informado`/`Não aplicável`).
+3. `consumerKey`, `contactEmail/Phone`, `callbackUrl` omitidos por padrão (`omitFromDocumentation`).
+4. Valores de records de Custom Metadata não são renderizados.
+5. `inventory/**/components/` e `inventory/**/normalized/` no `.gitignore` (raw intacto em disco, fora do Git). Segredos são redigidos (`[REDACTED]`) apenas no derivado normalizado.
+
+## 5. Lote A — implementado
+
+| Item | Arquivos |
+|---|---|
+| Flow: doc principal + ProcessType, Description, Status (XML) | `contracts/flow.schema.json`, `models/api-v67/modelo-doc-flow-vapi-67.md` |
+| Flow Trigger: + RecordTriggerType | `flow-trigger.schema.json`, `modelo-doc-flow-trigger-vapi-67.md` |
+| Flow Screen: + AllowBack/AllowFinish/AllowPause/ShowHeader/ShowFooter | `flow-screen.schema.json`, `modelo-doc-flow-screen-vapi-67.md` |
+| Flow Autolaunched (novo): identificação + variáveis de entrada/saída | `flow-autolaunched.schema.json`, `modelo-doc-flow-autolaunched-vapi-67.md`, `config/metadata-types-mvp.json` |
+| Custom Object: + SharingModel, DeploymentStatus; tabelas Validation Rules e Record Types | `custom-object.schema.json`, `modelo-doc-custom-object-vapi-67.md` |
+| Custom Metadata: + PluralLabel, Description; tabela de campos do `__mdt`; coluna Protected; sem valores | `custom-metadata.schema.json`, `modelo-doc-custom-metadata-vapi-67.md`, config (`CHILD_OF_PRIMARY`) |
+| ECA: + Description, DistributionState, IsProtected; seções por componente com arquivo e sha256 | `external-client-app.schema.json`, `modelo-doc-cea-vapi-67.md`, novos `extl-clnt-app-*.schema.json` |
+| Connected App: OAuth só com propriedades em `allow` (`scopes`) | `connected-app.schema.json` |
+| Motor: `when` com várias condições (`equals`/`in`/`present`); `where` em `path_rows`; `allow` em `child_properties`; proveniência em `related_properties_table`; `omittedProperties`; redação de segredos no normalizado; `NO_TEMPLATE` com referência/contrato/modelo; `OUT_OF_SCOPE` | `rendering/`, `parsing/`, `pipeline/`, `config/metadata_types_loader.py`, `status.py` |
+| `validate-config`: placeholders × propriedades/blocos/colunas/builders, fonte, elementos bloqueados, modelos sem contrato | `validation/project_validator.py` |
+| Testes | `tests/test_refatoracao1_lote_a.py` + ajustes; fixtures sintéticas (Flow autolaunched com pipe, quebra de linha, Unicode e texto longo; campos `__mdt`; sentinela em valor de CMDT) |
+
+Classificação de Flow (configurada em `subDocuments`, testada): **trigger** se `start.triggerType` presente (RecordBeforeSave/AfterSave/BeforeDelete, Scheduled, PlatformEvent); **autolaunched** se `processType = AutoLaunchedFlow` e sem `start.triggerType`; **tela** por elemento `screens`. Nenhuma categoria é inferida por um único campo.
+
+## 6. Lote B — implementado
+
+| Item | Arquivos |
+|---|---|
+| NamedCredential (novo grupo e modelo): identificação, opções de callout, parâmetros (nome e tipo, **sem** `parameterValue`), credencial externa com proveniência, relacionados | `contracts/named-credential.schema.json`, `models/api-v67/modelo-doc-named-credential-vapi-67.md`, config |
+| ExternalCredential: tabelas de Parâmetros e Principais (parâmetros `NamedPrincipal`/`PerUserPrincipal`), sem `parameterValue` nem `principal` | `external-credential.schema.json`, `modelo-doc-external-credential-vapi-67.md` |
+| RemoteSiteSetting (novo grupo e modelo): `url`, `isActive`, `disableProtocolSecurity`, `description` | `remote-site-setting.schema.json`, `modelo-doc-remote-site-setting-vapi-67.md`, config |
+| Certificate (novo grupo e modelo): `masterLabel`, `caSigned`, `keySize`, `expirationDate`, `privateKeyExportable`, `encryptedWithPlatformEncryption` — só o `.crt-meta.xml`; o `.crt` é copiado como raw e nunca lido | `certificate.schema.json`, `modelo-doc-certificate-vapi-67.md`, config |
+| Motor: relação `PRIMARY_FIELD_REFERENCES` (valor exato no XML do principal = fullName existente no inventário; só recupera os componentes referenciados); filtro `notIn` | `pipeline/deviation_handler.py`, `parsing/external_client_app_parser.py`, `parsing/generic_builders.py`, `config/metadata_types_loader.py` |
+| Segurança: `principal` e `endpoint` em `omitFromDocumentation`; `password` legado redigido no normalizado | `config/metadata-types-mvp.json` |
+| Testes | `tests/test_refatoracao1_lote_b.py` (relação NC → EC só por referência exata a EC existente; NC Legacy sem relação; principais separados dos parâmetros; `.crt` fora de derivados; sentinelas; tipo não habilitado) |
+
+Recomendações `ajudAI` rejeitadas no Lote B: `<endpoint>`/`<externalCredential>`/`<customHeaders>` como elementos de topo da NC SecuredEndpoint; seção 3 da NC (EC duplicada); `<principals>` e `authenticationFlowType` da EC; `encryptedWithPassword`, issuer/subject/fingerprint e "onde é usado" do Certificate; análise de porta/protocolo, matriz RSS × NC e dependentes Apex/Flow do RSS; exemplos de código Apex/Flow.
+
+## 7. Lacunas restantes
+
+- Confirmar na página oficial da API 67.0: campos de `NamedCredentialParameter` (o caminho `namedCredentialParameters.externalCredential` está marcado como pendente — se estiver errado, a relação simplesmente não aparece), `label` da NC, campos de Flow pendentes, ECA OauthPolicies e filhos adicionais de CustomObject.
+- `PublicKeyCertificate`/`PublicKeyCertificateSet`: tipos separados, não configurados.
+- Valores de records CMDT, `consumerKey` e `parameterValue` continuam no raw/normalizado local (fora do Git); política de retenção/mascaramento é da Prioridade 3.
+- Seleção de escopo por `config.json` é da Prioridade 2.
+
+## 8. Referências oficiais
+
+Consultadas (índice de busca de páginas oficiais):
+
+- [NamedCredential (262.0)](https://developer.salesforce.com/docs/atlas.en-us.262.0.api_meta.meta/api_meta/meta_namedcredential.htm)
+- [ExternalCredential (262.0)](https://developer.salesforce.com/docs/atlas.en-us.262.0.api_meta.meta/api_meta/meta_externalcredential.htm)
+- [Certificate](https://developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_certificate.htm), [PublicKeyCertificate](https://developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_publickeycertificate.htm), [PublicKeyCertificateSet (264.0, preview)](https://developer.salesforce.com/docs/atlas.en-us.264.0.api_meta.meta/api_meta/meta_publickeycertificateset.htm)
+- [RemoteSiteSetting](https://developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_remotesitesetting.htm)
+- [CustomMetadata](https://developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_custommetadata.htm)
+- [ExternalClientApplication](https://developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_externalclientapplication.htm), [ExtlClntAppOauthSettings](https://developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_extlclntappoauthsettings.htm), [ExtlClntAppGlobalOauthSettings](https://developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_extlclntappglobaloauthsettings.htm), [ExtlClntAppConfigurablePolicies (262.0)](https://developer.salesforce.com/docs/atlas.en-us.262.0.api_meta.meta/api_meta/meta_extlclntappconfigurablepolicies.htm)
+- [NamedCredential (campos de callout e description)](https://developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_namedcredential.htm), [Tooling NamedCredential](https://developer.salesforce.com/docs/atlas.en-us.api_tooling.meta/api_tooling/tooling_api_objects_namedcredential.htm), [Tooling ExternalCredential](https://developer.salesforce.com/docs/atlas.en-us.api_tooling.meta/api_tooling/tooling_api_objects_externalcredential.htm), [Create or Edit a Named Credential (Help)](https://help.salesforce.com/s/articleView?language=en_US&id=xcloud.nc_create_edit_named_credential.htm&type=5)
+- [ConnectedApp (218.0)](https://developer.salesforce.com/docs/atlas.en-us.218.0.api_meta.meta/api_meta/meta_connectedapp.htm)
+- [Decomposed Metadata Types](https://developer.salesforce.com/docs/platform/sfdx-dev/guide/sfdx-dev-ws-decomposed-md-types.html)
+- [Field Service Flow](https://developer.salesforce.com/docs/atlas.en-us.field_service_dev.meta/field_service_dev/fsl_dev_fieldserviceflow.htm) (indício para flags de tela)
+
+Pendentes: Flow 262.0 (FlowStart, FlowScheduledPath, FlowScreen, FlowScreenField, FlowVariable), ConnectedAppOauthConfig, ExtlClntAppOauthConfigurablePolicies, NamedCredentialParameter, CustomObject/CustomField 262.0, [Metadata Coverage Report](https://developer.salesforce.com/docs/success/metadata-coverage-report/references/coverage-report/metadata-coverage-report.html) para a API 67.0, Tooling ExternalCredential.

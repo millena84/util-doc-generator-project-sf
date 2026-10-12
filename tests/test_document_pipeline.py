@@ -60,7 +60,8 @@ class FullRunTest(PipelineTestBase):
         self.assertEqual(flow["xml"], "inventory/org-dev/api-v67/flows/components/flows/Meu_Flow.flow-meta.xml")
         self.assertEqual(flow["normalized"], "inventory/org-dev/api-v67/flows/normalized/meu-flow.json")
         self.assertEqual(flow["internalData"], "inventory/org-dev/api-v67/flows/internal-data/meu-flow.raw.json")
-        self.assertRegex(flow["document"], r"^saida/docs/doc-org-\d{6}/doc-meu-flow-flow\.md$")
+        self.assertRegex(flow["document"], r"^saida/docs/doc-org-\d{6}/run-[\d-]+/doc-meu-flow-flow\.md$")
+        self.assertIn(state.run_id, flow["document"])  # saída isolada por execução (BY_RUN)
         self.assertTrue(self.read(flow["retrieveRaw"]))
         self.assertTrue((self.root / "runs" / f"{state.run_id}.json").is_file())
 
@@ -106,12 +107,12 @@ class FullRunTest(PipelineTestBase):
         code, state = self.run_pipeline(groups=["CustomObject", "CustomMetadata"])
         obj = self.read(self.primary(state, "Pedido__c")["document"])
         self.assertIn("| Valor__c | Valor | Currency | XML |", obj)
-        self.assertIn("| Pedido__c.Padrao | RecordType | XML |", obj)
+        self.assertIn("| Pedido__c.Padrao | Padrão | true | XML |", obj)
         cmdt = self.primary(state, "Config__mdt")
         self.assertEqual(cmdt["metadataType"], "CustomMetadata")
         self.assertIn("inventory/org-dev/api-v67/custom-metadata/", cmdt["xml"])
         doc = self.read(cmdt["document"])
-        self.assertIn("| Config.Padrao | Config Padrao | XML |", doc)
+        self.assertIn("| Config.Padrao | Config Padrao | false | XML |", doc)
         self.assertIn("| Visibility | Public | XML |", doc)
 
     def test_token_never_leaks(self):
@@ -262,10 +263,11 @@ class FailureModesTest(PipelineTestBase):
 class RegenerateTest(PipelineTestBase):
     def test_regenerate_from_raw_without_org(self):
         code, state = self.run_pipeline()
-        docs = {c["document"]: self.read(c["document"]) for c in state.data["components"]
+        docs = {c["unitId"]: self.read(c["document"]) for c in state.data["components"]
                 if c.get("role") == "primary" and c.get("document")}
-        for d in docs:
-            (self.root / d).unlink()
+        for c in state.data["components"]:
+            if c.get("role") == "primary" and c.get("document"):
+                (self.root / c["document"]).unlink()
         for n in (self.root / "inventory").rglob("normalized/*.json"):
             n.unlink()
         (self.root / "catalog/org-dev/api-v67/metadata-types.index.json").unlink()
@@ -274,8 +276,11 @@ class RegenerateTest(PipelineTestBase):
                                     stream=io.StringIO())
         code2, state2 = pipeline.regenerate(state.run_id)
         self.assertEqual(code2, EXIT_OK)
-        for d, content in docs.items():
-            self.assertEqual(self.read(d), content, d)
+        regenerated = {c["unitId"]: c for c in state2.data["components"] if c.get("document")}
+        self.assertEqual(set(regenerated), set(docs))
+        for unit_id, content in docs.items():
+            self.assertIn(state2.run_id, regenerated[unit_id]["document"])  # nova pasta da execução
+            self.assertEqual(self.read(regenerated[unit_id]["document"]), content, unit_id)
         self.assertTrue((self.root / "catalog/org-dev/api-v67/metadata-types.index.json").is_file())
         self.assertTrue((self.root / "inventory/org-dev/api-v67/flows/normalized/meu-flow.json").is_file())
 

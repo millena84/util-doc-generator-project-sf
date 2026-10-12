@@ -1,0 +1,118 @@
+{
+  "metadataType": "Flow",
+  "apiVersion": "67.0",
+  "documentStrategy": "SUB_DOCUMENT_OF_FLOW",
+  "xmlFilePattern": "**/*.flow-meta.xml",
+  "template": "modelo-doc-flow-autolaunched-vapi-{apiMajor}.md",
+  "titlePath": "@fullName",
+  "referenceDoc": "_sf_utilities/ajudAI/contexto-flow-autolaunched.md",
+  "classification": "processType = AutoLaunchedFlow E start.triggerType ausente (config: subDocuments.when). Fluxos com triggerType geram o subdocumento flow-trigger.",
+  "properties": [
+    {
+      "name": "DeveloperName",
+      "placeholder": "developer_name",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação",
+      "notes": "fullName do componente (nome do arquivo XML recuperado)."
+    },
+    {
+      "name": "Label",
+      "placeholder": "label",
+      "path": "label",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "ProcessType",
+      "placeholder": "process_type",
+      "path": "processType",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "ApiVersion",
+      "placeholder": "api_version",
+      "path": "apiVersion",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Description",
+      "placeholder": "description",
+      "path": "description",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "StatusXml",
+      "placeholder": "status_xml",
+      "path": "status",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    }
+  ],
+  "tables": [
+    {
+      "markdownSection": "Variáveis de entrada",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "variables",
+        "where": [
+          {
+            "path": "isInput",
+            "equals": "true"
+          }
+        ],
+        "columns": {
+          "variable": "name",
+          "data_type": "dataType",
+          "object_type": "objectType",
+          "is_collection": "isCollection"
+        }
+      }
+    },
+    {
+      "markdownSection": "Variáveis de saída",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "variables",
+        "where": [
+          {
+            "path": "isOutput",
+            "equals": "true"
+          }
+        ],
+        "columns": {
+          "variable": "name",
+          "data_type": "dataType",
+          "object_type": "objectType",
+          "is_collection": "isCollection"
+        }
+      }
+    }
+  ],
+  "evidence": [
+    "Metadata API Flow: campo `start` (API 47+) confirmado via índice oficial; demais elementos validados só por fixture simulada — página Flow da API 67.0 pendente de leitura direta"
+  ],
+  "notSupported": [
+    "Origem de invocação (Apex/REST/subflow chamador): não está no metadata do Flow",
+    "Coluna 'Obrigatório?' de variáveis: não é propriedade de variável de Flow",
+    "Valor padrão de variáveis: omitido (pode conter literais de negócio); decidir na Prioridade 3"
+  ],
+  "relatedMetadataTypes": [],
+  "internalData": {
+    "enabled": false,
+    "source": null,
+    "object": null,
+    "query": null
+  }
+}

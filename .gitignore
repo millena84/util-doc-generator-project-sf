@@ -11,3 +11,9 @@ runs/*/errors/
 # External Client App global OAuth (consumerKey/consumerSecret) — tipo excluído do MVP,
 # ignorado aqui como defesa extra.
 **/*.ecaGlblOauth-meta.xml
+
+# Refatoração 1 (decisão 5): XMLs originais recuperados e derivados normalizados podem conter
+# valores sensíveis ou sujeitos a decisão (consumerKey, valores de Custom Metadata, URLs internas).
+# O raw continua intacto em disco, mas fora do Git.
+inventory/**/components/
+inventory/**/normalized/

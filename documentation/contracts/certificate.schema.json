@@ -1,0 +1,85 @@
+{
+  "metadataType": "Certificate",
+  "apiVersion": "67.0",
+  "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+  "xmlFilePattern": "**/*.crt-meta.xml",
+  "template": "modelo-doc-certificate-vapi-{apiMajor}.md",
+  "titlePath": "@fullName",
+  "referenceDoc": "_sf_utilities/ajudAI/contexto-certificate.md",
+  "properties": [
+    {
+      "name": "DeveloperName",
+      "placeholder": "developer_name",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação",
+      "notes": "fullName do componente (nome do arquivo XML recuperado)."
+    },
+    {
+      "name": "MasterLabel",
+      "placeholder": "master_label",
+      "path": "masterLabel",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "CaSigned",
+      "placeholder": "ca_signed",
+      "path": "caSigned",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "KeySize",
+      "placeholder": "key_size",
+      "path": "keySize",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "ExpirationDate",
+      "placeholder": "expiration_date",
+      "path": "expirationDate",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "PrivateKeyExportable",
+      "placeholder": "private_key_exportable",
+      "path": "privateKeyExportable",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "EncryptedWithPlatformEncryption",
+      "placeholder": "encrypted_with_platform_encryption",
+      "path": "encryptedWithPlatformEncryption",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    }
+  ],
+  "evidence": [
+    "Metadata API Certificate (certs/, .crt, API 36+): masterLabel e caSigned obrigatórios; keySize, expirationDate, privateKeyExportable, encryptedWithPlatformEncryption"
+  ],
+  "security": "Somente o .crt-meta.xml é normalizado/renderizado. O arquivo de conteúdo (.crt) é copiado como raw, nunca lido nem levado a derivados.",
+  "notSupported": [
+    "encryptedWithPassword (ajudAI): não existe; o campo oficial é encryptedWithPlatformEncryption",
+    "Issuer, subject, datas e fingerprint do certificado: exigiriam ler o .crt",
+    "Componentes que usam o certificado (NC, ECA, SSO): sem mecanismo de prova",
+    "PublicKeyCertificate / PublicKeyCertificateSet: tipos separados, não configurados"
+  ],
+  "relatedMetadataTypes": [],
+  "internalData": {
+    "enabled": false,
+    "source": null,
+    "object": null,
+    "query": null
+  }
+}

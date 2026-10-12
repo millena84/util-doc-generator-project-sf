@@ -15,11 +15,29 @@ class TemplateLoader:
     def resolve_name(self, template_pattern: str) -> str:
         return template_pattern.replace("{apiMajor}", api_major(self.api_version))
 
+    @staticmethod
+    def unsafe_reason(name: str):
+        """Motivo se o nome do modelo puder sair de documentation/models/api-vN/ (ou None)."""
+        if not isinstance(name, str) or not name.strip():
+            return "nome vazio"
+        if "/" in name or "\\" in name or ".." in name or ":" in name or name.startswith("~"):
+            return "o modelo deve ser um nome de arquivo dentro do diretório de modelos (sem / \\ .. :)"
+        if not name.endswith(".md"):
+            return "o modelo deve ter extensão .md"
+        return None
+
     def path(self, template_pattern: str) -> Path:
-        return self.models_dir / self.resolve_name(template_pattern)
+        name = self.resolve_name(template_pattern)
+        reason = self.unsafe_reason(name)
+        if reason:
+            raise ValueError(f"Caminho de modelo inválido {name!r}: {reason}")
+        path = (self.models_dir / name).resolve()
+        if path.parent != self.models_dir.resolve():
+            raise ValueError(f"Caminho de modelo inválido {name!r}: fora de {self.models_dir}")
+        return path
 
     def load(self, template_pattern):
-        """Texto do modelo ou None (=> NO_TEMPLATE)."""
+        """Texto do modelo ou None (=> NO_TEMPLATE). Nome inseguro => ValueError."""
         if not template_pattern:
             return None
         p = self.path(template_pattern)

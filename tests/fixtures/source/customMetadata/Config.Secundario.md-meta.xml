@@ -6,4 +6,8 @@
         <field>Ativo__c</field>
         <value xsi:type="xsd:boolean">true</value>
     </values>
+    <values>
+        <field>Chave_API__c</field>
+        <value xsi:type="xsd:string">SENTINELA_VALOR_CMDT_NAO_RENDERIZAR</value>
+    </values>
 </CustomMetadata>

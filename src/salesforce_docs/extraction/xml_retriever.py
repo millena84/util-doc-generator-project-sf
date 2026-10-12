@@ -9,12 +9,11 @@ formato source (ex.: objects/Obj__c/fields/Campo__c.field-meta.xml).
 from __future__ import annotations
 
 import json
-import shutil
 import tempfile
 from pathlib import Path
 
 from salesforce_docs import status as st
-from salesforce_docs.utils import rel, sha256_file
+from salesforce_docs.utils import copy_private, rel, sha256_file
 
 PACKAGE_DIR = "force-app"
 
@@ -86,7 +85,7 @@ def retrieve_component(runner, session, metadata_type, full_name, components_dir
                 continue
             dest = components_dir / _relative_to_package(src, project_dir)
             dest.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(src, dest)  # cópia byte a byte: XML original intacto
+            copy_private(src, dest)  # cópia byte a byte: XML original intacto (0600)
             copied.append({"type": f.get("type"), "fullName": f.get("fullName"),
                            "path": rel(dest, project_root), "sha256": sha256_file(dest)})
     outcome["files"] = copied

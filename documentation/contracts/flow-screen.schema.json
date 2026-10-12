@@ -30,6 +30,46 @@
       "source": "XML",
       "required": true,
       "markdownSection": "Identificação"
+    },
+    {
+      "name": "AllowBack",
+      "placeholder": "allow_back",
+      "path": "allowBack",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "AllowFinish",
+      "placeholder": "allow_finish",
+      "path": "allowFinish",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "AllowPause",
+      "placeholder": "allow_pause",
+      "path": "allowPause",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "ShowHeader",
+      "placeholder": "show_header",
+      "path": "showHeader",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "ShowFooter",
+      "placeholder": "show_footer",
+      "path": "showFooter",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
     }
   ],
   "tables": [
@@ -53,5 +93,14 @@
     "source": null,
     "object": null,
     "query": null
-  }
+  },
+  "referenceDoc": "_sf_utilities/ajudAI/contexto-flow-screen.md",
+  "evidence": [
+    "Metadata API Flow: campo `start` (API 47+) confirmado via índice oficial; demais elementos validados só por fixture simulada — página Flow da API 67.0 pendente de leitura direta",
+    "allowBack/allowFinish/allowPause/showHeader/showFooter: indício na documentação oficial Field Service (fsl_dev_fieldserviceflow)"
+  ],
+  "notSupported": [
+    "fieldType `LargeTextField` do ajudAI diverge do valor usado (`LargeTextArea`); enum oficial pendente",
+    "isReadOnly, nextOrFinishButtonLabel, dynamicChoiceSets, stages, visibilityRule: pendentes"
+  ]
 }

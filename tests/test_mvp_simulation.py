@@ -11,10 +11,12 @@ from salesforce_docs import status as st
 
 API = "inventory/org-dev/api-v67"
 
-# Documento -> modelo esperado (os 8 modelos de documentation/models/api-v67).
+# Documento -> modelo esperado (os 12 modelos de documentation/models/api-v67).
 EXPECTED_DOCS = {
     "doc-meu-flow-flow.md": "modelo-doc-flow-vapi-67.md",
     "doc-tela-cadastro-flow.md": "modelo-doc-flow-vapi-67.md",
+    "doc-processa-pedido-flow.md": "modelo-doc-flow-vapi-67.md",
+    "doc-processa-pedido-flow-autolaunched.md": "modelo-doc-flow-autolaunched-vapi-67.md",
     "doc-meu-flow-flow-trigger.md": "modelo-doc-flow-trigger-vapi-67.md",
     "doc-tela-cadastro-dados-cliente-flow-screen.md": "modelo-doc-flow-screen-vapi-67.md",
     "doc-minha-eca-external-client-app.md": "modelo-doc-cea-vapi-67.md",
@@ -22,6 +24,10 @@ EXPECTED_DOCS = {
     "doc-meu-app-connected-app.md": "modelo-doc-connectedapp-vapi-67.md",
     "doc-pedido-c-custom-object.md": "modelo-doc-custom-object-vapi-67.md",
     "doc-config-mdt-custom-metadata.md": "modelo-doc-custom-metadata-vapi-67.md",
+    "doc-minha-nc-named-credential.md": "modelo-doc-named-credential-vapi-67.md",
+    "doc-nc-legada-named-credential.md": "modelo-doc-named-credential-vapi-67.md",
+    "doc-meu-site-remote-site-setting.md": "modelo-doc-remote-site-setting-vapi-67.md",
+    "doc-meu-certificado-certificate.md": "modelo-doc-certificate-vapi-67.md",
 }
 
 # Componentes relacionados que precisam aparecer no documento do principal.
@@ -34,12 +40,12 @@ EXPECTED_RELATED = {
     "doc-pedido-c-custom-object.md": [
         "| Status__c | Status | Picklist | XML |",
         "| Valor__c | Valor | Currency | XML |",
-        "| Pedido__c.Padrao | RecordType | XML |",
-        "| Pedido__c.Valor_Positivo | ValidationRule | XML |",
+        "| Pedido__c.Padrao | Padrão | true | XML |",
+        "| Pedido__c.Valor_Positivo | true | Valor__c < 0 | Valor deve ser positivo | XML |",
         "| Pedido__c.Imprimir_Pedido | WebLink | XML |"],
     "doc-config-mdt-custom-metadata.md": [
-        "| Config.Padrao | Config Padrao | XML |",
-        "| Config.Secundario | Config Secundario | XML |"],
+        "| Config.Padrao | Config Padrao | false | XML |",
+        "| Config.Secundario | Config Secundario | false | XML |"],
     "doc-minha-ec-external-credential.md": ["| DeveloperName | Minha_EC | Objeto interno |"],
 }
 
@@ -52,6 +58,8 @@ LISTED_TYPES = {
     "ExtlClntAppOauthConfigurablePolicies": "extl-clnt-app-oauth-configurable-policies",
     "ExternalCredential": "external-credentials", "ConnectedApp": "connected-apps",
     "CustomObject": "custom-objects", "CustomMetadata": "custom-metadata",
+    "NamedCredential": "named-credentials", "RemoteSiteSetting": "remote-site-settings",
+    "Certificate": "certificates",
 }
 # Tipos que só chegam pelo retrieve do CustomObject (passo 7).
 CHILD_TYPES = ["CustomField", "RecordType", "ValidationRule", "WebLink"]
@@ -93,7 +101,7 @@ class MvpCompleteSimulationTest(PipelineTestBase):
                     if t["metadataType"] == "ExtlClntAppGlobalOauthSettings"]
         self.assertEqual(excluded, [])
 
-    def test_all_eight_models_rendered(self):
+    def test_all_twelve_models_rendered(self):
         docs = self.all_documents()
         self.assertEqual(set(docs), set(EXPECTED_DOCS))
         for name, template in EXPECTED_DOCS.items():

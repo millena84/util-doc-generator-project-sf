@@ -15,7 +15,7 @@ import subprocess
 import time
 
 from salesforce_docs.errors import CliNotFoundError, SessionExpiredError
-from salesforce_docs.utils import write_text_raw
+from salesforce_docs.utils import write_json, write_text_raw
 
 SESSION_EXPIRED_MARKERS = (
     "INVALID_SESSION_ID",
@@ -121,15 +121,41 @@ class CliRunner:
             err = f"Timeout após {self.timeout}s"
         duration = round(time.monotonic() - started, 3)
 
-        target = raw_path if rc == 0 else error_raw_path
-        if self.save_raw and target and (out or "").strip():
-            write_text_raw(target, out)  # bruto, antes de qualquer parse
-
         result = CliResult(["sf"] + list(args), rc, out, err, duration)
-        result.raw_path = target if (self.save_raw and target and (out or "").strip()) else None
+        result.raw_path = None
+        if rc == 0:
+            if self.save_raw and raw_path and (out or "").strip():
+                write_text_raw(raw_path, out)  # bruto, antes de qualquer parse
+                result.raw_path = raw_path
+        elif self.save_raw and error_raw_path and ((out or "").strip() or (err or "").strip()):
+            # Resposta de ERRO: não é raw canônico e pode ecoar credenciais (ex.: token em
+            # mensagem de falha). Grava envelope SANITIZADO (stdout/stderr mascarados),
+            # identificado como tal — nunca como raw intacto.
+            target = sanitized_error_path(error_raw_path)
+            write_json(target, {
+                "sanitized": True,
+                "note": "Resposta de erro mascarada; não é raw intacto.",
+                "command": self.masker(" ".join(result.args)),
+                "returncode": rc,
+                "stdout": self.masker(out or ""),
+                "stderr": self.masker(err or ""),
+            }, private=True)
+            result.raw_path = target
         self.history.append(
             {"command": " ".join(result.args), "returncode": rc, "durationSeconds": duration}
         )
         if check_session and not result.ok and result.session_expired():
             raise SessionExpiredError(self.masker(result.error_message))
         return result
+
+
+def sanitized_error_path(path):
+    """runs/<id>/errors/x.raw.json -> runs/<id>/errors/x.sanitized.json"""
+    from pathlib import Path
+    path = Path(path)
+    name = path.name
+    for suffix in (".raw.json", ".json"):
+        if name.endswith(suffix):
+            name = name[: -len(suffix)]
+            break
+    return path.with_name(name + ".sanitized.json")

@@ -12,8 +12,9 @@ from salesforce_docs import status as st
 from salesforce_docs.parsing.custom_metadata_parser import group_records_by_type
 from salesforce_docs.parsing.custom_object_parser import child_files
 from salesforce_docs.parsing.external_client_app_parser import (field_equals_primary, leaf_values,
-                                                                reference_scan)
+                                                                reference_scan, values_at)
 from salesforce_docs.parsing.flow_parser import flow_definition_matches
+from salesforce_docs.parsing.generic_builders import matches_conditions
 from salesforce_docs.parsing.xml_parser import as_list
 
 
@@ -59,8 +60,19 @@ def _related_from_record(rec):
             "retrieveRaw": rec.get("retrieveRaw")}
 
 
-def resolve_related(unit, primary, group, processor, inventories, enabled_types, log):
-    """Retorna (related, failures). `failures` são componentes candidatos que falharam."""
+# Relações que só se comprovam lendo o XML de CADA candidato (exigem retrieve de
+# componentes que podem não pertencer ao principal selecionado).
+CANDIDATE_SCAN_MATCHES = ("FIELD_EQUALS_PRIMARY", "REFERENCE_SCAN")
+
+
+def resolve_related(unit, primary, group, processor, inventories, enabled_types, log,
+                    restrict_candidates=False, unresolved=None):
+    """Retorna (related, failures). `failures` são componentes candidatos que falharam.
+
+    restrict_candidates=True (selection.mode = SELECTED): relações em
+    CANDIDATE_SCAN_MATCHES NÃO recuperam candidatos (nada fora da seleção é recuperado);
+    a lacuna é anexada a `unresolved`.
+    """
     related, failures = [], []
 
     def fetch(metadata_type, item):
@@ -89,6 +101,13 @@ def resolve_related(unit, primary, group, processor, inventories, enabled_types,
                     related.append(dict(child, status=st.SUCCESS))
             continue
         candidates = inventories.get(rtype) or []
+        if restrict_candidates and match in CANDIDATE_SCAN_MATCHES:
+            if candidates and unresolved is not None:
+                unresolved.append({
+                    "metadataType": rtype, "match": match, "candidates": len(candidates),
+                    "reason": "selection.mode = SELECTED: o vínculo só se comprova lendo o XML de cada "
+                              "candidato; candidatos fora da seleção não são recuperados"})
+            continue
         if match == "SAME_FULL_NAME":
             for item in candidates:
                 if item["fullName"] != primary["fullName"]:
@@ -102,6 +121,15 @@ def resolve_related(unit, primary, group, processor, inventories, enabled_types,
                 rec = fetch(rtype, item)
                 if rec and field_equals_primary(primary["fullName"], rec.get("data"), rel_cfg["field"]):
                     related.append(_related_from_record(rec))
+        elif match == "PRIMARY_FIELD_REFERENCES":
+            # Relação comprovada pelo XML do principal: o valor exato em `field` é o fullName
+            # de um componente existente no inventário do tipo relacionado.
+            referenced = values_at(primary.get("data") or {}, rel_cfg["field"])
+            for item in candidates:
+                if item["fullName"] in referenced:
+                    rec = fetch(rtype, item)
+                    if rec:
+                        related.append(_related_from_record(rec))
         elif match == "REFERENCE_SCAN":
             primary_values = leaf_values(primary.get("data") or {})
             for item in candidates:
@@ -130,12 +158,12 @@ def sub_document_targets(group, primary_data, primary_full_name):
                     if name:
                         targets.append((sub, item, name))
         elif sub.get("when"):
-            cond = sub["when"]
-            cur = primary_data or {}
-            for part in cond["path"].split("."):
-                cur = cur.get(part) if isinstance(cur, dict) else None
-            present = cur not in (None, "", [], {})
-            if present == bool(cond.get("present", True)):
+            # `when`: condição ou lista de condições (todas devem valer) sobre o XML do Flow:
+            # {path, present} | {path, equals} | {path, in}
+            conds = sub["when"] if isinstance(sub["when"], list) else [sub["when"]]
+            conds = [dict(c, present=c.get("present", True))
+                     if not ({"equals", "in", "present"} & set(c)) else c for c in conds]
+            if matches_conditions(primary_data or {}, conds):
                 targets.append((sub, None, None))
         else:
             targets.append((sub, None, None))

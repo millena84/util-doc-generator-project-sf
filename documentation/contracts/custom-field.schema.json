@@ -37,5 +37,6 @@
     "source": null,
     "object": null,
     "query": null
-  }
+  },
+  "renderedVia": "custom-object.schema.json (tabela 'Custom Fields') e custom-metadata.schema.json (tabela 'Campos do tipo'), builder related_rows"
 }

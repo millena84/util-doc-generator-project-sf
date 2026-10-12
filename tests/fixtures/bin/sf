@@ -7,6 +7,9 @@ FAKE_SF_SCENARIO  lista separada por vírgula: old_cli, no_alias, disconnected,
                   mismatch_retrieve=<fullName>, empty=<MetadataType>,
                   mvp_complete (usa a camada tests/fixtures/mvp-complete por cima
                   das fixtures base: todos os metadata types do MVP com componentes)
+                  sleep_on_retrieve=<fullName> (dorme 30s: testa timeout),
+                  scale_flows=<N> (N Flows sintéticos Gerado_0001...),
+                  leak_token_on_retrieve=<fullName> (erro cujo texto contém o accessToken)
 FAKE_SF_STATE     arquivo para contar chamadas (opcional)
 """
 import json
@@ -85,6 +88,24 @@ if cmd[:2] == ["org", "display"]:
 if cmd[:3] == ["org", "list", "metadata-types"]:
     out(json.loads(fx("org/metadata-types.json").read_text()))
 
+SCALE = int((scen("scale_flows") or ["0"])[0])
+TOKEN = json.loads((FIX / "org" / "org-display.json").read_text())["result"]["accessToken"]
+
+
+def scale_flow_xml(name):
+    return ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+            "<Flow xmlns=\"http://soap.sforce.com/2006/04/metadata\">\n"
+            "    <apiVersion>67.0</apiVersion>\n"
+            f"    <label>{name}</label>\n"
+            "    <processType>AutoLaunchedFlow</processType>\n"
+            "    <status>Active</status>\n"
+            "</Flow>\n")
+
+
+if cmd[:3] == ["org", "list", "metadata"] and SCALE and opt(args, "--metadata-type")[0] == "Flow":
+    out({"status": 0, "result": [{"fullName": f"Gerado_{i:04d}", "type": "Flow", "namespacePrefix": ""}
+                                 for i in range(1, SCALE + 1)]})
+
 if cmd[:3] == ["org", "list", "metadata"]:
     mtype = opt(args, "--metadata-type")[0]
     if mtype in scen("empty"):
@@ -97,6 +118,19 @@ if cmd[:3] == ["org", "list", "metadata"]:
 if cmd[:3] == ["project", "retrieve", "start"]:
     spec = opt(args, "--metadata")[0]
     mtype, name = spec.split(":", 1)
+    if name in scen("sleep_on_retrieve"):
+        import time
+        time.sleep(30)
+    if name in scen("leak_token_on_retrieve"):
+        sys.stderr.write(f"Erro interno com sessão {TOKEN}\n")
+        err("UnexpectedError", f"Falha ao recuperar {spec} usando a sessão {TOKEN}")
+    if SCALE and mtype == "Flow" and name.startswith("Gerado_"):
+        cwd = Path.cwd()
+        dest = cwd / "force-app" / "main" / "default" / "flows" / f"{name}.flow-meta.xml"
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_text(scale_flow_xml(name))
+        out({"status": 0, "result": {"status": "Succeeded", "success": True, "files": [
+            {"fullName": name, "type": "Flow", "state": "Created", "filePath": str(dest)}]}})
     if name in scen("expire_on_retrieve"):
         err("INVALID_SESSION_ID", "INVALID_SESSION_ID: Session expired or invalid")
     if name in scen("fail_retrieve"):

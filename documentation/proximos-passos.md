@@ -27,6 +27,8 @@ Atividades:
 
 ### Prioridade 2 — selecionar tudo ou somente metadata/componentes no `config.json`
 
+> **Implementada** (`config.json` → `selection`, `src/salesforce_docs/config/scope.py`, `tests/test_scope.py`, `tests/test_selection.py`). Ver README, seção "Seleção da execução".
+
 **Objetivo:** permitir modo `ALL` e modo de seleção explícita, preservando o comportamento de CLI de forma previsível.
 
 Atividades:
@@ -41,6 +43,8 @@ Atividades:
 **Aceite:** modo `ALL` preserva comportamento documentado; modo selecionado executa estritamente o escopo configurado; nomes não encontrados e dependências têm resultado explícito.
 
 ### Prioridade 3 — mitigação dos riscos de segurança e execução
+
+> **Implementada** (`approvedOrgs`, `dataProtection`, `execution.outputLayout`, `coverage`, fingerprint de retomada; `tests/test_prioridade3.py`). Ver `documentation/protecao-de-dados.md`.
 
 **Objetivo:** melhorar validação da org-alvo, proteção de dados, cobertura, resumabilidade, saídas e operação em org grande.
 

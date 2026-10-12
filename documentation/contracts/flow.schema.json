@@ -25,12 +25,37 @@
       "notes": "Elemento <label> do Flow (Metadata API Flow.label)."
     },
     {
+      "name": "ProcessType",
+      "placeholder": "process_type",
+      "path": "processType",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação"
+    },
+    {
       "name": "ApiVersion",
       "placeholder": "api_version",
       "path": "apiVersion",
       "source": "XML",
       "required": false,
       "markdownSection": "Identificação"
+    },
+    {
+      "name": "Description",
+      "placeholder": "description",
+      "path": "description",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "StatusXml",
+      "placeholder": "status_xml",
+      "path": "status",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação",
+      "notes": "Elemento <status> do XML recuperado (versão retornada pelo retrieve)."
     },
     {
       "name": "Status",
@@ -73,5 +98,9 @@
     "query": "SELECT Id, VersionNumber, Status FROM Flow WHERE Definition.DeveloperName = '{developerName}' ORDER BY VersionNumber",
     "blocking": false,
     "validationPending": "Confirmar no piloto que o filtro Definition.DeveloperName é aceito pela Tooling API da org."
-  }
+  },
+  "referenceDoc": "_sf_utilities/ajudAI/contexto-flow-trigger.md, contexto-flow-screen.md, contexto-flow-autolaunched.md",
+  "evidence": [
+    "Metadata API Flow: campo `start` (API 47+) confirmado via índice oficial; demais elementos validados só por fixture simulada — página Flow da API 67.0 pendente de leitura direta"
+  ]
 }

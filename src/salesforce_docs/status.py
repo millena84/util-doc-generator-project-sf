@@ -17,6 +17,11 @@ ENABLED = "ENABLED"
 EXCLUDED = "EXCLUDED"
 INTERRUPTED = "INTERRUPTED"
 PARTIAL_SUCCESS = "PARTIAL_SUCCESS"
+# Execução terminou sem falhas de componente, mas a cobertura tem lacunas bloqueantes
+# (modelo ausente, subdocumento sem modelo, componente pedido não encontrado).
+COMPLETED_WITH_GAPS = "COMPLETED_WITH_GAPS"
+NOT_FOUND = "NOT_FOUND"  # componente pedido em scope.selection e ausente do inventário/filtro
+OUT_OF_SCOPE = "OUT_OF_SCOPE"  # grupo configurado, mas excluído do escopo da execução
 
 # Componentes nestes estados são reprocessados na retomada.
 REPROCESS_STATES = {RETRY_REQUIRED, FAILED, IN_PROGRESS}
