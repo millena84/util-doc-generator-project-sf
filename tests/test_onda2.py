@@ -205,8 +205,9 @@ class GitGuardTest(P3Base):
         self.assertEqual(state.data["gitGuard"]["notIgnored"], [])
 
 
-class ByRunDefaultTest(P3Base):
+class ByRunLayoutTest(P3Base):
     def test_each_run_has_its_own_directory(self):
+        self.config(execution={"outputLayout": "BY_RUN"})
         code, s1 = self.run_pipeline(groups=["RemoteSiteSetting"])
         time.sleep(1.1)
         code, s2 = self.run_pipeline(groups=["RemoteSiteSetting"])

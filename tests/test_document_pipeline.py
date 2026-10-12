@@ -60,8 +60,8 @@ class FullRunTest(PipelineTestBase):
         self.assertEqual(flow["xml"], "inventory/org-dev/api-v67/flows/components/flows/Meu_Flow.flow-meta.xml")
         self.assertEqual(flow["normalized"], "inventory/org-dev/api-v67/flows/normalized/meu-flow.json")
         self.assertEqual(flow["internalData"], "inventory/org-dev/api-v67/flows/internal-data/meu-flow.raw.json")
-        self.assertRegex(flow["document"], r"^saida/docs/doc-org-\d{6}/run-[\d-]+/doc-meu-flow-flow\.md$")
-        self.assertIn(state.run_id, flow["document"])  # saída isolada por execução (BY_RUN)
+        # Padrão BY_DATE: pasta do dia por org (doc-<alias>-MMDDAA), sem subpasta por execução.
+        self.assertRegex(flow["document"], r"^saida/docs/doc-dev-\d{6}/doc-meu-flow-flow\.md$")
         self.assertTrue(self.read(flow["retrieveRaw"]))
         self.assertTrue((self.root / "runs" / f"{state.run_id}.json").is_file())
 
@@ -294,8 +294,11 @@ class RegenerateTest(PipelineTestBase):
         self.assertEqual(code2, EXIT_OK)
         regenerated = {c["unitId"]: c for c in state2.data["components"] if c.get("document")}
         self.assertEqual(set(regenerated), set(docs))
+        original = {c["unitId"]: c["document"] for c in state.data["components"]
+                    if c.get("role") == "primary" and c.get("document")}
         for unit_id, content in docs.items():
-            self.assertIn(state2.run_id, regenerated[unit_id]["document"])  # nova pasta da execução
+            # resumeOutput = ORIGINAL_FOLDER: regenera na pasta da execução de origem
+            self.assertEqual(regenerated[unit_id]["document"], original[unit_id])
             self.assertEqual(self.read(regenerated[unit_id]["document"]), content, unit_id)
         self.assertTrue((self.root / "catalog/org-dev/api-v67/metadata-types.index.json").is_file())
         self.assertTrue((self.root / "inventory/org-dev/api-v67/flows/normalized/meu-flow.json").is_file())

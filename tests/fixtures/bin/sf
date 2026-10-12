@@ -6,7 +6,9 @@ FAKE_SF_SCENARIO  lista separada por vírgula: old_cli, no_alias, disconnected,
                   expire_on_retrieve=<fullName>, fail_retrieve=<fullName>,
                   mismatch_retrieve=<fullName>, empty=<MetadataType>,
                   mvp_complete (usa a camada tests/fixtures/mvp-complete por cima
-                  das fixtures base: todos os metadata types do MVP com componentes)
+                  das fixtures base: todos os metadata types do MVP com componentes),
+                  org_id=<orgId> (org display devolve outro orgId),
+                  extra_alias=<alias> (segunda org na CLI, com esse alias)
                   sleep_on_retrieve=<fullName> (dorme 30s: testa timeout),
                   scale_flows=<N> (N Flows sintéticos Gerado_0001...),
                   leak_token_on_retrieve=<fullName> (erro cujo texto contém o accessToken),
@@ -80,6 +82,9 @@ if cmd[:2] == ["org", "list"] and len(cmd) == 2:
     data = json.loads((FIX / "org" / "org-list.json").read_text())
     if "no_alias" in SCEN:
         data["result"]["nonScratchOrgs"] = []
+    for alias in scen("extra_alias"):  # segunda org autenticada na CLI
+        data["result"]["nonScratchOrgs"].append(dict(data["result"]["nonScratchOrgs"][0], alias=alias,
+                                                     isDefaultUsername=False))
     out(data)
 
 if cmd[:3] == ["org", "auth", "show-access-token"]:
@@ -94,6 +99,10 @@ if cmd[:2] == ["org", "display"]:
         data["result"]["accessToken"] = "[REDACTED]"
     if "no_org_id" in SCEN:
         data["result"].pop("id", None)
+    for org_id in scen("org_id"):  # alias apontando para outra org
+        data["result"]["id"] = org_id
+    for alias in scen("extra_alias"):
+        data["result"]["alias"] = alias
     if "disconnected" in SCEN:
         data["result"]["connectedStatus"] = "RefreshTokenAuthError"
     out(data)

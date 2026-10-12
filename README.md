@@ -24,6 +24,9 @@ bin/sf-docs.sh run --api-version 67.0
 
 # Retomar após sessão expirada (não reprocessa componentes SUCCESS)
 bin/sf-docs.sh run --resume latest          # ou --resume run-20261010-210000
+# Por padrão a retomada grava na pasta da coleta original (mesmo em outro dia);
+# para gravar na pasta do dia atual:
+bin/sf-docs.sh run --resume latest --resume-output TODAY
 
 # Regerar derivados (index/schema/normalized) e Markdown SOMENTE a partir dos raws/XMLs
 bin/sf-docs.sh regenerate --run latest
@@ -60,7 +63,7 @@ Códigos de saída: `0` sucesso (inclui `PARTIAL_SUCCESS` e `COMPLETED_WITH_GAPS
 | 7 | `sf project retrieve start --metadata <tipo>:<nome>` | `inventory/.../<pasta>/retrieve/<comp>.raw.json` + XML original em `components/` | — |
 | 8 | XML → JSON | — | `inventory/.../<pasta>/normalized/<comp>.json` |
 | 9 | `sf data query` (se o contrato prever) | `inventory/.../<pasta>/internal-data/<comp>.raw.json` | — |
-| 10 | Modelo + contrato → Markdown | — | `saida/docs/doc-org-<MMDDAA>/doc-<comp>-<tipo>.md` |
+| 10 | Modelo + contrato → Markdown | — | `saida/docs/doc-<alias>-<MMDDAA>/doc-<comp>-<tipo>.md` |
 
 Estado da execução: `runs/run-<AAAAMMDD-HHMMSS>.json`. Respostas de erro ficam em `runs/<runId>/errors/` (não sobrescrevem raws válidos).
 
@@ -97,6 +100,8 @@ Registro da auditoria de segurança de 2026-10-11 (10 riscos: 1 crítico, 2 alto
 | 1a | 🔴 `accessToken` gravado em disco em `catalog/.../org-display.raw.json` (e em `runs/*/errors/`) | **Resolvido**: resposta com token gera só `org-display.sanitized.json` (token como `[REDACTED]`); o token segue apenas em memória. `DELETE_AFTER_RUN` continua disponível para o raw sem credencial. | Raws antigos com token: apagar com `purge --apply --delete-sensitive` ou manualmente. |
 | P3 | Coleta em org errada; segredos em mensagens; sobrescrita silenciosa; retomada incompatível; cobertura não informada | **Tratados na Prioridade 3**: `approvedOrgs` (nada é coletado sem aprovação), máscara de valores secretos do XML e run state mascarado recursivamente, arquivos `0600`, manifesto/`_substituidos`/`BY_RUN`, fingerprint de retomada, `coverage`. | Ver `documentation/protecao-de-dados.md`. |
 | R3 | Raw × segredo; confirmação de org; CLI sem token no `org display`; erro inesperado sem estado; retomada/regeneração com fonte alterada; retenção | **Tratados na Refatoração 3** (seção abaixo). | CLI real ainda não validada (só simulada). |
+| DA-08 | 🟡 Documentação de uma mesma coleta dividida entre pastas após `--resume`; orgs diferentes na mesma pasta do dia | **Resolvido**: padrão `BY_DATE` com pasta por org (`doc-<alias>-MMDDAA`, dono registrado em `.org.json`); retomada/regeneração gravam na pasta da coleta original (`resumeOutput`). | Retomada muito antiga mistura datas na pasta: o `resumo.md` lista componentes por dia e recomenda execução nova. |
+| DA-12 | 🟢 `org-display.sanitized.json` (identidade da org, sem segredo) fora do `.gitignore` | **Decisão**: mantido acessível e não ignorado para uso local; tabela de `protecao-de-dados.md` corrigida. | Reavaliar (ignorar no Git) ao adotar GitHub Actions. |
 | 2–10 | Demais riscos da auditoria (2 altos, 5 médios, 2 baixos) | **Não detalhados** neste registro. | Incluir descrição, localização e decisão quando o relatório completo estiver disponível. |
 
 ## Desvios (configuráveis em `config/metadata-types-mvp.json`)
@@ -157,7 +162,9 @@ Comportamento:
 
 - **Org aprovada**: preencha `approvedOrgs` no `config.json` (o `run` informa o `orgId` detectado). Sem aprovação, nada é coletado (`ORG_NOT_APPROVED`).
 - **Proteção de dados**: `dataProtection.privateFiles` (padrão `true`, arquivos `0600`), `dataProtection.orgDisplayRaw` (`KEEP_PRIVATE` | `DELETE_AFTER_RUN`).
-- **Saída**: `execution.outputLayout` — `BY_RUN` (padrão: `saida/docs/doc-org-MMDDAA/<runId>/`, cada execução isolada) ou `BY_DATE` (pasta por data, com manifesto e `_substituidos/`).
+- **Saída**: `execution.outputLayout` — `BY_DATE` (padrão: `saida/docs/doc-<alias>-MMDDAA/`, tudo o que for processado no dia para a org na mesma pasta, com manifesto e `_substituidos/`) ou `BY_RUN` (`saida/docs/doc-<alias>-MMDDAA/<runId>/`, cada execução isolada).
+- **Uma pasta por org**: orgs diferentes nunca compartilham pasta. `.org.json` registra o `orgId` dono da pasta do dia; se o mesmo alias apontar para outra org no mesmo dia, os documentos vão para `doc-<alias>-<orgId>-MMDDAA/` e o log/`resumo.md` avisam.
+- **Retomada em outro dia**: `execution.resumeOutput` — `ORIGINAL_FOLDER` (padrão: grava na pasta da coleta original, que fica completa) ou `TODAY` (grava na pasta do dia; os documentos herdados continuam na pasta original). `--resume-output` sobrepõe o `config.json` na execução. A `regenerate` segue a mesma regra. O log e o `resumo.md` indicam a pasta usada, quantos componentes foram processados em cada dia (`processedOn` no run state) e, se a execução de origem tiver mais de `execution.resumeWarnAfterDays` dias (padrão 1), recomendam uma execução completa nova.
 - **Git**: `.gitignore` não é tratado como controle suficiente. `validate-config` e `run` verificam se há arquivo sensível **rastreado** (raw de `org display`, XMLs, normalizados, erros, `.crt`) — o `run` para antes de qualquer chamada à org (`SENSITIVE_FILES_TRACKED`) — e se os caminhos sensíveis estão de fato ignorados (`git check-ignore`). Fora de repositório Git a verificação fica registrada como indisponível.
 - **Erros**: respostas de erro da CLI são gravadas como envelope `*.sanitized.json` (stdout/stderr mascarados), nunca como raw intacto.
 - **Barreira final**: um documento que contenha o token ou valor de elemento sensível visto no XML (mesmo por outro campo) não é gravado (`FAILED`).

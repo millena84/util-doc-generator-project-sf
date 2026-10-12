@@ -23,7 +23,7 @@
 | Artefato | Local | Conteúdo / sensibilidade | Proteção | Git | Retenção recomendada |
 |---|---|---|---|---|---|
 | `org-display.raw.json` | `catalog/org-<alias>/api-v<N>/` | username, instanceUrl, orgId — **só gravado quando a resposta não tem credencial** | 0600; `dataProtection.orgDisplayRaw = DELETE_AFTER_RUN` apaga ao fim | ignorado | apagar ao fim (`DELETE_AFTER_RUN`) |
-| `org-display.sanitized.json` | `catalog/org-<alias>/api-v<N>/` | resposta de `sf org display` de CLIs que ainda exibem o token, com `accessToken`/`refreshToken`/`sfdxAuthUrl`/`password`/`clientSecret` como `[REDACTED]` (derivado, não raw) | 0600 | ignorado | junto do catálogo |
+| `org-display.sanitized.json` | `catalog/org-<alias>/api-v<N>/` | resposta de `sf org display` de CLIs que ainda exibem o token, com `accessToken`/`refreshToken`/`sfdxAuthUrl`/`password`/`clientSecret` como `[REDACTED]` (derivado, não raw); sem segredo, mas com a identidade da org (username, orgId, instanceUrl) | 0600 | **não ignorado** (mantido acessível para uso local); revisar antes de versionar — reavaliar ao adotar GitHub Actions | junto do catálogo |
 | Respostas de erro | `runs/<runId>/errors/*.sanitized.json` (CLI) e `*.describevaluetype.raw.json` (SOAP, sem token na requisição) | erros da CLI/API; os da CLI são gravados **mascarados** (envelope sanitizado, não raw) | 0600 | ignorado | apagar após análise da falha |
 | `metadata-types.raw.json`, `*.describevaluetype.raw.json`, `*.schema.json`, `*.index.json` | `catalog/` | catálogo/estrutura da org; baixa sensibilidade | 0600 (raws) | versionável após revisão | enquanto a API version for usada |
 | `inventory.raw.json` / `inventory.index.json` | `inventory/.../<tipo>/` | nomes de componentes, IDs, usuários que alteraram | 0600 (raw) | versionável após revisão | por execução documental |
@@ -34,7 +34,7 @@
 | Resumo da execução | `runs/<runId>/resumo.md` | status, cobertura, identidade da org, lacunas e métricas; gerado a partir do run state já mascarado e mascarado de novo | padrão | versionável após revisão | junto do run state |
 | Run state | `runs/run-*.json` | status, caminhos, avisos; todo texto passa pela máscara (token e valores secretos encontrados no XML) | 0600 | versionável após revisão | histórico de auditoria (ex.: 90 dias) |
 | Logs (stderr) | terminal / CI | mesmas mensagens do run state, mascaradas | — | — | conforme política do ambiente |
-| Markdown | `saida/docs/doc-org-MMDDAA/` | só propriedades do contrato; nunca `sensitiveXmlElements` nem `omitFromDocumentation` | padrão do sistema | revisar antes de publicar | conforme documentação do projeto |
+| Markdown | `saida/docs/doc-<alias>-MMDDAA/` (+ `.org.json` com o orgId dono da pasta) | só propriedades do contrato; nunca `sensitiveXmlElements` nem `omitFromDocumentation` | padrão do sistema | revisar antes de publicar | conforme documentação do projeto |
 | Versões substituídas | `saida/docs/.../_substituidos/<runId>/` | documento anterior quando outra execução gera conteúdo diferente | padrão | revisar | apagar após conferência |
 
 `dataProtection.privateFiles = true` (padrão) grava raws, cópias de XML, normalizados e run state com permissão `0600`.
@@ -93,7 +93,9 @@ A confirmar em documentação oficial antes de entrar na lista (não adicionados
 
 ## Saída e retomada
 
-- `execution.outputLayout = BY_RUN` (padrão) isola cada execução em `saida/docs/doc-org-MMDDAA/<runId>/`. `BY_DATE` mantém a pasta por data; um manifesto registra a execução de cada arquivo e versões de outras execuções com conteúdo diferente vão para `_substituidos/`.
+- `execution.outputLayout = BY_DATE` (padrão) mantém tudo o que for processado no dia, para a org, em `saida/docs/doc-<alias>-MMDDAA/`; um manifesto registra a execução de cada arquivo e versões de outras execuções com conteúdo diferente vão para `_substituidos/`. `BY_RUN` isola cada execução em `saida/docs/doc-<alias>-MMDDAA/<runId>/`.
+- Orgs diferentes nunca compartilham pasta: `.org.json` guarda o `orgId` dono da pasta do dia. Mesmo alias apontando para outra org no mesmo dia → `doc-<alias>-<orgId>-MMDDAA/`, com aviso no log e no `resumo.md` (`output.orgFolderConflict`).
+- Retomada e `regenerate` gravam, por padrão, na pasta da execução de origem (`execution.resumeOutput = ORIGINAL_FOLDER`), mesmo em outro dia, para a coleta ficar completa numa pasta só; `TODAY` (ou `--resume-output TODAY`) grava na pasta do dia. Cada componente registra o dia em que foi processado (`processedOn`); acima de `execution.resumeWarnAfterDays` dias, o log e o `resumo.md` recomendam uma execução completa nova.
 - Colisão de nome na mesma execução (ex.: `Meu_Flow` × `Meu-Flow`) gera sufixo com hash; nada é sobrescrito.
 - Retomada (`--resume`) só reaproveita unidades `SUCCESS` quando org, API version, versão do utilitário, política de dados sensíveis e `config/metadata-types-mvp.json` são iguais, a unidade está no escopo atual, os contratos/modelos do grupo não mudaram, o documento ainda existe e o XML de origem existe com o mesmo sha256. O motivo de cada reprocessamento fica em `resume.reprocessed`.
 - `--resume latest` ignora execuções de regeneração e descontinuadas.

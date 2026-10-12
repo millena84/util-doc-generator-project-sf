@@ -277,6 +277,7 @@ class PurgeTest(R3Base):
         self.assertEqual(old.path.read_text(), before)
 
     def test_apply_marks_discontinued_without_deleting(self):
+        self.config(execution={"outputLayout": "BY_RUN"})  # marcador só em pasta exclusiva da execução
         old = self.old_run(groups=["Flow"])
         recent = self.run_pipeline(groups=["RemoteSiteSetting"])[1]
         files_before = sorted(str(f) for f in self.root.rglob("*") if f.is_file())

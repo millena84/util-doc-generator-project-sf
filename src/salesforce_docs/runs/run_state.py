@@ -150,9 +150,12 @@ class RunState:
         done = previous.successful_units()
         if only is not None:
             done = {k: v for k, v in done.items() if k in only}
+        started = str(previous.data.get("startedAt") or "")[:10] or None
         for c in previous.data["components"]:
             if c.get("unitId") in done:
-                self.data["components"].append(dict(c, carriedFrom=previous.run_id))
+                # processedOn: dia em que o componente foi de fato coletado (preservado em cadeia).
+                self.data["components"].append(dict(c, carriedFrom=previous.run_id,
+                                                    processedOn=c.get("processedOn") or started))
         self.save()
         return set(done)
 

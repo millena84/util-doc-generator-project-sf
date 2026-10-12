@@ -104,10 +104,13 @@ def purge(app, older_than_days, apply=False, delete_sensitive=False, now=None, s
         return 0
 
     reason = f"purge --older-than-days {older_than_days}"
+    # Retomada com resumeOutput = ORIGINAL_FOLDER reaproveita a pasta da execução de origem:
+    # pasta ainda usada por execução ativa não recebe o marcador de descontinuada.
+    active_dirs = {(d.get("output") or {}).get("dir") for _, d in active}
     for path, data in selected:
         data["discontinued"] = {"at": iso_now(), "reason": reason}
         out_info = data.get("output") or {}
-        if out_info.get("layout") == "BY_RUN" and out_info.get("dir"):
+        if out_info.get("layout") == "BY_RUN" and out_info.get("dir") and out_info["dir"] not in active_dirs:
             out_dir = root / out_info["dir"]
             if out_dir.is_dir():
                 write_text(out_dir / MARKER,

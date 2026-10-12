@@ -141,12 +141,34 @@ def build_summary(pipeline, state) -> str:
         "",
         f"- Documentos: `{out.get('dir', '—')}` (layout {out.get('layout', '—')}); "
         f"substituídos {len(out.get('replaced') or [])}; colisões {len(out.get('collisions') or [])}",
+    ] + _output_notes(d, out) + [
         f"- Git: {'verificado' if guard.get('available') else 'verificação indisponível'}"
         f"{'; rastreados sensíveis: ' + str(len(guard.get('tracked') or [])) if guard.get('available') else ''}",
         f"- Run state: `{rel(state.path, pipeline.root)}`",
         "",
     ]
     return pipeline.masker("\n".join(lines))
+
+
+def _output_notes(d, out):
+    """Orientação sobre a pasta de saída: retomada, defasagem entre dias e conflito de org."""
+    notes = []
+    if out.get("resumeNote"):
+        notes.append(f"- Retomada/regeneração: {out['resumeNote']}")
+    if out.get("resumeAgeWarning"):
+        notes.append(f"- **Atenção:** {out['resumeAgeWarning']}")
+    conflict = out.get("orgFolderConflict")
+    if conflict:
+        notes.append(f"- **Atenção:** `{conflict['folder']}` pertence à org {conflict['owner']}; "
+                     "esta execução usou uma pasta separada (orgs diferentes nunca compartilham pasta)")
+    days = {}
+    for c in d.get("components") or []:
+        if c.get("role") == "primary" and c.get("processedOn"):
+            days[c["processedOn"]] = days.get(c["processedOn"], 0) + 1
+    if len(days) > 1:
+        notes.append("- Componentes por dia de processamento: "
+                     + "; ".join(f"{day}: {n}" for day, n in sorted(days.items())))
+    return notes
 
 
 def write_summary(pipeline, state, p=None):
