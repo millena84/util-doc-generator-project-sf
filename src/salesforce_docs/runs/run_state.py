@@ -51,13 +51,41 @@ class RunState:
         return cls(Path(path), read_json(path))
 
     @staticmethod
-    def find(runs_dir, run_id):
+    def find(runs_dir, run_id, purpose=None):
+        """Localiza o run state.
+
+        "latest" ignora execuções de regeneração (mode REGENERATE), execuções
+        DESCONTINUADAS (purge) e, conforme `purpose`, as que não servem como origem:
+        "resume" exige fingerprint; "regenerate" exige componentes.
+        Um id explícito de execução descontinuada é recusado (ConfigError).
+        """
+        from salesforce_docs.errors import ConfigError
         runs_dir = Path(runs_dir)
         if run_id == "latest":
-            files = sorted(runs_dir.glob("run-*.json"))
-            return files[-1] if files else None
+            for f in sorted(runs_dir.glob("run-*.json"), reverse=True):
+                try:
+                    data = read_json(f)
+                except (OSError, ValueError):
+                    continue
+                if data.get("discontinued") or data.get("mode") == "REGENERATE":
+                    continue
+                if purpose == "resume" and not data.get("fingerprint"):
+                    continue
+                if purpose == "regenerate" and not data.get("components"):
+                    continue
+                return f
+            return None
         p = runs_dir / (run_id if run_id.endswith(".json") else f"{run_id}.json")
-        return p if p.is_file() else None
+        if not p.is_file():
+            return None
+        try:
+            data = read_json(p)
+        except (OSError, ValueError):
+            return p
+        if data.get("discontinued"):
+            raise ConfigError(f"Execução {data.get('runId', run_id)} foi DESCONTINUADA "
+                              f"({data['discontinued'].get('reason')}); não pode ser usada como origem")
+        return p
 
     # Persistência -------------------------------------------------------
     def save(self):

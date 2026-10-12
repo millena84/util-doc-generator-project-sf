@@ -107,10 +107,17 @@ def copy_private(src, dest) -> None:
 
 
 def write_text(path, text: str) -> None:
+    """Gravação atômica (tmp + os.replace): nunca deixa documento pela metade."""
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w", encoding="utf-8", newline="\n") as f:
-        f.write(text)
+    tmp = path.with_name(path.name + ".tmp")
+    try:
+        with open(tmp, "w", encoding="utf-8", newline="\n") as f:
+            f.write(text)
+        os.replace(tmp, path)
+    finally:
+        if tmp.exists():
+            tmp.unlink()
 
 
 def read_json(path):

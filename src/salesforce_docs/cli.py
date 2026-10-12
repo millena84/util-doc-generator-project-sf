@@ -24,6 +24,8 @@ def build_parser():
         description="Utilitário único de documentação Markdown de componentes Salesforce.")
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     parser.add_argument("--project-root", help="Raiz do projeto (padrão: diretório do utilitário)")
+    parser.add_argument("--debug", action="store_true",
+                        help="Em erro inesperado, mostra o traceback (sempre mascarado)")
     sub = parser.add_subparsers(dest="command", required=True)
 
     run = sub.add_parser("run", help="Executa o pipeline completo (passos 1–10)")
@@ -33,12 +35,22 @@ def build_parser():
                      help="Restringe o escopo do config.json ao(s) grupo(s) informado(s) (ex.: --group Flow)")
     run.add_argument("--component", action="append",
                      help="Restringe o escopo do config.json ao(s) componente(s) informado(s) (fullName)")
+    run.add_argument("--non-interactive", action="store_true",
+                     help="Nunca pergunta: org fora de approvedOrgs é recusada (padrão sem terminal)")
     run.add_argument("--resume", metavar="RUN_ID",
                      help="Retoma execução (ou 'latest') sem reprocessar componentes SUCCESS")
 
     regen = sub.add_parser("regenerate",
                            help="Regera derivados e Markdown a partir dos raws/XMLs (sem acessar a org)")
     regen.add_argument("--run", default="latest", help="Execução de origem (padrão: latest)")
+
+    pg = sub.add_parser("purge", help="Retenção: marca execuções antigas como DESCONTINUADAS "
+                                      "(padrão: só lista; nada é apagado)")
+    pg.add_argument("--older-than-days", type=int, required=True, help="Idade mínima (dias) da execução")
+    pg.add_argument("--apply", action="store_true", help="Aplica a marcação (sem isso, só lista)")
+    pg.add_argument("--delete-sensitive", action="store_true",
+                    help="Com --apply: apaga também os artefatos sensíveis usados SÓ por execuções "
+                         "descontinuadas (raw do org display, erros, XML e normalizados)")
 
     vc = sub.add_parser("validate-config", help="Valida config, contratos e modelos (sem acessar a org)")
     vc.add_argument("--strict", action="store_true",
@@ -50,8 +62,14 @@ def main(argv=None):
     args = build_parser().parse_args(argv)
     root = _project_root(args.project_root)
     from salesforce_docs.pipeline.document_pipeline import DocumentPipeline
+    pipeline = None
     try:
-        pipeline = DocumentPipeline(root)
+        interactive = False if getattr(args, "non_interactive", False) else None
+        pipeline = DocumentPipeline(root, interactive=interactive)
+        if args.command == "purge":
+            from salesforce_docs.runs.retention import purge
+            return purge(pipeline.app, args.older_than_days, apply=args.apply,
+                         delete_sensitive=args.delete_sensitive)
         if args.command == "run":
             api = normalize_api_version(args.api_version) if args.api_version else None
             code, _ = pipeline.run(org_alias=args.target_org, api_version=api, groups=args.group,
@@ -103,7 +121,15 @@ def main(argv=None):
             print("Configuração válida.")
             return 0
     except (ConfigError, ValueError) as exc:
-        print(f"ERRO de configuração: {exc}", file=sys.stderr)
+        mask = pipeline.masker if pipeline is not None else (lambda t: t)
+        print(f"ERRO de configuração: {mask(str(exc))}", file=sys.stderr)
+        return 1
+    except Exception as exc:  # nunca imprimir traceback/mensagem sem máscara
+        mask = pipeline.masker if pipeline is not None else (lambda t: t)
+        print(f"ERRO inesperado ({type(exc).__name__}): {mask(str(exc))}", file=sys.stderr)
+        if args.debug:
+            import traceback
+            print(mask(traceback.format_exc()), file=sys.stderr)
         return 1
     return 1
 

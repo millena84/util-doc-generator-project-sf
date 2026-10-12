@@ -34,6 +34,12 @@ class OrgSession:
     def cleared(self) -> bool:
         return self._cleared
 
+    def set_access_token(self, token) -> None:
+        """Token obtido após a aprovação da org (ver DocumentPipeline._acquire_token)."""
+        if self._cleared:
+            raise SessionExpiredError("Sessão já encerrada nesta execução")
+        self._access_token = token
+
     def clear(self) -> None:
         """Descarta a referência ao token (chamado ao fim de cada execução)."""
         self._access_token = None
@@ -71,3 +77,10 @@ class OrgSession:
         return f"OrgSession(alias={self.alias!r}, username={self.username!r}, accessToken='***')"
 
     __str__ = __repr__
+
+
+def looks_like_session_token(value) -> bool:
+    """Heurística conservadora: o access token de sessão Salesforce começa com o
+    prefixo de org ID (00D) e contém '!'. Valores ausentes ou mascarados pela CLI
+    (versões recentes não exibem segredos em `sf org display`) não passam."""
+    return isinstance(value, str) and value.startswith("00D") and "!" in value and len(value) > 20

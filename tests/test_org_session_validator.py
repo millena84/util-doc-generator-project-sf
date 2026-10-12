@@ -43,10 +43,17 @@ class OrgSessionValidatorTest(unittest.TestCase):
 
     def test_display_missing_fields(self):
         data = json.loads(json.dumps(DISPLAY))
-        del data["result"]["accessToken"]
+        del data["result"]["instanceUrl"]
         with self.assertRaises(GlobalFailure) as ctx:
             validate_display(result(data), "dev")
-        self.assertIn("accessToken", ctx.exception.message)
+        self.assertIn("instanceUrl", ctx.exception.message)
+
+    def test_display_without_token_is_accepted(self):
+        # CLIs recentes não exibem segredos em `sf org display`; o token vem depois
+        # (sf org auth show-access-token), só após a aprovação da org.
+        data = json.loads(json.dumps(DISPLAY))
+        del data["result"]["accessToken"]
+        validate_display(result(data), "dev")
 
     def test_session_api_version_override_and_masking(self):
         s = OrgSession.from_display_result("dev", DISPLAY["result"])

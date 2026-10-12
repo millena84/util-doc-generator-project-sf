@@ -117,7 +117,7 @@ A versão atual ainda precisa das refatorações de seleção explícita e das p
 
 ### Aprovar a org-alvo (obrigatório)
 
-Na primeira execução sem `approvedOrgs`, o utilitário para depois de `sf org display` com `ORG_NOT_APPROVED` e mostra `orgId`, `alias`, `username` e `instanceUrl` detectados — **nenhum inventário ou retrieve é feito**. Confira se é a org pretendida e registre-a no `config.json`:
+Na primeira execução sem `approvedOrgs`, o utilitário para depois de `sf org display` com `ORG_NOT_APPROVED` e mostra `orgId`, `alias`, `username` e `instanceUrl` detectados — **nenhum inventário ou retrieve é feito**. Em terminal interativo, você pode digitar o `orgId` exato para aprovar a org **só nessa execução**; sem terminal (CI ou `--non-interactive`) a execução sempre para. Confira se é a org pretendida e registre-a no `config.json`:
 
 ```json
 "approvedOrgs": [ { "orgId": "00D...", "alias": "dev", "note": "motivo/ambiente" } ]
