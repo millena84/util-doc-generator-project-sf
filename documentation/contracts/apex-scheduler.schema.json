@@ -1,0 +1,132 @@
+{
+  "metadataType": "ApexClass",
+  "apiVersion": "67.0",
+  "documentStrategy": "SUB_DOCUMENT_OF_APEX_CLASS",
+  "xmlFilePattern": "**/*.cls-meta.xml",
+  "codeFilePattern": "**/*.cls",
+  "template": "modelo-doc-apex-scheduler-vapi-{apiMajor}.md",
+  "titlePath": "@fullName",
+  "referenceDoc": "_sf_utilities/ajudAI/contexto-apex.md",
+  "classification": "implements System.Schedulable (config: subDocuments.when contains).",
+  "properties": [
+    {
+      "name": "ClassName",
+      "placeholder": "class_name",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação",
+      "notes": "fullName da classe (nome do arquivo recuperado)."
+    },
+    {
+      "name": "ApiVersion",
+      "placeholder": "api_version",
+      "path": "apiVersion",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Status",
+      "placeholder": "status",
+      "path": "status",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Description",
+      "placeholder": "description",
+      "path": "apex.description",
+      "source": "Código Apex",
+      "required": false,
+      "markdownSection": "Identificação",
+      "notes": "Texto do bloco ApexDoc (/** */) imediatamente acima da classe; ApexClass não tem campo de descrição."
+    },
+    {
+      "name": "Delega para Batch/Queueable",
+      "placeholder": "delegates",
+      "path": "apex.schedulable.delegatesToBatchOrQueueable",
+      "source": "Código Apex",
+      "required": false,
+      "markdownSection": "Capacidades do Schedulable"
+    },
+    {
+      "name": "Classes delegadas",
+      "placeholder": "delegated_classes",
+      "path": "apex.schedulable.delegatedClassNames",
+      "source": "Código Apex",
+      "required": false,
+      "markdownSection": "Capacidades do Schedulable"
+    }
+  ],
+  "tables": [
+    {
+      "markdownSection": "Jobs disparados no execute()",
+      "builder": "path_rows",
+      "source": "Código Apex",
+      "args": {
+        "path": "apex.schedulable.delegatedJobs",
+        "columns": {
+          "call_kind": "kind",
+          "target_class": "targetClass",
+          "batch_size": "batchSize"
+        }
+      },
+      "emptyValue": "Não aplicável"
+    },
+    {
+      "markdownSection": "Agendamentos feitos pela própria classe",
+      "builder": "path_rows",
+      "source": "Código Apex",
+      "args": {
+        "path": "apex.asyncInvocations",
+        "where": [
+          {
+            "path": "kind",
+            "equals": "schedule"
+          }
+        ],
+        "columns": {
+          "job_name": "jobName",
+          "cron_expression": "cronExpression",
+          "target_class": "targetClass"
+        }
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "System.schedule com argumentos literais no código desta classe. Agendamentos ativos na org (CronTrigger) ficam para a entrega de dados internos."
+    },
+    {
+      "markdownSection": "Dados internos",
+      "builder": "internal_record_properties",
+      "source": "Objeto interno",
+      "args": {
+        "keyPlaceholder": "internal_property",
+        "valuePlaceholder": "internal_value"
+      },
+      "emptyValue": "Não informado"
+    }
+  ],
+  "blocks": [
+    {
+      "placeholder": "naming_convention",
+      "markdownSection": "Convenção de nomes",
+      "builder": "naming_convention",
+      "source": "Derivado",
+      "args": {
+        "pattern": "Scheduler$",
+        "description": "sufixo `Scheduler` (ex.: `DailyOrderCleanupScheduler`)"
+      },
+      "notes": "Convenção do projeto (configurável aqui). O papel da classe vem das interfaces/anotações, nunca do nome."
+    }
+  ],
+  "internalData": {
+    "enabled": false,
+    "notes": "Usa o dado interno do documento da classe (ApexClass)."
+  },
+  "evidence": [
+    "Metadata API ApexClass: apiVersion, packageVersions, status (Active/Deleted) — developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_classes.htm",
+    "Transaction Finalizers: System.attachFinalizer é chamado dentro do execute() do Queueable — developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_transaction_finalizers.htm",
+    "Batch Apex: Database.RaisesPlatformEvents publica BatchApexErrorEvent — developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_batch_platformevents.htm"
+  ]
+}

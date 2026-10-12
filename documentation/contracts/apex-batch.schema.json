@@ -1,0 +1,169 @@
+{
+  "metadataType": "ApexClass",
+  "apiVersion": "67.0",
+  "documentStrategy": "SUB_DOCUMENT_OF_APEX_CLASS",
+  "xmlFilePattern": "**/*.cls-meta.xml",
+  "codeFilePattern": "**/*.cls",
+  "template": "modelo-doc-apex-batch-vapi-{apiMajor}.md",
+  "titlePath": "@fullName",
+  "referenceDoc": "_sf_utilities/ajudAI/contexto-apex.md",
+  "classification": "implements Database.Batchable (config: subDocuments.when contains).",
+  "properties": [
+    {
+      "name": "ClassName",
+      "placeholder": "class_name",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação",
+      "notes": "fullName da classe (nome do arquivo recuperado)."
+    },
+    {
+      "name": "ApiVersion",
+      "placeholder": "api_version",
+      "path": "apiVersion",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Status",
+      "placeholder": "status",
+      "path": "status",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Description",
+      "placeholder": "description",
+      "path": "apex.description",
+      "source": "Código Apex",
+      "required": false,
+      "markdownSection": "Identificação",
+      "notes": "Texto do bloco ApexDoc (/** */) imediatamente acima da classe; ApexClass não tem campo de descrição."
+    },
+    {
+      "name": "Tipo de escopo",
+      "placeholder": "scope_type",
+      "path": "apex.batch.scopeType",
+      "source": "Código Apex",
+      "required": true,
+      "markdownSection": "Capacidades do Batch",
+      "notes": "Retorno do start(): QueryLocator ou Iterable."
+    },
+    {
+      "name": "Retorno do start()",
+      "placeholder": "start_return_type",
+      "path": "apex.batch.startReturnType",
+      "source": "Código Apex",
+      "required": false,
+      "markdownSection": "Capacidades do Batch"
+    },
+    {
+      "name": "Database.Stateful",
+      "placeholder": "is_stateful",
+      "path": "apex.batch.isStateful",
+      "source": "Código Apex",
+      "required": false,
+      "markdownSection": "Capacidades do Batch"
+    },
+    {
+      "name": "Database.AllowsCallouts",
+      "placeholder": "allows_callouts",
+      "path": "apex.batch.allowsCallouts",
+      "source": "Código Apex",
+      "required": false,
+      "markdownSection": "Capacidades do Batch"
+    },
+    {
+      "name": "Database.RaisesPlatformEvents",
+      "placeholder": "raises_platform_events",
+      "path": "apex.batch.raisesPlatformEvents",
+      "source": "Código Apex",
+      "required": false,
+      "markdownSection": "Capacidades do Batch"
+    },
+    {
+      "name": "Métodos do ciclo de vida",
+      "placeholder": "lifecycle_methods",
+      "path": "apex.batch.lifecycleMethods",
+      "source": "Código Apex",
+      "required": false,
+      "markdownSection": "Capacidades do Batch"
+    },
+    {
+      "name": "Consulta do start()",
+      "placeholder": "soql_query",
+      "path": "apex.batch.soqlQuery",
+      "source": "Código Apex",
+      "required": false,
+      "markdownSection": "Consulta",
+      "notes": "Só SOQL literal ([SELECT ...] ou getQueryLocator('...')); consulta montada em tempo de execução não é inferida."
+    },
+    {
+      "name": "Consulta dinâmica",
+      "placeholder": "soql_dynamic",
+      "path": "apex.batch.soqlDynamic",
+      "source": "Código Apex",
+      "required": false,
+      "markdownSection": "Consulta"
+    },
+    {
+      "name": "Objeto da consulta",
+      "placeholder": "target_sobject",
+      "path": "apex.batch.targetSObject",
+      "source": "Código Apex",
+      "required": false,
+      "markdownSection": "Consulta"
+    }
+  ],
+  "tables": [
+    {
+      "markdownSection": "Encadeamento no finish()",
+      "builder": "path_rows",
+      "source": "Código Apex",
+      "args": {
+        "path": "apex.batch.chainedJobs",
+        "columns": {
+          "call_kind": "kind",
+          "target_class": "targetClass",
+          "batch_size": "batchSize"
+        }
+      },
+      "emptyValue": "Não aplicável"
+    },
+    {
+      "markdownSection": "Dados internos",
+      "builder": "internal_record_properties",
+      "source": "Objeto interno",
+      "args": {
+        "keyPlaceholder": "internal_property",
+        "valuePlaceholder": "internal_value"
+      },
+      "emptyValue": "Não informado"
+    }
+  ],
+  "blocks": [
+    {
+      "placeholder": "naming_convention",
+      "markdownSection": "Convenção de nomes",
+      "builder": "naming_convention",
+      "source": "Derivado",
+      "args": {
+        "pattern": "Batch$",
+        "description": "sufixo `Batch` (ex.: `OrderCleanupBatch`)"
+      },
+      "notes": "Convenção do projeto (configurável aqui). O papel da classe vem das interfaces/anotações, nunca do nome."
+    }
+  ],
+  "internalData": {
+    "enabled": false,
+    "notes": "Usa o dado interno do documento da classe (ApexClass)."
+  },
+  "evidence": [
+    "Metadata API ApexClass: apiVersion, packageVersions, status (Active/Deleted) — developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_classes.htm",
+    "Transaction Finalizers: System.attachFinalizer é chamado dentro do execute() do Queueable — developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_transaction_finalizers.htm",
+    "Batch Apex: Database.RaisesPlatformEvents publica BatchApexErrorEvent — developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_batch_platformevents.htm"
+  ]
+}

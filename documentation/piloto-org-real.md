@@ -71,7 +71,20 @@ sf data query --target-org dev --json --query "SELECT Id, NamespacePrefix FROM E
 - **Sucesso:** o campo existe; o contrato passa a filtrar `NamespacePrefix` e o aviso "pode incluir componente homônimo de outro namespace" deixa de aparecer.
 - **`INVALID_FIELD`:** o objeto não tem o campo; o aviso continua para componentes de pacote.
 
-## 5. Execução completa
+## 5. Apex (Onda 01)
+
+Confirma que o retrieve traz o código e que a consulta de dados internos funciona:
+
+```bash
+sf data query --target-org dev --json --query "SELECT Id, Name, ApiVersion, Status, IsValid, LengthWithoutComments, CreatedDate, LastModifiedDate FROM ApexClass WHERE Name = '<Classe>'"
+bin/sf-docs.sh run --group ApexClass --component <Classe> --non-interactive
+```
+
+- **Esperado:** `status: 0` na consulta; no run, `inventory/org-<alias>/api-v<N>/apex-classes/components/classes/` com `<Classe>.cls` e `<Classe>.cls-meta.xml`, e o documento `doc-<classe>-apex-class.md` com interfaces e métodos preenchidos.
+- **`INVALID_FIELD` em `IsValid` ou `LengthWithoutComments`:** relate; o campo sai do contrato `apex-class.schema.json`.
+- **Classe com papel assíncrono:** confira se o subdocumento esperado (`-apex-batch`, `-apex-queueable`, `-apex-scheduler`, `-apex-future`) foi gerado. Classe com papel não detectado: relate a declaração da classe (só a linha `class ... implements ...`, sem o corpo).
+
+## 6. Execução completa
 
 Depois dos itens acima:
 

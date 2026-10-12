@@ -1,0 +1,110 @@
+{
+  "metadataType": "ApexClass",
+  "apiVersion": "67.0",
+  "documentStrategy": "SUB_DOCUMENT_OF_APEX_CLASS",
+  "xmlFilePattern": "**/*.cls-meta.xml",
+  "codeFilePattern": "**/*.cls",
+  "template": "modelo-doc-apex-future-vapi-{apiMajor}.md",
+  "titlePath": "@fullName",
+  "referenceDoc": "_sf_utilities/ajudAI/contexto-apex.md",
+  "classification": "Um subdocumento por método com @future (config: subDocuments.forEach apex.futureMethods).",
+  "properties": [
+    {
+      "name": "Classe",
+      "placeholder": "class_name",
+      "path": "@parent.fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação do método"
+    },
+    {
+      "name": "Método",
+      "placeholder": "method_name",
+      "path": "name",
+      "source": "Código Apex",
+      "required": true,
+      "markdownSection": "Identificação do método"
+    },
+    {
+      "name": "Assinatura",
+      "placeholder": "signature",
+      "path": "signature",
+      "source": "Código Apex",
+      "required": false,
+      "markdownSection": "Identificação do método"
+    },
+    {
+      "name": "Modificadores",
+      "placeholder": "method_modifiers",
+      "path": "modifiers",
+      "source": "Código Apex",
+      "required": false,
+      "markdownSection": "Identificação do método"
+    },
+    {
+      "name": "Retorno",
+      "placeholder": "return_type",
+      "path": "returnType",
+      "source": "Código Apex",
+      "required": false,
+      "markdownSection": "Identificação do método"
+    },
+    {
+      "name": "callout=true",
+      "placeholder": "callout",
+      "path": "callout",
+      "source": "Código Apex",
+      "required": false,
+      "markdownSection": "Identificação do método",
+      "notes": "Parâmetro da anotação @future(callout=true)."
+    }
+  ],
+  "tables": [
+    {
+      "markdownSection": "Parâmetros",
+      "builder": "path_rows",
+      "source": "Código Apex",
+      "args": {
+        "path": "parameters",
+        "columns": {
+          "param_name": "name",
+          "param_type": "type"
+        }
+      },
+      "emptyValue": "Não aplicável"
+    },
+    {
+      "markdownSection": "Dados internos",
+      "builder": "internal_record_properties",
+      "source": "Objeto interno",
+      "args": {
+        "keyPlaceholder": "internal_property",
+        "valuePlaceholder": "internal_value"
+      },
+      "emptyValue": "Não informado"
+    }
+  ],
+  "blocks": [
+    {
+      "placeholder": "naming_convention",
+      "markdownSection": "Convenção de nomes",
+      "builder": "naming_convention",
+      "source": "Derivado",
+      "args": {
+        "pattern": "(AsyncHelper|Service)$",
+        "description": "sufixo `AsyncHelper` ou `Service` na classe",
+        "useParentName": true
+      },
+      "notes": "Convenção do projeto (configurável aqui). O papel da classe vem das interfaces/anotações, nunca do nome."
+    }
+  ],
+  "internalData": {
+    "enabled": false,
+    "notes": "Usa o dado interno do documento da classe (ApexClass)."
+  },
+  "evidence": [
+    "Metadata API ApexClass: apiVersion, packageVersions, status (Active/Deleted) — developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_classes.htm",
+    "Transaction Finalizers: System.attachFinalizer é chamado dentro do execute() do Queueable — developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_transaction_finalizers.htm",
+    "Batch Apex: Database.RaisesPlatformEvents publica BatchApexErrorEvent — developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_batch_platformevents.htm"
+  ]
+}

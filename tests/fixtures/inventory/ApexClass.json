@@ -1,0 +1,65 @@
+[
+  {
+    "fullName": "AccountSyncQueueable",
+    "type": "ApexClass",
+    "fileName": "classes/AccountSyncQueueable.cls",
+    "id": "01p000000000000AAA",
+    "namespacePrefix": "",
+    "manageableState": "unmanaged",
+    "lastModifiedDate": "2026-10-01T00:00:00.000Z"
+  },
+  {
+    "fullName": "DailyOrderCleanupScheduler",
+    "type": "ApexClass",
+    "fileName": "classes/DailyOrderCleanupScheduler.cls",
+    "id": "01p000000000000AAA",
+    "namespacePrefix": "",
+    "manageableState": "unmanaged",
+    "lastModifiedDate": "2026-10-01T00:00:00.000Z"
+  },
+  {
+    "fullName": "IntegrationAsyncHelper",
+    "type": "ApexClass",
+    "fileName": "classes/IntegrationAsyncHelper.cls",
+    "id": "01p000000000000AAA",
+    "namespacePrefix": "",
+    "manageableState": "unmanaged",
+    "lastModifiedDate": "2026-10-01T00:00:00.000Z"
+  },
+  {
+    "fullName": "MultiRoleJob",
+    "type": "ApexClass",
+    "fileName": "classes/MultiRoleJob.cls",
+    "id": "01p000000000000AAA",
+    "namespacePrefix": "",
+    "manageableState": "unmanaged",
+    "lastModifiedDate": "2026-10-01T00:00:00.000Z"
+  },
+  {
+    "fullName": "OrderCleanupBatch",
+    "type": "ApexClass",
+    "fileName": "classes/OrderCleanupBatch.cls",
+    "id": "01p000000000000AAA",
+    "namespacePrefix": "",
+    "manageableState": "unmanaged",
+    "lastModifiedDate": "2026-10-01T00:00:00.000Z"
+  },
+  {
+    "fullName": "PedidoService",
+    "type": "ApexClass",
+    "fileName": "classes/PedidoService.cls",
+    "id": "01p000000000000AAA",
+    "namespacePrefix": "",
+    "manageableState": "unmanaged",
+    "lastModifiedDate": "2026-10-01T00:00:00.000Z"
+  },
+  {
+    "fullName": "pkg__ClasseGerenciada",
+    "type": "ApexClass",
+    "fileName": "classes/pkg__ClasseGerenciada.cls",
+    "id": "01p000000000001AAA",
+    "namespacePrefix": "pkg",
+    "manageableState": "installed",
+    "lastModifiedDate": "2026-10-01T00:00:00.000Z"
+  }
+]

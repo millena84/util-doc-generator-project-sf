@@ -34,6 +34,7 @@ ALLOWED_SOURCES = (
     "Objeto interno",
     "Salesforce CLI",
     "Derivado",
+    "Código Apex",
 )
 
 # Valores permitidos para dado ausente (prompt, seção 6.2).

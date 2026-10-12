@@ -11,7 +11,7 @@ from salesforce_docs import status as st
 
 API = "inventory/org-dev/api-v67"
 
-# Documento -> modelo esperado (os 12 modelos de documentation/models/api-v67).
+# Documento -> modelo esperado (os 17 modelos de documentation/models/api-v67).
 EXPECTED_DOCS = {
     "doc-meu-flow-flow.md": "modelo-doc-flow-vapi-67.md",
     "doc-tela-cadastro-flow.md": "modelo-doc-flow-vapi-67.md",
@@ -28,6 +28,20 @@ EXPECTED_DOCS = {
     "doc-nc-legada-named-credential.md": "modelo-doc-named-credential-vapi-67.md",
     "doc-meu-site-remote-site-setting.md": "modelo-doc-remote-site-setting-vapi-67.md",
     "doc-meu-certificado-certificate.md": "modelo-doc-certificate-vapi-67.md",
+    # Apex (Onda 01): classe + subdocumento por papel assíncrono
+    "doc-ordercleanupbatch-apex-class.md": "modelo-doc-apex-class-vapi-67.md",
+    "doc-ordercleanupbatch-apex-batch.md": "modelo-doc-apex-batch-vapi-67.md",
+    "doc-accountsyncqueueable-apex-class.md": "modelo-doc-apex-class-vapi-67.md",
+    "doc-accountsyncqueueable-apex-queueable.md": "modelo-doc-apex-queueable-vapi-67.md",
+    "doc-dailyordercleanupscheduler-apex-class.md": "modelo-doc-apex-class-vapi-67.md",
+    "doc-dailyordercleanupscheduler-apex-scheduler.md": "modelo-doc-apex-scheduler-vapi-67.md",
+    "doc-multirolejob-apex-class.md": "modelo-doc-apex-class-vapi-67.md",
+    "doc-multirolejob-apex-batch.md": "modelo-doc-apex-batch-vapi-67.md",
+    "doc-multirolejob-apex-scheduler.md": "modelo-doc-apex-scheduler-vapi-67.md",
+    "doc-integrationasynchelper-apex-class.md": "modelo-doc-apex-class-vapi-67.md",
+    "doc-integrationasynchelper-processordersasync-apex-future.md": "modelo-doc-apex-future-vapi-67.md",
+    "doc-integrationasynchelper-recalc-apex-future.md": "modelo-doc-apex-future-vapi-67.md",
+    "doc-pedidoservice-apex-class.md": "modelo-doc-apex-class-vapi-67.md",
 }
 
 # Componentes relacionados que precisam aparecer no documento do principal.
@@ -59,7 +73,7 @@ LISTED_TYPES = {
     "ExternalCredential": "external-credentials", "ConnectedApp": "connected-apps",
     "CustomObject": "custom-objects", "CustomMetadata": "custom-metadata",
     "NamedCredential": "named-credentials", "RemoteSiteSetting": "remote-site-settings",
-    "Certificate": "certificates",
+    "Certificate": "certificates", "ApexClass": "apex-classes",
 }
 # Tipos que só chegam pelo retrieve do CustomObject (passo 7).
 CHILD_TYPES = ["CustomField", "RecordType", "ValidationRule", "WebLink"]
@@ -101,7 +115,7 @@ class MvpCompleteSimulationTest(PipelineTestBase):
                     if t["metadataType"] == "ExtlClntAppGlobalOauthSettings"]
         self.assertEqual(excluded, [])
 
-    def test_all_twelve_models_rendered(self):
+    def test_all_models_rendered(self):
         docs = self.all_documents()
         self.assertEqual(set(docs), set(EXPECTED_DOCS))
         for name, template in EXPECTED_DOCS.items():

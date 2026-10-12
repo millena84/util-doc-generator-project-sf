@@ -1,0 +1,84 @@
+{
+  "done": true,
+  "totalSize": 6,
+  "records": [
+    {
+      "attributes": {
+        "type": "ApexClass"
+      },
+      "Id": "01p000000000000AAA",
+      "Name": "AccountSyncQueueable",
+      "ApiVersion": 62.0,
+      "Status": "Active",
+      "IsValid": true,
+      "LengthWithoutComments": 400,
+      "CreatedDate": "2026-01-01T00:00:00.000+0000",
+      "LastModifiedDate": "2026-10-01T00:00:00.000+0000"
+    },
+    {
+      "attributes": {
+        "type": "ApexClass"
+      },
+      "Id": "01p000000000001AAA",
+      "Name": "DailyOrderCleanupScheduler",
+      "ApiVersion": 62.0,
+      "Status": "Active",
+      "IsValid": true,
+      "LengthWithoutComments": 401,
+      "CreatedDate": "2026-01-01T00:00:00.000+0000",
+      "LastModifiedDate": "2026-10-01T00:00:00.000+0000"
+    },
+    {
+      "attributes": {
+        "type": "ApexClass"
+      },
+      "Id": "01p000000000002AAA",
+      "Name": "IntegrationAsyncHelper",
+      "ApiVersion": 62.0,
+      "Status": "Active",
+      "IsValid": true,
+      "LengthWithoutComments": 402,
+      "CreatedDate": "2026-01-01T00:00:00.000+0000",
+      "LastModifiedDate": "2026-10-01T00:00:00.000+0000"
+    },
+    {
+      "attributes": {
+        "type": "ApexClass"
+      },
+      "Id": "01p000000000003AAA",
+      "Name": "MultiRoleJob",
+      "ApiVersion": 62.0,
+      "Status": "Active",
+      "IsValid": true,
+      "LengthWithoutComments": 403,
+      "CreatedDate": "2026-01-01T00:00:00.000+0000",
+      "LastModifiedDate": "2026-10-01T00:00:00.000+0000"
+    },
+    {
+      "attributes": {
+        "type": "ApexClass"
+      },
+      "Id": "01p000000000004AAA",
+      "Name": "OrderCleanupBatch",
+      "ApiVersion": 62.0,
+      "Status": "Active",
+      "IsValid": true,
+      "LengthWithoutComments": 404,
+      "CreatedDate": "2026-01-01T00:00:00.000+0000",
+      "LastModifiedDate": "2026-10-01T00:00:00.000+0000"
+    },
+    {
+      "attributes": {
+        "type": "ApexClass"
+      },
+      "Id": "01p000000000005AAA",
+      "Name": "PedidoService",
+      "ApiVersion": 62.0,
+      "Status": "Active",
+      "IsValid": true,
+      "LengthWithoutComments": 405,
+      "CreatedDate": "2026-01-01T00:00:00.000+0000",
+      "LastModifiedDate": "2026-10-01T00:00:00.000+0000"
+    }
+  ]
+}

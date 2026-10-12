@@ -127,6 +127,14 @@
         "metaFile": true,
         "suffix": "crt",
         "xmlName": "Certificate"
+      },
+      {
+        "childXmlNames": [],
+        "directoryName": "classes",
+        "inFolder": false,
+        "metaFile": true,
+        "suffix": "cls",
+        "xmlName": "ApexClass"
       }
     ],
     "organizationNamespace": "",

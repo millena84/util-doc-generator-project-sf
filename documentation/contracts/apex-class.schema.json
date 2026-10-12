@@ -1,0 +1,163 @@
+{
+  "metadataType": "ApexClass",
+  "apiVersion": "67.0",
+  "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+  "xmlFilePattern": "**/*.cls-meta.xml",
+  "codeFilePattern": "**/*.cls",
+  "template": "modelo-doc-apex-class-vapi-{apiMajor}.md",
+  "titlePath": "@fullName",
+  "referenceDoc": "_sf_utilities/ajudAI/contexto-apex.md",
+  "classification": "Documento de toda classe Apex. Papéis assíncronos geram subdocumentos (config: subDocuments.when / forEach).",
+  "properties": [
+    {
+      "name": "ClassName",
+      "placeholder": "class_name",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação",
+      "notes": "fullName da classe (nome do arquivo recuperado)."
+    },
+    {
+      "name": "ApiVersion",
+      "placeholder": "api_version",
+      "path": "apiVersion",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Status",
+      "placeholder": "status",
+      "path": "status",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Description",
+      "placeholder": "description",
+      "path": "apex.description",
+      "source": "Código Apex",
+      "required": false,
+      "markdownSection": "Identificação",
+      "notes": "Texto do bloco ApexDoc (/** */) imediatamente acima da classe; ApexClass não tem campo de descrição."
+    },
+    {
+      "name": "Tipo de declaração",
+      "placeholder": "declaration_kind",
+      "path": "apex.kind",
+      "source": "Código Apex",
+      "required": false,
+      "markdownSection": "Identificação",
+      "notes": "class, interface ou enum (interfaces e enums também são metadata ApexClass)."
+    },
+    {
+      "name": "Sharing",
+      "placeholder": "sharing",
+      "path": "apex.sharing",
+      "source": "Código Apex",
+      "required": false,
+      "markdownSection": "Identificação",
+      "notes": "with/without/inherited sharing; ausente = não declarado na classe."
+    },
+    {
+      "name": "Modificadores",
+      "placeholder": "class_modifiers",
+      "path": "apex.classModifiers",
+      "source": "Código Apex",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Extends",
+      "placeholder": "extends",
+      "path": "apex.extends",
+      "source": "Código Apex",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Anotações da classe",
+      "placeholder": "class_annotations",
+      "path": "apex.classAnnotations",
+      "source": "Código Apex",
+      "required": false,
+      "markdownSection": "Identificação"
+    }
+  ],
+  "tables": [
+    {
+      "markdownSection": "Interfaces implementadas",
+      "builder": "list_values",
+      "source": "Código Apex",
+      "args": {
+        "path": "apex.implementsDeclared",
+        "valuePlaceholder": "interface"
+      },
+      "emptyValue": "Não aplicável"
+    },
+    {
+      "markdownSection": "Métodos",
+      "builder": "path_rows",
+      "source": "Código Apex",
+      "args": {
+        "path": "apex.methods",
+        "columns": {
+          "method_signature": "signature",
+          "return_type": "returnType",
+          "method_modifiers": "modifiers",
+          "method_annotations": "annotations"
+        },
+        "formats": {
+          "method_annotations": "@{name}"
+        }
+      },
+      "notes": "Somente assinaturas; o corpo dos métodos nunca é renderizado."
+    },
+    {
+      "markdownSection": "Chamadas assíncronas feitas pela classe",
+      "builder": "path_rows",
+      "source": "Código Apex",
+      "args": {
+        "path": "apex.asyncInvocations",
+        "columns": {
+          "caller": "callerMethod",
+          "call_kind": "kind",
+          "target_class": "targetClass",
+          "batch_size": "batchSize",
+          "delay_minutes": "delayMinutes",
+          "job_name": "jobName",
+          "cron_expression": "cronExpression"
+        }
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Só argumentos literais; classe em variável sem declaração local fica 'Não informado'."
+    },
+    {
+      "markdownSection": "Dados internos",
+      "builder": "internal_record_properties",
+      "source": "Objeto interno",
+      "args": {
+        "keyPlaceholder": "internal_property",
+        "valuePlaceholder": "internal_value"
+      },
+      "emptyValue": "Não informado"
+    }
+  ],
+  "internalData": {
+    "enabled": true,
+    "source": "Objeto interno",
+    "object": "ApexClass",
+    "useToolingApi": false,
+    "query": "SELECT Id, Name, ApiVersion, Status, IsValid, LengthWithoutComments, CreatedDate, LastModifiedDate FROM ApexClass WHERE Name = '{developerName}'",
+    "expectSingleRecord": true,
+    "blocking": false,
+    "validationPending": "Objeto ApexClass (SOAP/REST API): confirmar no piloto os campos IsValid e LengthWithoutComments."
+  },
+  "evidence": [
+    "Metadata API ApexClass: apiVersion, packageVersions, status (Active/Deleted) — developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_classes.htm",
+    "Transaction Finalizers: System.attachFinalizer é chamado dentro do execute() do Queueable — developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_transaction_finalizers.htm",
+    "Batch Apex: Database.RaisesPlatformEvents publica BatchApexErrorEvent — developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_batch_platformevents.htm"
+  ]
+}

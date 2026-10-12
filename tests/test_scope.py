@@ -65,7 +65,7 @@ class ScopeConfigTest(unittest.TestCase):
 
     def test_unknown_and_related_types_are_rejected(self):
         with self.assertRaises(ConfigError) as ctx:
-            resolve_scope(ScopeConfig(sel(("ApexClass", ["X"]))), self.mvp)
+            resolve_scope(ScopeConfig(sel(("ApexTrigger", ["X"]))), self.mvp)
         self.assertIn("não está configurado", str(ctx.exception))
         for related, principal in (("FlowDefinition", "Flow"), ("CustomField", "CustomObject"),
                                    ("ExtlClntAppOauthSettings", "ExternalClientApplication")):

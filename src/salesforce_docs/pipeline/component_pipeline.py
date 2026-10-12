@@ -13,7 +13,8 @@ from salesforce_docs import status as st
 from salesforce_docs.extraction.schema_extractor import load_schema
 from salesforce_docs.extraction.xml_retriever import retrieve_component
 from salesforce_docs.parsing.xml_parser import local_name, normalize_component, schema_field_names
-from salesforce_docs.utils import kebab, rel, slugify, write_json
+from salesforce_docs.parsing.source_parsers import SOURCE_PARSERS, source_file
+from salesforce_docs.utils import kebab, rel, sha256_file, slugify, write_json
 
 
 class ComponentRecord(dict):
@@ -93,6 +94,33 @@ class ComponentProcessor:
         return warnings
 
 
+def attach_source(pctx, record, metadata_type, normalized):
+    """Anexa ao normalizado a leitura estrutural do arquivo-fonte (ex.: `.cls`), se configurada.
+
+    O arquivo-fonte é raw e não é alterado; o normalizado registra caminho e sha256 dele.
+    """
+    cfg = pctx.mvp.source_parser(metadata_type)
+    if not cfg:
+        return
+    src = source_file(record.get("files"), metadata_type, cfg["suffix"])
+    key = cfg["key"]
+    if src is None:
+        normalized["data"][key] = {"parsed": False, "error": f"arquivo {cfg['suffix']} não recuperado"}
+        record.setdefault("warnings", []).append(
+            f"{metadata_type}:{record['fullName']}: arquivo {cfg['suffix']} não recuperado; "
+            "seções de código ficam 'Não informado'")
+        return
+    path = pctx.root / src["path"]
+    parsed = SOURCE_PARSERS[cfg["name"]](path.read_text(encoding="utf-8", errors="replace"))
+    normalized["data"][key] = parsed
+    normalized["source"]["code"] = rel(path, pctx.root)
+    normalized["source"]["codeSha256"] = sha256_file(path)
+    normalized["source"]["codeParser"] = parsed.get("parser")
+    if not parsed.get("parsed"):
+        record.setdefault("warnings", []).append(
+            f"{metadata_type}:{record['fullName']}: leitura do código falhou ({parsed.get('error')})")
+
+
 def normalize_record(pctx, record):
     """(Re)gera o normalizado do componente e dos filhos a partir do XML."""
     metadata_type, full_name = record["metadataType"], record["fullName"]
@@ -102,6 +130,7 @@ def normalize_record(pctx, record):
                                      pctx.root, schema, role=record.get("role", "primary"),
                                      retrieve_raw=record.get("retrieveRaw"),
                                      secret_keys=pctx.mvp.sensitive_elements, on_secret=pctx.masker.add)
+    attach_source(pctx, record, metadata_type, normalized)
     norm_path = type_dir / "normalized" / f"{slugify(full_name)}.json"
     write_json(norm_path, normalized, private=True)
     record.update(normalized=rel(norm_path, pctx.root), data=normalized["data"],
