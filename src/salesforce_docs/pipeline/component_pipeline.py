@@ -13,7 +13,7 @@ from salesforce_docs import status as st
 from salesforce_docs.extraction.schema_extractor import load_schema
 from salesforce_docs.extraction.xml_retriever import retrieve_component
 from salesforce_docs.parsing.xml_parser import local_name, normalize_component, schema_field_names
-from salesforce_docs.utils import rel, slugify, write_json
+from salesforce_docs.utils import kebab, rel, slugify, write_json
 
 
 class ComponentRecord(dict):
@@ -114,7 +114,9 @@ def normalize_record(pctx, record):
         child_norm = normalize_component(f["type"], f["fullName"], pctx.root / f["path"], pctx.root,
                                          child_schema, role="child", retrieve_raw=record.get("retrieveRaw"),
                                          secret_keys=pctx.mvp.sensitive_elements, on_secret=pctx.masker.add)
-        child_path = type_dir / "normalized" / f"{slugify(f['fullName'])}.json"
+        # O tipo entra no nome: filhos de tipos diferentes podem ter o mesmo fullName
+        # (ex.: RecordType e ValidationRule `Pedido__c.Padrao`).
+        child_path = type_dir / "normalized" / f"{kebab(f['type'])}--{slugify(f['fullName'])}.json"
         write_json(child_path, child_norm, private=True)
         children.append({"metadataType": f["type"], "fullName": f["fullName"], "xml": f["path"],
                          "normalized": rel(child_path, pctx.root), "data": child_norm["data"],
