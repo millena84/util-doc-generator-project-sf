@@ -31,16 +31,20 @@ class RenderContext:
         self.normalized_path = normalized_path
         # Propriedades encontradas no XML e omitidas por política (compartilhado com filhos).
         self.omitted = omitted if omitted is not None else set()
+        # Tipos relacionados não verificados (seleção restrita): "Não informado", não "Não aplicável".
+        self.unresolved_related = set()
 
     def omit(self, name):
         self.omitted.add(f"{self.metadata_type}:{self.full_name}:{name}")
 
     def child(self, data, full_name=None, schema_fields=None, metadata_type=None):
-        return RenderContext(metadata_type or self.metadata_type, full_name or self.full_name, data,
+        ctx = RenderContext(metadata_type or self.metadata_type, full_name or self.full_name, data,
                              schema_fields=schema_fields, internal=self.internal,
                              related=self.related, files=self.files, parent=self,
                              contracts=self.contracts, sensitive=self.sensitive,
                              omitted=self.omitted)
+        ctx.unresolved_related = self.unresolved_related
+        return ctx
 
     def related_of(self, metadata_type):
         return [r for r in self.related if r["metadataType"] == metadata_type]

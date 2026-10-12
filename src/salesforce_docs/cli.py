@@ -86,7 +86,7 @@ def main(argv=None):
                     return 1
                 print("Git: nenhum arquivo sensível rastreado; caminhos sensíveis ignorados.")
             from salesforce_docs.config.scope import describe_effective, resolve_scope
-            effective = resolve_scope(pipeline.app.scope, pipeline.mvp)
+            effective = resolve_scope(pipeline.app.selection, pipeline.mvp)
             print(f"Org alias: {pipeline.app.org_alias} (config.json)")
             if pipeline.app.approved_orgs:
                 ids = ", ".join(e["orgId"] for e in pipeline.app.approved_orgs)
@@ -97,7 +97,7 @@ def main(argv=None):
             print(f"Proteção de dados: privateFiles={pipeline.app.private_files}, "
                   f"orgDisplayRaw={pipeline.app.org_display_raw_policy}, "
                   f"outputLayout={pipeline.app.output_layout}")
-            print(f"Escopo: {pipeline.app.scope.mode}")
+            print(f"Seleção: {pipeline.app.selection.mode}")
             for group, comps in describe_effective(effective).items():
                 print(f"  - {group}: {', '.join(comps)}")
             print("Configuração válida.")

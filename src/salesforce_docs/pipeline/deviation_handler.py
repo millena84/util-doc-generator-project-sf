@@ -60,8 +60,19 @@ def _related_from_record(rec):
             "retrieveRaw": rec.get("retrieveRaw")}
 
 
-def resolve_related(unit, primary, group, processor, inventories, enabled_types, log):
-    """Retorna (related, failures). `failures` são componentes candidatos que falharam."""
+# Relações que só se comprovam lendo o XML de CADA candidato (exigem retrieve de
+# componentes que podem não pertencer ao principal selecionado).
+CANDIDATE_SCAN_MATCHES = ("FIELD_EQUALS_PRIMARY", "REFERENCE_SCAN")
+
+
+def resolve_related(unit, primary, group, processor, inventories, enabled_types, log,
+                    restrict_candidates=False, unresolved=None):
+    """Retorna (related, failures). `failures` são componentes candidatos que falharam.
+
+    restrict_candidates=True (selection.mode = SELECTED): relações em
+    CANDIDATE_SCAN_MATCHES NÃO recuperam candidatos (nada fora da seleção é recuperado);
+    a lacuna é anexada a `unresolved`.
+    """
     related, failures = [], []
 
     def fetch(metadata_type, item):
@@ -90,6 +101,13 @@ def resolve_related(unit, primary, group, processor, inventories, enabled_types,
                     related.append(dict(child, status=st.SUCCESS))
             continue
         candidates = inventories.get(rtype) or []
+        if restrict_candidates and match in CANDIDATE_SCAN_MATCHES:
+            if candidates and unresolved is not None:
+                unresolved.append({
+                    "metadataType": rtype, "match": match, "candidates": len(candidates),
+                    "reason": "selection.mode = SELECTED: o vínculo só se comprova lendo o XML de cada "
+                              "candidato; candidatos fora da seleção não são recuperados"})
+            continue
         if match == "SAME_FULL_NAME":
             for item in candidates:
                 if item["fullName"] != primary["fullName"]:

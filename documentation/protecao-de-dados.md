@@ -4,7 +4,7 @@
 
 ## Controles antes da coleta
 
-1. **Configuração e escopo** são validados antes de qualquer chamada à org (`scope`, contratos, modelos).
+1. **Configuração e escopo** são validados antes de qualquer chamada à org (`selection`, contratos, modelos).
 2. **Identidade da org**: depois de `sf org display`, o `orgId` (e, se informados, `alias`, `username`, `instanceUrl`) precisa constar em `approvedOrgs` do `config.json`. Sem aprovação, a execução para com `ORG_NOT_APPROVED` **antes** de `sf org list metadata-types`, inventário ou retrieve, e informa a identidade detectada para conferência.
 
 ```json

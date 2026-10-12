@@ -32,6 +32,9 @@ def related_components(ctx, args):
         if r["metadataType"] in exclude:
             continue
         rows.append({"related_component": r["fullName"], "related_type": r["metadataType"]})
+    if not rows and ctx.unresolved_related - exclude:
+        # Relacionados existem mas não foram verificados (seleção restrita): não é "Não aplicável".
+        return [{"related_component": st.NOT_INFORMED, "related_type": st.NOT_INFORMED}]
     return rows
 
 
@@ -129,7 +132,7 @@ def related_properties_table(ctx, args, render_props):
     """Bloco: propriedades (do contrato do tipo relacionado) de cada relacionado."""
     related = sorted(ctx.related_of(args["metadataType"]), key=lambda r: r["fullName"])
     if not related:
-        return st.NOT_APPLICABLE
+        return st.NOT_INFORMED if args["metadataType"] in ctx.unresolved_related else st.NOT_APPLICABLE
     contract = ctx.contracts.for_type(args["metadataType"]) if ctx.contracts else None
     if not contract:
         return st.NOT_APPLICABLE

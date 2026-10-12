@@ -88,38 +88,46 @@ Registro da auditoria de segurança de 2026-10-11 (10 riscos: 1 crítico, 2 alto
 
 Cada componente (principal ou relacionado) é extraído e normalizado de forma independente; a agregação acontece apenas no documento.
 
-## Escopo da execução (`config.json` → `scope`)
+## Seleção da execução (`config.json` → `selection`)
 
 | Item | Onde | Precedência |
 |---|---|---|
 | Alias da org | `orgAlias` | `--target-org` > `config.json` (o `orgAlias` de `metadata-types-mvp.json` é só informativo; divergência gera aviso) |
 | Diretórios | `paths` (`catalog`, `inventory`, `models`, `contracts`, `runs`, `outputDocs`, `metadataTypesConfig`) | `config.json` |
-| O que documentar | `scope.mode` = `ALL` ou `SELECTED` | `config.json`; `--group`/`--component` só **restringem** |
+| O que documentar | `selection.mode` = `ALL` ou `SELECTED` | `config.json`; `--group`/`--component` só **restringem** |
 
-- **`ALL`** (padrão): todos os grupos configurados em `metadataTypesConfig`, com todos os componentes que a org tiver. Não usa automaticamente a lista inteira de `sf org list metadata-types` (tipos sem grupo/contrato não são processados).
-- **`SELECTED`**: somente os tipos principais e componentes listados:
+- **`ALL`** (padrão; também quando `selection` está ausente): todos os grupos documentáveis configurados em `metadataTypesConfig`, com todos os componentes encontrados na org. Não usa automaticamente a lista inteira de `sf org list metadata-types` (tipos sem grupo/contrato não são processados).
+- **`SELECTED`**: somente os tipos principais listados em `metadataTypes`:
 
 ```json
-"scope": {
+"selection": {
   "mode": "SELECTED",
-  "selection": [
-    { "metadataType": "Flow", "components": ["Meu_Flow", "Outro_Flow"] },
-    { "metadataType": "CustomMetadata", "components": ["Config__mdt"] },
-    { "metadataType": "RemoteSiteSetting", "components": ["*"] }
-  ]
+  "metadataTypes": {
+    "Flow":                      { "components": "ALL" },
+    "CustomObject":              { "components": ["Pedido__c"] },
+    "CustomMetadata":            { "components": ["Config__mdt"] },
+    "ExternalClientApplication": { "components": ["Minha_ECA"] }
+  }
 }
 ```
 
-Regras:
+Regras (validadas **antes de qualquer chamada à org**):
 
-- `metadataType` é o tipo **principal** de um grupo. Tipos relacionados/filhos (`FlowDefinition`, `CustomField`, `ExtlClntApp*`…) são rejeitados com a indicação do principal — eles entram como dependência do principal selecionado.
-- `components` é obrigatório; `["*"]` = todos do tipo. Para Custom Metadata o componente é o tipo (`Config__mdt`).
-- Configuração inválida ou ambígua (modo desconhecido, `selection` vazia ou com `ALL`, tipo repetido, componente vazio/repetido, `*` misturado com nomes, tipo desconhecido) é rejeitada **antes de qualquer chamada à org**.
-- `--group`/`--component` fora do escopo do `config.json` é erro (antes de chamar a org).
-- Componente pedido e não encontrado (ou excluído pelo `componentFilter` do grupo) vira `NOT_FOUND` explícito no run state (`scope.notFound`) e a execução termina como `PARTIAL_SUCCESS`.
-- Componentes fora do escopo **não são recuperados**. Dependências do principal selecionado são: `FlowDefinition` de mesmo nome, filhos do objeto, records do `__mdt`, EC referenciada pela NC. Exceção documentada: para ligar `ExtlClntApp*` a uma ECA (`FIELD_EQUALS_PRIMARY`), os candidatos do tipo relacionado são recuperados para ler `externalClientApplication`; só os que apontam para a ECA selecionada entram no documento.
-- O run state registra o escopo pedido (`scope.requested`, `scope.cli`), o efetivo (`scope.effective`), o alias e sua origem; grupos fora do escopo aparecem como `OUT_OF_SCOPE`.
-- `bin/sf-docs.sh validate-config` mostra alias e escopo efetivo.
+- `selection` aceita só `mode` e `metadataTypes`; cada tipo aceita só `components`. Chave desconhecida é erro.
+- `mode` é exatamente `"ALL"` ou `"SELECTED"`; em `ALL`, `metadataTypes` deve estar ausente ou vazio.
+- Em `SELECTED`, `metadataTypes` é obrigatório e não vazio; tipo ausente não é processado.
+- `components`: `"ALL"` (todos do tipo) ou lista não vazia de fullNames únicos. Lista vazia é erro (nunca significa "todos"); `"ALL"`/`"*"` dentro da lista é erro.
+- Nomes com espaço no início/fim são rejeitados (não corrigidos). Chave JSON repetida (ex.: `"Flow"` duas vezes) é erro — o leitor JSON padrão manteria só a última.
+- A chave é o **tipo principal** (`ExternalClientApplication`), não o nome do grupo (`ExternalClientApp`) — usar o nome do grupo gera erro indicando o tipo correto. Para Custom Metadata o componente é o tipo (`Config__mdt`).
+- Tipos relacionados/filhos (`FlowDefinition`, `CustomField`, `RecordType`, `ValidationRule`, `WebLink`, `ExtlClntApp*`…) são **rejeitados** com o principal a selecionar; entram como dependência do principal.
+- `--group`/`--component` fora da seleção é erro (antes de chamar a org). A chave antiga `scope` é rejeitada com instrução de migração.
+
+Comportamento:
+
+- Componentes fora da seleção **não são recuperados**. Dependências comprovadas do principal selecionado continuam: `FlowDefinition` de mesmo nome, filhos do objeto, records do `__mdt`, EC referenciada no XML da NC.
+- Em `SELECTED`, relações que só se comprovam lendo o XML de **cada candidato** (`FIELD_EQUALS_PRIMARY`, `REFERENCE_SCAN` — ex.: `ExtlClntApp*` de uma ECA) **não recuperam candidatos**: as seções correspondentes mostram `Não informado`, a lacuna fica em `selection.relatedNotResolved` e a cobertura é `COMPLETE_WITH_WARNINGS`. Em `ALL` os candidatos são recuperados e o vínculo é verificado normalmente.
+- Componente pedido e não encontrado (ou excluído pelo `componentFilter` do grupo) vira `NOT_FOUND` (`selection.notFound`) e a execução termina como `COMPLETED_WITH_GAPS` — nunca vira "todos os componentes".
+- O run state registra `selection.requested` (formato do config.json), `selection.cli`, `selection.effective`, o alias e sua origem; grupos fora da seleção aparecem como `OUT_OF_SCOPE`. `bin/sf-docs.sh validate-config` mostra alias e seleção.
 
 ## Segurança e execução (Prioridade 3)
 
@@ -152,7 +160,7 @@ A matriz de rastreabilidade, as divergências entre `ajudAI`, o utilitário e a 
 
 ## Estados
 
-`SUCCESS`, `NO_TEMPLATE`, `NO_COMPONENTS`, `NOT_ENABLED`, `SCHEMA_UNAVAILABLE`, `RETRIEVE_FAILED`, `INTERNAL_DATA_UNAVAILABLE`, `RETRY_REQUIRED`, `MISMATCH` (+ `FAILED` para erro inesperado ou documento inválido; `OUT_OF_SCOPE` para grupo configurado mas fora do escopo; `NOT_FOUND` para componente pedido em `scope.selection` e ausente).
+`SUCCESS`, `NO_TEMPLATE`, `NO_COMPONENTS`, `NOT_ENABLED`, `SCHEMA_UNAVAILABLE`, `RETRIEVE_FAILED`, `INTERNAL_DATA_UNAVAILABLE`, `RETRY_REQUIRED`, `MISMATCH` (+ `FAILED` para erro inesperado ou documento inválido; `OUT_OF_SCOPE` para grupo configurado mas fora do escopo; `NOT_FOUND` para componente pedido em `selection.metadataTypes` e ausente).
 
 Status final da execução: `SUCCESS` (sem falhas e sem lacunas bloqueantes), `COMPLETED_WITH_GAPS` (sem falhas de componente, mas com modelo/contrato ausente, subdocumento sem modelo ou componente pedido não encontrado — **nunca** representa cobertura completa), `PARTIAL_SUCCESS` (algum componente falhou), `FAILED`, `INTERRUPTED`. Códigos de saída: `0` (SUCCESS, PARTIAL_SUCCESS, COMPLETED_WITH_GAPS), `1` falha global, `2` sessão expirada, `3` COMPLETED_WITH_GAPS quando `execution.strictCoverage = true`.
 

@@ -250,7 +250,7 @@ class DocumentPipeline:
         policy = {"sensitive": sorted(self.mvp.sensitive_elements),
                   "omit": sorted(self.mvp.omit_from_documentation)}
         return {"orgId": p.session.org_id, "orgAlias": alias, "apiVersion": p.session.api_version,
-                "utilVersion": __version__, "scope": describe_effective(effective),
+                "utilVersion": __version__, "selection": describe_effective(effective),
                 "contracts": contracts, "models": models,
                 "policySha256": sha256_text(json.dumps(policy, sort_keys=True))}
 
@@ -307,13 +307,13 @@ class DocumentPipeline:
     # Cobertura (Prioridade 3) ------------------------------------------
     # Lacunas que impedem cobertura completa x avisos que só degradam o conteúdo.
     BLOCKING_GAPS = ("noTemplate", "failed", "subDocuments", "notFound")
-    WARNING_GAPS = ("internalDataUnavailable", "notEnabled", "schemaUnavailable")
+    WARNING_GAPS = ("internalDataUnavailable", "notEnabled", "schemaUnavailable", "relatedNotResolved")
 
     def _coverage(self, state, p=None):
         prim = [c for c in state.data["components"] if c.get("role") == "primary"]
         gaps = {"noTemplate": [], "failed": [], "subDocuments": [], "internalDataUnavailable": [],
-                "notFound": list((state.data.get("scope") or {}).get("notFound") or []),
-                "notEnabled": [], "schemaUnavailable": []}
+                "notFound": list((state.data.get("selection") or {}).get("notFound") or []),
+                "notEnabled": [], "schemaUnavailable": [], "relatedNotResolved": []}
         documented = 0
         documented_types, related_types, no_template_types = set(), set(), set()
         for c in prim:
@@ -334,6 +334,8 @@ class DocumentPipeline:
                         no_template_types.add(f"{c.get('metadataType')} (subdocumento)")
             if c.get("internalDataStatus") == st.INTERNAL_DATA_UNAVAILABLE:
                 gaps["internalDataUnavailable"].append(key)
+            for u in c.get("relatedNotResolved") or []:
+                gaps["relatedNotResolved"].append(f"{key} → {u.get('metadataType')}")
         not_enabled, out_of_scope_groups = set(), set()
         for t in state.data.get("metadataTypes") or []:
             if t.get("stage") == "enabled" and t.get("status") == st.NOT_ENABLED:
@@ -404,20 +406,21 @@ class DocumentPipeline:
 
     def _resolve_scope(self, p, alias, cli_alias, groups, components):
         """Valida e registra o escopo antes de qualquer chamada à org."""
-        effective = resolve_scope(self.app.scope, self.mvp, groups, components)
+        effective = resolve_scope(self.app.selection, self.mvp, groups, components)
         if self.mvp.org_alias and self.mvp.org_alias != self.app.org_alias:
             p.log.warn(f"orgAlias de metadata-types-mvp.json ({self.mvp.org_alias}) difere do config.json "
                        f"({self.app.org_alias}); vale o config.json")
-        p.run_state.set("scope", {
-            "mode": self.app.scope.mode,
-            "requested": self.app.scope.describe()["selection"],
+        p.run_state.set("selection", {
+            "mode": self.app.selection.mode,
+            "requested": self.app.selection.describe(),
             "cli": {"targetOrg": cli_alias, "groups": groups or [], "components": components or []},
             "orgAlias": alias,
             "orgAliasSource": "--target-org" if cli_alias else "config.json",
             "effective": describe_effective(effective),
             "notFound": [],
+            "relatedNotResolved": [],
         })
-        p.log.info(f"Escopo {self.app.scope.mode}: {describe_effective(effective)}")
+        p.log.info(f"Seleção {self.app.selection.mode}: {describe_effective(effective)}")
         return effective
 
     def _final_status(self, state):
@@ -493,7 +496,7 @@ class DocumentPipeline:
             if group.name not in group_filter:
                 # Configurado, mas fora do escopo desta execução (≠ NOT_ENABLED / NO_TEMPLATE).
                 p.run_state.type_status(group.primary_type, st.OUT_OF_SCOPE, group=group.name,
-                                        stage="scope", detail=f"scope.mode={self.app.scope.mode}")
+                                        stage="scope", detail=f"selection.mode={self.app.selection.mode}")
                 continue
             types = list(group.all_types)
             if group.type_definition:
@@ -593,10 +596,10 @@ class DocumentPipeline:
                 self._record_processed(p, processor)
 
     def _report_not_found(self, p, group, units, inventories, component_filter):
-        """Componentes pedidos em scope.selection que não viraram unidade de documento."""
-        if self.app.scope.mode != "SELECTED" or component_filter is None:
+        """Componentes pedidos em selection.metadataTypes que não viraram unidade de documento."""
+        if self.app.selection.mode != "SELECTED" or component_filter is None:
             return
-        requested = next((set(i["components"]) for i in self.app.scope.selection
+        requested = next((set(i["components"]) for i in self.app.selection.selection
                           if i["metadataType"] == group.primary_type), set())
         requested -= {WILDCARD}
         listed = {i["fullName"] for i in inventories.get(group.primary_type) or []}
@@ -604,12 +607,12 @@ class DocumentPipeline:
         for name in sorted((requested & component_filter) - built):
             reason = ("existe no inventário, mas foi excluído por componentFilter do grupo"
                       if name in listed else "não encontrado no inventário da org")
-            p.run_state.data["scope"]["notFound"].append(
+            p.run_state.data["selection"]["notFound"].append(
                 {"group": group.name, "metadataType": group.primary_type, "component": name,
                  "reason": reason})
             p.run_state.type_status(group.primary_type, st.NOT_FOUND, group=group.name,
                                     stage="selection", component=name, detail=reason)
-            p.log.warn(f"{group.primary_type}:{name} pedido em scope.selection: NOT_FOUND ({reason})")
+            p.log.warn(f"{group.primary_type}:{name} pedido em selection.metadataTypes: NOT_FOUND ({reason})")
 
     def _record_processed(self, p, processor):
         types = set()
@@ -628,8 +631,14 @@ class DocumentPipeline:
                 "metadataType": unit["documentType"], "component": unit["fullName"]}
         if primary["status"] != st.SUCCESS:
             return dict(base, **_entry_fields(primary), status=primary["status"])
+        unresolved = []
         related, failures = deviation_handler.resolve_related(
-            unit, primary, group, processor, inventories, set(types), log)
+            unit, primary, group, processor, inventories, set(types), log,
+            restrict_candidates=self.app.selection.mode == "SELECTED", unresolved=unresolved)
+        for u in unresolved:
+            p.run_state.data["selection"]["relatedNotResolved"].append(dict(u, unitId=unit["unitId"]))
+            log.warn(f"{unit['unitId']}: relacionados {u['metadataType']} não verificados "
+                     f"({u['candidates']} candidato(s) fora da seleção não recuperados)")
         for rec in related + [dict(f) for f in failures]:
             p.run_state.upsert_component({
                 "unitId": unit["unitId"], "group": group.name, "role": "related",
@@ -640,8 +649,12 @@ class DocumentPipeline:
             })
         contract = p.contracts.get_file(group.contract_file)
         internal = self._internal_data(p, unit, primary, contract)
-        result = self.render_unit(p, group, unit, primary, related, internal, contract)
+        result = self.render_unit(p, group, unit, primary, related, internal, contract,
+                                  unresolved_types={u["metadataType"] for u in unresolved})
         warnings = list(primary.get("warnings", [])) + result.pop("warnings", [])
+        if unresolved:
+            warnings.append("Relacionados não verificados na seleção: " + ", ".join(
+                f"{u['metadataType']} ({u['candidates']} candidato(s))" for u in unresolved))
         if failures:
             warnings.append("Relacionados candidatos com falha: " + ", ".join(
                 f"{f['metadataType']}:{f['fullName']} ({f['status']})" for f in failures))
@@ -653,6 +666,7 @@ class DocumentPipeline:
                      internalDataStatus=internal.get("status"),
                      relatedComponents=[{"metadataType": r["metadataType"], "fullName": r["fullName"]}
                                         for r in related],
+                     relatedNotResolved=unresolved,
                      warnings=[self.masker(w) for w in warnings])
         log.info(f"{unit['unitId']}: {entry['status']}"
                  + (f" -> {entry.get('document')}" if entry.get("document") else ""))
@@ -674,7 +688,7 @@ class DocumentPipeline:
         return res
 
     # Passo 10 -----------------------------------------------------------
-    def render_unit(self, p, group, unit, primary, related, internal, contract):
+    def render_unit(self, p, group, unit, primary, related, internal, contract, unresolved_types=()):
         doc_slug = self.mvp.document_slug(unit["documentType"])
         if contract is None:
             msg = self._missing_message(p, unit["documentType"], unit["fullName"],
@@ -692,6 +706,7 @@ class DocumentPipeline:
                             related=related, files=primary.get("files"), contracts=p.contracts,
                             sensitive=self.mvp.render_blocked_elements,
                             developer_name=developer_name(unit["fullName"], primary.get("namespacePrefix")))
+        ctx.unresolved_related = set(unresolved_types)
         result = self.renderer.render(template, contract, ctx)
         if not result.ok:
             p.log.error(f"{unit['unitId']}: documento inválido: {result.errors}")
@@ -821,7 +836,9 @@ class DocumentPipeline:
             unit = {"unitId": unit_id, "metadataType": _record_type(group),
                     "documentType": group.primary_type, "fullName": primary_entry["component"]}
             contract = p.contracts.get_file(group.contract_file)
-            result = self.render_unit(p, group, unit, primary, related, internal, contract)
+            result = self.render_unit(
+                p, group, unit, primary, related, internal, contract,
+                unresolved_types={u["metadataType"] for u in primary_entry.get("relatedNotResolved") or []})
             entry = dict(primary_entry, **_entry_fields(primary))
             entry.update(result)
             entry["regeneratedFrom"] = source.run_id

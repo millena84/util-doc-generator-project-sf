@@ -16,7 +16,9 @@ from salesforce_docs.pipeline.document_pipeline import EXIT_FAILURE, EXIT_OK, Do
 
 
 def sel(*items):
-    return {"mode": "SELECTED", "selection": [{"metadataType": t, "components": c} for t, c in items]}
+    """Seleção no formato do config.json; ["*"] nos testes = "ALL"."""
+    return {"mode": "SELECTED",
+            "metadataTypes": {t: {"components": "ALL" if c == ["*"] else c} for t, c in items}}
 
 
 class ScopeConfigTest(unittest.TestCase):
@@ -31,22 +33,30 @@ class ScopeConfigTest(unittest.TestCase):
     def test_selected_types_and_components(self):
         eff = resolve_scope(ScopeConfig(sel(("Flow", ["Meu_Flow"]), ("ConnectedApp", ["*"]),
                                             ("CustomMetadata", ["Config__mdt"]))), self.mvp)
-        self.assertEqual(describe_effective(eff), {"ConnectedApp": ["*"], "CustomMetadata": ["Config__mdt"],
+        self.assertEqual(describe_effective(eff), {"ConnectedApp": ["ALL"], "CustomMetadata": ["Config__mdt"],
                                                    "Flow": ["Meu_Flow"]})
 
     def test_invalid_configurations_are_rejected(self):
         bad = [
             {"mode": "TUDO"},
+            {"mode": "all"},
             {"mode": "SELECTED"},
-            {"mode": "SELECTED", "selection": []},
-            {"mode": "ALL", "selection": [{"metadataType": "Flow", "components": ["*"]}]},
+            {"mode": "SELECTED", "metadataTypes": {}},
+            {"mode": "ALL", "metadataTypes": {"Flow": {"components": "ALL"}}},
+            {"mode": "SELECTED", "metadataTypes": [{"metadataType": "Flow"}]},
             sel(("Flow", [])),
             sel(("Flow", ["*", "Meu_Flow"])),
+            sel(("Flow", ["ALL", "Meu_Flow"])),
             sel(("Flow", ["A", "A"])),
             sel(("Flow", [""])),
-            {"mode": "SELECTED", "selection": [{"components": ["A"]}]},
-            {"mode": "SELECTED", "selection": [{"metadataType": "Flow", "components": ["A"]},
-                                               {"metadataType": "Flow", "components": ["B"]}]},
+            sel(("Flow", [" Meu_Flow"])),
+            sel((" Flow", ["Meu_Flow"])),
+            {"mode": "SELECTED", "metadataTypes": {"Flow": {"components": "all"}}},
+            {"mode": "SELECTED", "metadataTypes": {"Flow": {"components": 1}}},
+            {"mode": "SELECTED", "metadataTypes": {"Flow": {}}},
+            {"mode": "SELECTED", "metadataTypes": {"Flow": ["Meu_Flow"]}},
+            {"mode": "SELECTED", "metadataTypes": {"Flow": {"components": "ALL", "componentes": ["A"]}}},
+            {"mode": "SELECTED", "selecao": 1, "metadataTypes": {"Flow": {"components": "ALL"}}},
             "ALL",
         ]
         for data in bad:
@@ -84,7 +94,8 @@ class ScopePipelineTest(PipelineTestBase):
     def set_scope(self, scope, **extra):
         cfg_path = self.root / "config" / "config.json"
         cfg = json.loads(cfg_path.read_text())
-        cfg["scope"] = scope
+        cfg.pop("scope", None)
+        cfg["selection"] = scope
         cfg.update(extra)
         cfg_path.write_text(json.dumps(cfg))
 
@@ -112,10 +123,10 @@ class ScopePipelineTest(PipelineTestBase):
         self.assertEqual(types, ["CustomMetadata", "Flow", "FlowDefinition", "RemoteSiteSetting"])
         primaries = sorted(c["component"] for c in state.data["components"] if c["role"] == "primary")
         self.assertEqual(primaries, ["Config__mdt", "Meu_Flow", "Meu_Site"])
-        scope = state.data["scope"]
+        scope = state.data["selection"]
         self.assertEqual(scope["mode"], "SELECTED")
         self.assertEqual(scope["effective"], {"CustomMetadata": ["Config__mdt"], "Flow": ["Meu_Flow"],
-                                              "RemoteSiteSetting": ["*"]})
+                                              "RemoteSiteSetting": ["ALL"]})
         out = {t["group"]: t["status"] for t in state.data["metadataTypes"] if t.get("stage") == "scope"}
         self.assertEqual(out.get("ConnectedApp"), st.OUT_OF_SCOPE)
         self.assertNotIn("Flow", out)
@@ -123,7 +134,7 @@ class ScopePipelineTest(PipelineTestBase):
     def test_not_found_and_filtered_are_explicit(self):
         self.set_scope(sel(("Flow", ["Meu_Flow", "Flow_Inexistente"]), ("CustomObject", ["Account"])))
         code, state = self.run_pipeline()
-        nf = {(n["metadataType"], n["component"]): n["reason"] for n in state.data["scope"]["notFound"]}
+        nf = {(n["metadataType"], n["component"]): n["reason"] for n in state.data["selection"]["notFound"]}
         self.assertIn("não encontrado", nf[("Flow", "Flow_Inexistente")])
         self.assertIn("componentFilter", nf[("CustomObject", "Account")])
         statuses = [(t["component"], t["status"]) for t in state.data["metadataTypes"]
@@ -149,7 +160,7 @@ class ScopePipelineTest(PipelineTestBase):
         self.set_scope(sel(("Flow", ["Meu_Flow"])))
         code, state = self.run_pipeline(components=["Tela_Cadastro"])
         self.assertEqual(code, EXIT_FAILURE)
-        self.assertIn("fora do escopo", state.data["failure"]["message"])
+        self.assertIn("fora da seleção", state.data["failure"]["message"])
         self.assertEqual(self.calls(), "")
 
     def test_all_mode_documents_everything_configured(self):
@@ -159,7 +170,7 @@ class ScopePipelineTest(PipelineTestBase):
         primaries = {c["component"] for c in state.data["components"] if c["role"] == "primary"}
         self.assertTrue({"Meu_Flow", "Tela_Cadastro", "Processa_Pedido", "Pedido__c", "Minha_NC",
                          "Meu_Site", "Meu_Certificado"} <= primaries)
-        self.assertEqual(state.data["scope"]["effective"]["Flow"], ["*"])
+        self.assertEqual(state.data["selection"]["effective"]["Flow"], ["ALL"])
 
     def test_org_alias_and_paths_from_config_json(self):
         self.set_scope({"mode": "ALL"}, orgAlias="outra")
@@ -170,11 +181,11 @@ class ScopePipelineTest(PipelineTestBase):
         code, state = self.run_pipeline(groups=["RemoteSiteSetting"])
         # A CLI simulada só conhece o alias "dev": prova que o alias veio do config.json.
         self.assertEqual(state.data["failure"]["code"], "ORG_NOT_AUTHENTICATED")
-        self.assertEqual(state.data["scope"]["orgAlias"], "outra")
-        self.assertEqual(state.data["scope"]["orgAliasSource"], "config.json")
+        self.assertEqual(state.data["selection"]["orgAlias"], "outra")
+        self.assertEqual(state.data["selection"]["orgAliasSource"], "config.json")
         code, state = self.run_pipeline(org_alias="dev", groups=["RemoteSiteSetting"])
         self.assertEqual(code, EXIT_OK, self.log.getvalue())
-        self.assertEqual(state.data["scope"]["orgAliasSource"], "--target-org")
+        self.assertEqual(state.data["selection"]["orgAliasSource"], "--target-org")
         self.assertTrue(self.primary(state, "Meu_Site")["document"].startswith("docs-geradas/"))
 
     def test_custom_metadata_types_path(self):
@@ -190,7 +201,7 @@ class ScopePipelineTest(PipelineTestBase):
         cfg_path.write_text(json.dumps(cfg))
         code, state = self.run_pipeline()
         self.assertEqual(code, EXIT_OK, self.log.getvalue())
-        self.assertEqual(list(state.data["scope"]["effective"]), ["RemoteSiteSetting"])
+        self.assertEqual(list(state.data["selection"]["effective"]), ["RemoteSiteSetting"])
 
 
 if __name__ == "__main__":

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import re
 from pathlib import Path
 
@@ -36,8 +37,8 @@ class AppConfig:
         # Arquivo de grupos/tipos (opcional; padrão config/metadata-types-mvp.json).
         self.metadata_types_path = self.paths.get(
             "metadataTypesConfig", self.project_root / "config" / "metadata-types-mvp.json")
-        # Escopo: ALL (tudo o que estiver configurado) ou SELECTED (tipos/componentes listados).
-        self.scope = ScopeConfig(data.get("scope"))
+        # Seleção: ALL (tudo o que estiver configurado) ou SELECTED (tipos/componentes listados).
+        self.selection = ScopeConfig(data.get("selection"), legacy_scope=data.get("scope"))
         # Orgs aprovadas: nenhuma coleta (inventário/retrieve) sem identidade aprovada.
         self.approved_orgs = _parse_approved_orgs(data.get("approvedOrgs"))
         protection = data.get("dataProtection") or {}
@@ -104,7 +105,21 @@ def load_config(project_root, config_path=None) -> AppConfig:
     if not path.is_file():
         raise ConfigError(f"Arquivo de configuração não encontrado: {path}")
     try:
-        data = read_json(path)
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f, object_pairs_hook=_no_duplicate_keys)
+    except ConfigError:
+        raise
     except ValueError as exc:
         raise ConfigError(f"config.json inválido: {exc}") from exc
     return AppConfig(data, project_root)
+
+
+def _no_duplicate_keys(pairs):
+    """O leitor JSON padrão manteria só a última ocorrência de uma chave repetida;
+    aqui isso é erro (ex.: o mesmo metadata type duas vezes em selection)."""
+    out = {}
+    for key, value in pairs:
+        if key in out:
+            raise ConfigError(f"config.json: chave JSON repetida {key!r} (só a última seria considerada)")
+        out[key] = value
+    return out

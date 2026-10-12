@@ -14,7 +14,7 @@
     "outputDocs": "saida/docs",
     "metadataTypesConfig": "config/metadata-types-mvp.json"
   },
-  "scope": {
+  "selection": {
     "mode": "ALL"
   },
   "approvedOrgs": [],
