@@ -22,3 +22,9 @@
 | Variável | Tipo de dado | Objeto | Coleção | Fonte |
 |---|---|---|---|---|
 | {{ variable }} | {{ data_type }} | {{ object_type }} | {{ is_collection }} | XML |
+
+## Dados internos
+
+| Versão | Status | Id | Fonte |
+|---|---|---|---|
+| {{ internal_version }} | {{ internal_status }} | {{ internal_id }} | Tooling API |

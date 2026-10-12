@@ -64,5 +64,21 @@
     "Seção 7 (variáveis globais $Record/$User...): inferência sobre expressões, não propriedade do metadata",
     "OptimizationMode via start.elementSubtype: não confirmado",
     "scheduledPaths / start.schedule: nomes de campos pendentes de confirmação oficial"
+  ],
+  "tables": [
+    {
+      "markdownSection": "Dados internos",
+      "builder": "internal_rows",
+      "source": "Tooling API",
+      "args": {
+        "columns": {
+          "internal_version": "VersionNumber",
+          "internal_status": "Status",
+          "internal_id": "Id"
+        }
+      },
+      "emptyValue": "Não informado",
+      "notes": "Versões do Flow (Tooling API, objeto Flow), do internalData do Flow."
+    }
   ]
 }

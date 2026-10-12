@@ -1,0 +1,26 @@
+{
+  "done": true,
+  "totalSize": 2,
+  "records": [
+    {
+      "attributes": {
+        "type": "EntityDefinition"
+      },
+      "QualifiedApiName": "Pedido__c",
+      "Label": "Pedido",
+      "PluralLabel": "Pedidos",
+      "KeyPrefix": "a01",
+      "LastModifiedDate": "2026-01-10T12:00:00.000+0000"
+    },
+    {
+      "attributes": {
+        "type": "EntityDefinition"
+      },
+      "QualifiedApiName": "Config__mdt",
+      "Label": "Config",
+      "PluralLabel": "Configs",
+      "KeyPrefix": "m00",
+      "LastModifiedDate": "2026-01-11T12:00:00.000+0000"
+    }
+  ]
+}

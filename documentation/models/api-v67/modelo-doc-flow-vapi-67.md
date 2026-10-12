@@ -21,3 +21,9 @@
 | Componente | Tipo | Fonte |
 |---|---|---|
 | {{ related_component }} | {{ related_type }} | XML |
+
+## Dados internos
+
+| Versão | Status | Id | Fonte |
+|---|---|---|---|
+| {{ internal_version }} | {{ internal_status }} | {{ internal_id }} | Tooling API |

@@ -173,6 +173,13 @@ if cmd[:2] == ["data", "query"]:
     p = fx(f"query/{obj}.json")
     if not p.is_file():
         err("INVALID_TYPE", f"sObject type '{obj}' is not supported.")
-    out({"status": 0, "result": json.loads(p.read_text())})
+    data = json.loads(p.read_text())
+    # Filtro simples `WHERE Campo = 'valor'` (campos com relacionamento não são filtrados).
+    import re
+    m = re.search(r"WHERE (\w+) = '([^']*)'", q)
+    if m:
+        data["records"] = [r for r in data["records"] if str(r.get(m.group(1))) == m.group(2)]
+        data["totalSize"] = len(data["records"])
+    out({"status": 0, "result": data})
 
 err("UnknownCommand", f"Comando não simulado: {' '.join(args)}")

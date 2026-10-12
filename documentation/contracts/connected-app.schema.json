@@ -46,14 +46,28 @@
         ]
       },
       "notes": "Somente propriedades em `allow` são renderizadas; as demais (callbackUrl, consumerKey, certificate...) são omitidas e registradas em omittedProperties do run."
+    },
+    {
+      "markdownSection": "Dados internos",
+      "builder": "internal_record_properties",
+      "source": "Objeto interno",
+      "args": {
+        "keyPlaceholder": "internal_property",
+        "valuePlaceholder": "internal_value"
+      },
+      "emptyValue": "Não informado"
     }
   ],
   "relatedMetadataTypes": [],
   "internalData": {
-    "enabled": false,
-    "source": null,
-    "object": null,
-    "query": null
+    "enabled": true,
+    "source": "Objeto interno",
+    "object": "ConnectedApplication",
+    "useToolingApi": false,
+    "query": "SELECT Id, Name, OptionsAllowAdminApprovedUsersOnly FROM ConnectedApplication WHERE Name = '{developerName}'",
+    "expectSingleRecord": true,
+    "blocking": false,
+    "validationPending": "Object Reference (ConnectedApplication, query()). Confirmar no piloto se Name corresponde ao fullName do metadata ConnectedApp."
   },
   "referenceDoc": "_sf_utilities/ajudAI/contexto-connected-app.md",
   "security": "consumerKey, callbackUrl, certificate, contactEmail/Phone em omitFromDocumentation; consumerSecret em sensitiveXmlElements.",

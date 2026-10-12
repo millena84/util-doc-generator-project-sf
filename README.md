@@ -51,7 +51,7 @@ Códigos de saída: `0` sucesso (inclui `PARTIAL_SUCCESS` e `COMPLETED_WITH_GAPS
 |---|---|---|---|
 | 1 | `sf --version` ≥ mínima | — | — |
 | 2 | `sf org list --json` contém o alias | não persistido (dado local da CLI, pode conter tokens) | — |
-| 3 | `sf org display --target-org <alias> --json` | `catalog/org-<alias>/api-v<N>/org-display.raw.json` | — |
+| 3 | `sf org display --target-org <alias> --json` | `catalog/org-<alias>/api-v<N>/org-display.raw.json` se a resposta não tiver credencial; senão só `org-display.sanitized.json` (credenciais como `[REDACTED]`) | — |
 | 3b | Aprovação da org (`approvedOrgs` ou confirmação interativa do `orgId`) | — | `orgApproval` no run state |
 | 3c | Token: do `org display` (CLIs antigas) ou `sf org auth show-access-token --json` | não persistido | `tokenSource` no run state |
 | 4 | `sf org list metadata-types` | `catalog/.../metadata-types.raw.json` | `metadata-types.index.json` |
@@ -67,13 +67,25 @@ Estado da execução: `runs/run-<AAAAMMDD-HHMMSS>.json`. Respostas de erro ficam
 ## Decisões de implementação
 
 - **Raw do `describeValueType`**: a Metadata API responde em XML (SOAP). O raw é um envelope JSON (`rawFormat: metadata-api-soap-capture/v1`) com `request` (endpoint, tipo, data — **sem token**) e `response.body` contendo o **XML exatamente como recebido**. O `.schema.json` é derivado desse corpo e pode ser regenerado.
-- **Token**: obtido só depois da aprovação da org — de `sf org display` quando a CLI ainda o exibe, senão de `sf org auth show-access-token --json` (resposta não gravada) —, mantido só em memória, mascarado em logs/`repr`/`str`, não serializável (pickle/deepcopy) e descartado (`OrgSession.clear()`) ao fim de cada execução. O `org-display.raw.json` é salvo inalterado (regra do raw), com permissão `0600` e no `.gitignore`.
+- **Token**: obtido só depois da aprovação da org — de `sf org display` quando a CLI ainda o exibe, senão de `sf org auth show-access-token --json` (resposta não gravada) —, mantido só em memória, mascarado em logs/`repr`/`str`, não serializável (pickle/deepcopy) e descartado (`OrgSession.clear()`) ao fim de cada execução. Se a CLI ainda exibir o token em `sf org display`, a resposta **não vira raw**: grava-se apenas `org-display.sanitized.json`, com `accessToken` e demais credenciais como `[REDACTED]` (política R1: resposta com credencial não é persistida em bruto). Sem credencial na resposta, `org-display.raw.json` é salvo inalterado, `0600` e no `.gitignore`.
 - **Retrieve**: roda em um projeto SFDX temporário; o XML é copiado byte a byte, preservando as pastas do formato source (ex.: `objects/Obj__c/fields/...`).
 - **Valores ausentes**: `Não aplicável` quando o `describeValueType` comprova que o campo não existe no tipo; `Não informado` quando existe mas não veio no XML/dado interno.
 - **Dados sensíveis**: elementos listados em `sensitiveXmlElements` (ex.: `consumerSecret`) nunca são renderizados e são substituídos por `[REDACTED]` no JSON normalizado (o XML original fica intacto); o run log avisa quando um XML recuperado os contém. `ExtlClntAppGlobalOauthSettings` é tipo excluído (contém consumer secret).
 - **Valores sujeitos a decisão de segurança** (`omitFromDocumentation`: `consumerKey`, `callbackUrl`, `contactEmail/Phone`, `certificate`, `parameterValue`, permission sets/perfis, usuários de execução): nunca entram no Markdown. A linha é **omitida** (sem criar valor além de `Não informado`/`Não aplicável`) e o nome da propriedade fica em `omittedProperties` no run state. Valores (`<values>`) de records de Custom Metadata também não são renderizados.
 - **`inventory/**/components/` e `inventory/**/normalized/` estão no `.gitignore`**: o raw é preservado em disco, mas pode conter valores sensíveis.
 - **External Client App**: o nome correto do metadata type é `ExternalClientApplication` (Metadata API). O grupo continua chamado `ExternalClientApp`.
+- **Dados internos**: todo documento principal (e os subdocumentos de Flow) tem a seção "Dados internos". As consultas não bloqueiam a execução; objeto inacessível → "Não informado". Com `expectSingleRecord`, mais de um registro para o componente é descartado como ambíguo. `validate-config` recusa consulta que selecione campo de `sensitiveXmlElements` ou `omitFromDocumentation`, e campos bloqueados devolvidos pela org não são renderizados.
+
+  | Documento | Objeto interno | API | Situação |
+  |---|---|---|---|
+  | Flow (e subdocumentos trigger/autolaunched/tela) | `Flow` (versões e status) | Tooling | `validationPending` |
+  | Custom Object / Custom Metadata | `EntityDefinition` | Tooling | `validationPending` |
+  | Connected App | `ConnectedApplication` | padrão | `validationPending` (confirmar se `Name` = fullName) |
+  | Named Credential | `NamedCredential` (sem `Endpoint`, que é omitido) | padrão | `validationPending` |
+  | Certificate | `Certificate` | Tooling | `validationPending` |
+  | External Credential | `ExternalCredential` | padrão | `validationPending` |
+  | External Client App | — | — | "Não aplicável": nenhum objeto consultável confirmado em documentação oficial |
+  | Remote Site Setting | — | — | "Não aplicável": `RemoteProxy` (Tooling) não documenta campo de nome filtrável |
 
 ## Riscos conhecidos (tratar futuramente, se necessário)
 
@@ -82,7 +94,7 @@ Registro da auditoria de segurança de 2026-10-11 (10 riscos: 1 crítico, 2 alto
 | # | Risco | Situação | Possível tratamento futuro |
 |---|---|---|---|
 | 1 | 🔴 `accessToken` mantido em memória durante a execução | **Mitigado**: mascarado em `repr`/`str`, serialização bloqueada, descartado em `finally` ao fim da execução; `MetadataApiClient` obtém o token da sessão a cada chamada (sem cópia própria). | Risco residual: Python não permite zerar uma `str` na memória; um dump do processo durante a execução ainda expõe o token. Aceitável para uso local. |
-| 1a | 🔴 `accessToken` gravado em disco em `catalog/.../org-display.raw.json` (e em `runs/*/errors/`) | **Mitigado e configurável**: `.gitignore` + `0600`; `dataProtection.orgDisplayRaw = DELETE_AFTER_RUN` apaga o raw ao fim da execução (padrão `KEEP_PRIVATE` preserva a regra do raw). | Decisão registrada em `documentation/protecao-de-dados.md`. |
+| 1a | 🔴 `accessToken` gravado em disco em `catalog/.../org-display.raw.json` (e em `runs/*/errors/`) | **Resolvido**: resposta com token gera só `org-display.sanitized.json` (token como `[REDACTED]`); o token segue apenas em memória. `DELETE_AFTER_RUN` continua disponível para o raw sem credencial. | Raws antigos com token: apagar com `purge --apply --delete-sensitive` ou manualmente. |
 | P3 | Coleta em org errada; segredos em mensagens; sobrescrita silenciosa; retomada incompatível; cobertura não informada | **Tratados na Prioridade 3**: `approvedOrgs` (nada é coletado sem aprovação), máscara de valores secretos do XML e run state mascarado recursivamente, arquivos `0600`, manifesto/`_substituidos`/`BY_RUN`, fingerprint de retomada, `coverage`. | Ver `documentation/protecao-de-dados.md`. |
 | R3 | Raw × segredo; confirmação de org; CLI sem token no `org display`; erro inesperado sem estado; retomada/regeneração com fonte alterada; retenção | **Tratados na Refatoração 3** (seção abaixo). | CLI real ainda não validada (só simulada). |
 | 2–10 | Demais riscos da auditoria (2 altos, 5 médios, 2 baixos) | **Não detalhados** neste registro. | Incluir descrição, localização e decisão quando o relatório completo estiver disponível. |

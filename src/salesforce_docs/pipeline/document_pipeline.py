@@ -24,6 +24,7 @@ from salesforce_docs.runs.run_logger import RunLogger
 from salesforce_docs.runs.run_state import RunState
 from salesforce_docs.salesforce.cli_runner import CliRunner, sanitized_error_path
 from salesforce_docs.salesforce.metadata_api_client import MetadataApiClient
+from salesforce_docs.parsing.xml_parser import redact
 from salesforce_docs.salesforce.org_session import OrgSession, looks_like_session_token
 from salesforce_docs.salesforce.tooling_api_client import ToolingApiClient
 from salesforce_docs.pipeline.output_writer import OutputWriter
@@ -36,6 +37,8 @@ from salesforce_docs.validation.git_guard import check_git
 from salesforce_docs.validation.project_validator import validate_project
 
 EXIT_OK, EXIT_FAILURE, EXIT_SESSION, EXIT_GAPS = 0, 1, 2, 3
+# Chaves de `sf org display --json` que carregam credenciais (algumas só com --verbose).
+ORG_DISPLAY_SECRET_KEYS = ("accessToken", "refreshToken", "sfdxAuthUrl", "password", "clientSecret")
 
 
 class PipelineContext:
@@ -296,6 +299,28 @@ class DocumentPipeline:
         p.display_token = None
         p.run_state.set("tokenSource", source)
         p.log.info(f"Passo 3c: token de acesso obtido via `{source}` (não persistido)")
+
+    def _save_org_display(self, p, result, raw_path):
+        """Política R1: resposta com credencial não vira raw.
+
+        CLIs que ainda exibem o token em `sf org display` geram só o envelope
+        `org-display.sanitized.json` (credenciais como [REDACTED]); sem credencial
+        na resposta, o raw é gravado intacto. Retorna o caminho gravado.
+        """
+        data = json.loads(json.dumps(result.data)) if isinstance(result.data, dict) else None
+        display = (data or {}).get("result") if isinstance((data or {}).get("result"), dict) else {}
+        has_secret = looks_like_session_token(display.get("accessToken")) or any(
+            display.get(k) not in (None, "") for k in ORG_DISPLAY_SECRET_KEYS if k != "accessToken")
+        if not has_secret:
+            write_text_raw(raw_path, result.stdout, private=True)  # bruto, inalterado
+            return raw_path
+        redacted = redact(data, set(ORG_DISPLAY_SECRET_KEYS))
+        path = raw_path.with_name("org-display.sanitized.json")
+        write_json(path, {"sanitized": True,
+                          "note": "Resposta de `sf org display` com credenciais; não é raw intacto.",
+                          "redacted": redacted, "response": data}, private=True)
+        p.log.info("Passo 3: `sf org display` exibiu credenciais; gravado só o envelope sanitizado")
+        return path
 
     def _apply_org_display_policy(self, p):
         if self.app.org_display_raw_policy != "DELETE_AFTER_RUN":
@@ -596,8 +621,7 @@ class DocumentPipeline:
         p.bind_session(session)
         raw_path = p.catalog_dir / "org-display.raw.json"
         if self.app.save_raw_responses:
-            # bruto, inalterado; contém token: .gitignore + permissão restrita ao dono (0600)
-            write_text_raw(raw_path, result.stdout, private=True)
+            raw_path = self._save_org_display(p, result, raw_path)
         org_session_validator.validate_display(result, alias)
         p.run_state.data["apiVersion"] = session.api_version
         p.run_state.set("session", session.describe())

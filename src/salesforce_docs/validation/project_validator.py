@@ -40,7 +40,8 @@ def validate_project(app_config, mvp_config, contracts, strict=False) -> list:
         for block in contract.get("blocks", []):
             if block.get("source") not in st.ALLOWED_SOURCES:
                 errors.append(f"{name}: bloco {block.get('placeholder')} com fonte inválida")
-        errors.extend(validate_internal_data_config(name, contract.get("internalData")))
+        errors.extend(validate_internal_data_config(name, contract.get("internalData"),
+                                                    mvp_config.render_blocked_elements))
         if contract.get("template"):
             e, w = validate_template(name, contract, app_config)
             errors.extend(e)

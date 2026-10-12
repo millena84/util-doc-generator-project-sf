@@ -114,12 +114,13 @@ class MaskingAndFilesTest(P3Base):
         for path in (api / "inventory.raw.json", api / "retrieve/meu-app.raw.json",
                      api / "components/connectedApps/Meu_App.connectedApp-meta.xml",
                      api / "normalized/meu-app.json", state.path,
-                     self.root / "catalog/org-dev/api-v67/org-display.raw.json"):
+                     self.root / "catalog/org-dev/api-v67/org-display.sanitized.json"):
             self.assertEqual(stat.S_IMODE(path.stat().st_mode), 0o600, str(path))
 
     def test_delete_org_display_raw_after_run(self):
         self.config(dataProtection={"orgDisplayRaw": "DELETE_AFTER_RUN"})
-        code, state = self.run_pipeline(groups=["RemoteSiteSetting"])
+        # CLI que não exibe o token: o raw é gravado intacto e apagado ao fim.
+        code, state = self.run_pipeline("redact_display_token", groups=["RemoteSiteSetting"])
         self.assertEqual(code, EXIT_OK)
         self.assertFalse((self.root / "catalog/org-dev/api-v67/org-display.raw.json").exists())
         self.assertEqual(state.data["dataProtection"]["removed"],

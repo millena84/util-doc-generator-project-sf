@@ -62,6 +62,20 @@
     "enabled": false,
     "source": null,
     "object": null,
-    "query": null
-  }
+    "query": null,
+    "notes": "Tooling API RemoteProxy não documenta campo de nome filtrável (SiteName não consta da lista oficial de campos)."
+  },
+  "tables": [
+    {
+      "markdownSection": "Dados internos",
+      "builder": "internal_record_properties",
+      "source": "Objeto interno",
+      "args": {
+        "keyPlaceholder": "internal_property",
+        "valuePlaceholder": "internal_value"
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Tooling API RemoteProxy não documenta campo de nome filtrável (SiteName não consta da lista oficial de campos). Seção 'Não aplicável' até confirmação."
+    }
+  ]
 }

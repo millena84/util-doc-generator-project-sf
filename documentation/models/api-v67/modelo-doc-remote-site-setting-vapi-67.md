@@ -9,3 +9,9 @@
 | IsActive | {{ is_active }} | XML |
 | DisableProtocolSecurity | {{ disable_protocol_security }} | XML |
 | Description | {{ description }} | XML |
+
+## Dados internos
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| {{ internal_property }} | {{ internal_value }} | Objeto interno |
