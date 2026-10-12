@@ -68,6 +68,17 @@
       "builder": "related_folders",
       "source": "XML",
       "notes": "Pasta (formato source) de cada XML recuperado; finalidade = metadata type armazenado na pasta."
+    },
+    {
+      "markdownSection": "Dados internos",
+      "builder": "internal_record_properties",
+      "source": "Objeto interno",
+      "args": {
+        "keyPlaceholder": "internal_property",
+        "valuePlaceholder": "internal_value"
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Nenhum objeto consultável por SOQL para ExternalClientApplication foi confirmado na documentação oficial. Seção 'Não aplicável' até confirmação."
     }
   ],
   "relatedMetadataTypes": [
@@ -79,7 +90,8 @@
     "enabled": false,
     "source": null,
     "object": null,
-    "query": null
+    "query": null,
+    "notes": "Nenhum objeto consultável por SOQL para ExternalClientApplication foi confirmado na documentação oficial."
   },
   "blocks": [
     {

@@ -79,14 +79,28 @@
           "protected": "protected"
         }
       }
+    },
+    {
+      "markdownSection": "Dados internos",
+      "builder": "internal_record_properties",
+      "source": "Tooling API",
+      "args": {
+        "keyPlaceholder": "internal_property",
+        "valuePlaceholder": "internal_value"
+      },
+      "emptyValue": "Não informado"
     }
   ],
   "relatedMetadataTypes": [],
   "internalData": {
-    "enabled": false,
-    "source": null,
-    "object": null,
-    "query": null
+    "enabled": true,
+    "source": "Tooling API",
+    "object": "EntityDefinition",
+    "useToolingApi": true,
+    "query": "SELECT QualifiedApiName, Label, PluralLabel, KeyPrefix, LastModifiedDate FROM EntityDefinition WHERE QualifiedApiName = '{fullName}'",
+    "expectSingleRecord": true,
+    "blocking": false,
+    "validationPending": "Campos conforme Tooling API e Field Reference (EntityDefinition); confirmar no piloto que a consulta é aceita pela org."
   },
   "referenceDoc": "_sf_utilities/ajudAI/contexto-custommetadata.md",
   "evidence": [

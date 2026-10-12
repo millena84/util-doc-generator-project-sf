@@ -98,6 +98,11 @@ def child_properties(ctx, args):
     return rows
 
 
+def _blocked_field(ctx, name):
+    """Campos de SOQL vêm em PascalCase (ex.: Endpoint); a lista de bloqueio, em camelCase."""
+    return isinstance(name, str) and name.lower() in {str(s).lower() for s in ctx.sensitive}
+
+
 def internal_record_properties(ctx, args):
     """Campo/valor do primeiro registro do dado interno."""
     records = ctx.internal.get("records") or []
@@ -105,10 +110,23 @@ def internal_record_properties(ctx, args):
         return []
     rows = []
     for k, v in records[0].items():
-        if k == "attributes" or k in ctx.sensitive:
+        if k == "attributes" or _blocked_field(ctx, k):
             continue
         rows.append({args.get("keyPlaceholder", "property"): k,
                      args.get("valuePlaceholder", "value"): format_value(v, None, ctx.sensitive)})
+    return rows
+
+
+def internal_rows(ctx, args):
+    """Uma linha por registro do dado interno; colunas = {placeholder: campo}."""
+    rows = []
+    for rec in ctx.internal.get("records") or []:
+        row = {}
+        for placeholder, field in args["columns"].items():
+            if _blocked_field(ctx, field):
+                raise ValueError(f"Campo sensível não pode ser documentado: {field}")
+            row[placeholder] = format_value(rec.get(field), None, ctx.sensitive)
+        rows.append(row)
     return rows
 
 
@@ -169,6 +187,7 @@ TABLE_BUILDERS = {
     "path_rows": path_rows,
     "child_properties": child_properties,
     "internal_record_properties": internal_record_properties,
+    "internal_rows": internal_rows,
     "related_folders": related_folders,
 }
 

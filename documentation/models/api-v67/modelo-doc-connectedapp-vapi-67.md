@@ -13,3 +13,9 @@
 | Propriedade | Valor | Fonte |
 |---|---|---|
 | {{ oauth_property }} | {{ value }} | XML |
+
+## Dados internos
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| {{ internal_property }} | {{ internal_value }} | Objeto interno |

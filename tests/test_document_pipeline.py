@@ -52,7 +52,7 @@ class FullRunTest(PipelineTestBase):
         self.assertEqual(state.data["status"], st.SUCCESS)
         self.assertEqual(state.data["apiVersion"], "67.0")
         cat = self.root / "catalog" / "org-dev" / "api-v67"
-        for f in ("org-display.raw.json", "metadata-types.raw.json", "metadata-types.index.json",
+        for f in ("org-display.sanitized.json", "metadata-types.raw.json", "metadata-types.index.json",
                   "schemas/flow.describevaluetype.raw.json", "schemas/flow.schema.json"):
             self.assertTrue((cat / f).is_file(), f)
         flow = self.primary(state, "Meu_Flow")
@@ -139,11 +139,27 @@ class FullRunTest(PipelineTestBase):
         self.assertEqual(code, EXIT_OK, self.log.getvalue())
         self.assertTrue(sessions and all(s.cleared for s in sessions))
 
-    @unittest.skipIf(os.name != "posix", "permissões POSIX")
-    def test_org_display_raw_is_private(self):
-        self.run_pipeline(groups=["Flow"])
-        raw = self.root / "catalog" / "org-dev" / "api-v67" / "org-display.raw.json"
-        self.assertEqual(raw.stat().st_mode & 0o777, 0o600)
+    def test_org_display_with_token_is_not_saved_as_raw(self):
+        code, state = self.run_pipeline(groups=["Flow"])
+        cat = self.root / "catalog" / "org-dev" / "api-v67"
+        self.assertFalse((cat / "org-display.raw.json").exists())
+        sanitized = cat / "org-display.sanitized.json"
+        self.assertNotIn(FAKE_TOKEN, sanitized.read_text())
+        data = json.loads(sanitized.read_text())
+        self.assertTrue(data["sanitized"])
+        self.assertEqual(data["redacted"], ["result.accessToken"])
+        self.assertEqual(data["response"]["result"]["accessToken"], "[REDACTED]")
+        self.assertEqual(data["response"]["result"]["apiVersion"], "67.0")
+        if os.name == "posix":
+            self.assertEqual(sanitized.stat().st_mode & 0o777, 0o600)
+        self.assertEqual(code, EXIT_OK, self.log.getvalue())  # token segue em memória para a Metadata API
+
+    def test_org_display_without_token_keeps_raw_intact(self):
+        code, state = self.run_pipeline("redact_display_token", groups=["Flow"])
+        cat = self.root / "catalog" / "org-dev" / "api-v67"
+        self.assertTrue((cat / "org-display.raw.json").is_file())
+        self.assertFalse((cat / "org-display.sanitized.json").exists())
+        self.assertEqual(state.data["tokenSource"], "sf org auth show-access-token")
 
     def test_sensitive_xml_warning_and_not_rendered(self):
         code, state = self.run_pipeline(groups=["ConnectedApp"])
@@ -155,7 +171,7 @@ class FullRunTest(PipelineTestBase):
         code, state = self.run_pipeline(api_version="66.0", groups=["Flow"])
         self.assertEqual(state.data["session"]["apiVersion"], "66.0")
         self.assertEqual(state.data["session"]["detectedApiVersion"], "67.0")
-        self.assertTrue((self.root / "catalog/org-dev/api-v66/org-display.raw.json").is_file())
+        self.assertTrue((self.root / "catalog/org-dev/api-v66/org-display.sanitized.json").is_file())
         # Não existe documentation/models/api-v66 => NO_TEMPLATE, dados preservados.
         flow = self.primary(state, "Meu_Flow")
         self.assertEqual(flow["status"], st.NO_TEMPLATE)

@@ -32,3 +32,9 @@
 | Componente | Tipo | Fonte |
 |---|---|---|
 | {{ related_component }} | {{ related_type }} | XML |
+
+## Dados internos
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| {{ internal_property }} | {{ internal_value }} | Objeto interno |

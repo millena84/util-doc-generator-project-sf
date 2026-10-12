@@ -34,3 +34,9 @@
 | Pasta | Finalidade | Fonte |
 |---|---|---|
 | {{ folder }} | {{ purpose }} | XML |
+
+## Dados internos
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| {{ internal_property }} | {{ internal_value }} | Objeto interno |

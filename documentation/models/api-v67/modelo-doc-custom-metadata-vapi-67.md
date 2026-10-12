@@ -21,3 +21,9 @@
 | Record | Label | Protected | Fonte |
 |---|---|---|---|
 | {{ record }} | {{ label }} | {{ protected }} | XML |
+
+## Dados internos
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| {{ internal_property }} | {{ internal_value }} | Tooling API |

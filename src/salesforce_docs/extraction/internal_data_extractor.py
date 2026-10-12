@@ -33,5 +33,9 @@ def extract_internal_data(tooling, internal_cfg, full_name, raw_path, errors_raw
     if records is None:
         return {"status": st.INTERNAL_DATA_UNAVAILABLE, "records": None, "raw": result.raw_path,
                 "query": query, "error": result.error_message}
+    if internal_cfg.get("expectSingleRecord") and len(records) > 1:
+        # Mais de um registro para o mesmo componente: escolher um seria suposição.
+        return {"status": st.INTERNAL_DATA_UNAVAILABLE, "records": None, "raw": result.raw_path,
+                "query": query, "error": f"{len(records)} registros para um componente (ambíguo)"}
     return {"status": st.SUCCESS, "records": records, "raw": result.raw_path, "query": query,
             "error": None}

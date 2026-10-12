@@ -22,7 +22,8 @@
 
 | Artefato | Local | Conteúdo / sensibilidade | Proteção | Git | Retenção recomendada |
 |---|---|---|---|---|---|
-| `org-display.raw.json` | `catalog/org-<alias>/api-v<N>/` | username, instanceUrl, orgId; **accessToken** apenas em CLIs que ainda o exibem | 0600; `dataProtection.orgDisplayRaw = DELETE_AFTER_RUN` apaga ao fim | ignorado | apagar ao fim (`DELETE_AFTER_RUN`) ou até o token expirar |
+| `org-display.raw.json` | `catalog/org-<alias>/api-v<N>/` | username, instanceUrl, orgId — **só gravado quando a resposta não tem credencial** | 0600; `dataProtection.orgDisplayRaw = DELETE_AFTER_RUN` apaga ao fim | ignorado | apagar ao fim (`DELETE_AFTER_RUN`) |
+| `org-display.sanitized.json` | `catalog/org-<alias>/api-v<N>/` | resposta de `sf org display` de CLIs que ainda exibem o token, com `accessToken`/`refreshToken`/`sfdxAuthUrl`/`password`/`clientSecret` como `[REDACTED]` (derivado, não raw) | 0600 | ignorado | junto do catálogo |
 | Respostas de erro | `runs/<runId>/errors/*.sanitized.json` (CLI) e `*.describevaluetype.raw.json` (SOAP, sem token na requisição) | erros da CLI/API; os da CLI são gravados **mascarados** (envelope sanitizado, não raw) | 0600 | ignorado | apagar após análise da falha |
 | `metadata-types.raw.json`, `*.describevaluetype.raw.json`, `*.schema.json`, `*.index.json` | `catalog/` | catálogo/estrutura da org; baixa sensibilidade | 0600 (raws) | versionável após revisão | enquanto a API version for usada |
 | `inventory.raw.json` / `inventory.index.json` | `inventory/.../<tipo>/` | nomes de componentes, IDs, usuários que alteraram | 0600 (raw) | versionável após revisão | por execução documental |
@@ -44,7 +45,8 @@ Há um conflito entre "raw sem alteração" (regra 3 do `CLAUDE.md`) e "não per
 
 - O raw **permanece intacto** — nenhum `.raw.json` ou XML recuperado é redigido, filtrado ou reescrito. Um arquivo modificado não seria raw, e o utilitário não chama de raw nada que tenha alterado.
 - A proteção vem de **onde e como** o raw é guardado, não de alterá-lo: permissão `0600`, caminhos no `.gitignore` **e** verificação ativa do Git (abaixo), segredos redigidos apenas nos **derivados** (normalizado, run state, logs, Markdown).
-- Respostas que são **só** credencial não viram raw: `sf org list` (passo 2) e `sf org auth show-access-token` (passo 3c) não são gravadas. Respostas de erro da CLI são gravadas como envelope `*.sanitized.json` (derivado mascarado), não como raw.
+- Respostas que são **só** credencial não viram raw: `sf org list` (passo 2) e `sf org auth show-access-token` (passo 3c) não são gravadas.
+- Resposta que **contém** credencial também não vira raw: se `sf org display` exibir o token (CLIs antigas), grava-se só o envelope `org-display.sanitized.json` com as credenciais como `[REDACTED]`. O token usado pela Metadata API vem da resposta em memória, nunca do arquivo. Respostas de erro da CLI são gravadas como envelope `*.sanitized.json` (derivado mascarado), não como raw.
 - O raw do `sf org display` pode ser apagado ao fim (`dataProtection.orgDisplayRaw = DELETE_AFTER_RUN`) — exclusão, não alteração.
 - A exclusão dos demais artefatos sensíveis é **explícita** e por retenção (`purge --apply --delete-sensitive`, abaixo); nunca automática.
 

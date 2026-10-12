@@ -18,3 +18,9 @@
 | Campo | Tipo | Obrigatório | Fonte |
 |---|---|---|---|
 | {{ field }} | {{ type }} | {{ required }} | XML |
+
+## Dados internos
+
+| Versão | Status | Id | Fonte |
+|---|---|---|---|
+| {{ internal_version }} | {{ internal_status }} | {{ internal_id }} | Tooling API |

@@ -77,9 +77,25 @@
   ],
   "relatedMetadataTypes": [],
   "internalData": {
-    "enabled": false,
-    "source": null,
-    "object": null,
-    "query": null
-  }
+    "enabled": true,
+    "source": "Tooling API",
+    "object": "Certificate",
+    "useToolingApi": true,
+    "query": "SELECT DeveloperName, ExpirationDate, KeySize FROM Certificate WHERE DeveloperName = '{developerName}'",
+    "expectSingleRecord": true,
+    "blocking": false,
+    "validationPending": "Tooling API (Certificate, API 37.0+). Confirmar no piloto."
+  },
+  "tables": [
+    {
+      "markdownSection": "Dados internos",
+      "builder": "internal_record_properties",
+      "source": "Tooling API",
+      "args": {
+        "keyPlaceholder": "internal_property",
+        "valuePlaceholder": "internal_value"
+      },
+      "emptyValue": "Não informado"
+    }
+  ]
 }

@@ -23,7 +23,7 @@ from salesforce_docs.pipeline.document_pipeline import DocumentPipeline
 from salesforce_docs.salesforce.cli_runner import CliRunner
 
 TRACE = [  # componente rastreado em detalhe: (passo, arquivo, máx. linhas)
-    ("3", "catalog/org-dev/api-v67/org-display.raw.json", 0),
+    ("3", "catalog/org-dev/api-v67/org-display.sanitized.json", 0),
     ("4", "catalog/org-dev/api-v67/metadata-types.index.json", 20),
     ("5", "catalog/org-dev/api-v67/schemas/flow.schema.json", 20),
     ("6", "inventory/org-dev/api-v67/flows/inventory.index.json", 20),

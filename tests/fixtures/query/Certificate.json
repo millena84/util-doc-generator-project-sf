@@ -1,0 +1,14 @@
+{
+  "done": true,
+  "totalSize": 1,
+  "records": [
+    {
+      "attributes": {
+        "type": "Certificate"
+      },
+      "DeveloperName": "Meu_Certificado",
+      "ExpirationDate": "2027-10-01",
+      "KeySize": 2048
+    }
+  ]
+}

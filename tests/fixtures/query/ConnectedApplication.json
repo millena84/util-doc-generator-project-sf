@@ -1,0 +1,22 @@
+{
+  "done": true,
+  "totalSize": 2,
+  "records": [
+    {
+      "attributes": {
+        "type": "ConnectedApplication"
+      },
+      "Id": "0H4000000000001AAA",
+      "Name": "Meu_App",
+      "OptionsAllowAdminApprovedUsersOnly": true
+    },
+    {
+      "attributes": {
+        "type": "ConnectedApplication"
+      },
+      "Id": "0H4000000000002AAA",
+      "Name": "Outro_App",
+      "OptionsAllowAdminApprovedUsersOnly": false
+    }
+  ]
+}

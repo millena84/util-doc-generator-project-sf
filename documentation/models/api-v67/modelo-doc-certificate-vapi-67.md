@@ -11,3 +11,9 @@
 | ExpirationDate | {{ expiration_date }} | XML |
 | PrivateKeyExportable | {{ private_key_exportable }} | XML |
 | EncryptedWithPlatformEncryption | {{ encrypted_with_platform_encryption }} | XML |
+
+## Dados internos
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| {{ internal_property }} | {{ internal_value }} | Tooling API |

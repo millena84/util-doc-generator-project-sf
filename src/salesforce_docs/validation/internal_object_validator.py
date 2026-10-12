@@ -5,7 +5,7 @@ from __future__ import annotations
 INTERNAL_SOURCES = {"Tooling API", "Objeto interno"}
 
 
-def validate_internal_data_config(contract_name: str, internal: dict):
+def validate_internal_data_config(contract_name: str, internal: dict, sensitive=()):
     """Retorna lista de erros (vazia = válido)."""
     errors = []
     if not internal or not internal.get("enabled"):
@@ -17,6 +17,12 @@ def validate_internal_data_config(contract_name: str, internal: dict):
     query = internal.get("query") or ""
     if not query.strip().upper().startswith("SELECT"):
         errors.append(f"{contract_name}: internalData.query deve ser uma consulta SOQL SELECT")
+    else:
+        select = query.strip()[len("SELECT"):].split(" FROM ", 1)[0].split(" from ", 1)[0]
+        fields = {f.strip().split(".")[-1].lower() for f in select.split(",") if f.strip()}
+        hits = sorted(fields & {str(s).lower() for s in sensitive})
+        if hits:
+            errors.append(f"{contract_name}: internalData.query seleciona campos sensíveis {hits}")
     return errors
 
 
