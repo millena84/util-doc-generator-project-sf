@@ -87,6 +87,39 @@ Registro da auditoria de segurança de 2026-10-11 (10 riscos: 1 crítico, 2 alto
 
 Cada componente (principal ou relacionado) é extraído e normalizado de forma independente; a agregação acontece apenas no documento.
 
+## Escopo da execução (`config.json` → `scope`)
+
+| Item | Onde | Precedência |
+|---|---|---|
+| Alias da org | `orgAlias` | `--target-org` > `config.json` (o `orgAlias` de `metadata-types-mvp.json` é só informativo; divergência gera aviso) |
+| Diretórios | `paths` (`catalog`, `inventory`, `models`, `contracts`, `runs`, `outputDocs`, `metadataTypesConfig`) | `config.json` |
+| O que documentar | `scope.mode` = `ALL` ou `SELECTED` | `config.json`; `--group`/`--component` só **restringem** |
+
+- **`ALL`** (padrão): todos os grupos configurados em `metadataTypesConfig`, com todos os componentes que a org tiver. Não usa automaticamente a lista inteira de `sf org list metadata-types` (tipos sem grupo/contrato não são processados).
+- **`SELECTED`**: somente os tipos principais e componentes listados:
+
+```json
+"scope": {
+  "mode": "SELECTED",
+  "selection": [
+    { "metadataType": "Flow", "components": ["Meu_Flow", "Outro_Flow"] },
+    { "metadataType": "CustomMetadata", "components": ["Config__mdt"] },
+    { "metadataType": "RemoteSiteSetting", "components": ["*"] }
+  ]
+}
+```
+
+Regras:
+
+- `metadataType` é o tipo **principal** de um grupo. Tipos relacionados/filhos (`FlowDefinition`, `CustomField`, `ExtlClntApp*`…) são rejeitados com a indicação do principal — eles entram como dependência do principal selecionado.
+- `components` é obrigatório; `["*"]` = todos do tipo. Para Custom Metadata o componente é o tipo (`Config__mdt`).
+- Configuração inválida ou ambígua (modo desconhecido, `selection` vazia ou com `ALL`, tipo repetido, componente vazio/repetido, `*` misturado com nomes, tipo desconhecido) é rejeitada **antes de qualquer chamada à org**.
+- `--group`/`--component` fora do escopo do `config.json` é erro (antes de chamar a org).
+- Componente pedido e não encontrado (ou excluído pelo `componentFilter` do grupo) vira `NOT_FOUND` explícito no run state (`scope.notFound`) e a execução termina como `PARTIAL_SUCCESS`.
+- Componentes fora do escopo **não são recuperados**. Dependências do principal selecionado são: `FlowDefinition` de mesmo nome, filhos do objeto, records do `__mdt`, EC referenciada pela NC. Exceção documentada: para ligar `ExtlClntApp*` a uma ECA (`FIELD_EQUALS_PRIMARY`), os candidatos do tipo relacionado são recuperados para ler `externalClientApplication`; só os que apontam para a ECA selecionada entram no documento.
+- O run state registra o escopo pedido (`scope.requested`, `scope.cli`), o efetivo (`scope.effective`), o alias e sua origem; grupos fora do escopo aparecem como `OUT_OF_SCOPE`.
+- `bin/sf-docs.sh validate-config` mostra alias e escopo efetivo.
+
 ## Refatoração 1 — modelos adaptados das referências `ajudAI`
 
 A matriz de rastreabilidade, as divergências entre `ajudAI`, o utilitário e a documentação Salesforce, as decisões aplicadas e as pendências estão em [`documentation/refatoracao-1-matriz-ajudai.md`](documentation/refatoracao-1-matriz-ajudai.md). Cada contrato registra `referenceDoc`, `evidence` e o que ficou `notSupported`/`pendingVerification`.
@@ -106,7 +139,7 @@ A matriz de rastreabilidade, as divergências entre `ajudAI`, o utilitário e a 
 
 ## Estados
 
-`SUCCESS`, `NO_TEMPLATE`, `NO_COMPONENTS`, `NOT_ENABLED`, `SCHEMA_UNAVAILABLE`, `RETRIEVE_FAILED`, `INTERNAL_DATA_UNAVAILABLE`, `RETRY_REQUIRED`, `MISMATCH` (+ `FAILED` para erro inesperado ou documento inválido; `OUT_OF_SCOPE` para grupo configurado mas excluído por `--group`).
+`SUCCESS`, `NO_TEMPLATE`, `NO_COMPONENTS`, `NOT_ENABLED`, `SCHEMA_UNAVAILABLE`, `RETRIEVE_FAILED`, `INTERNAL_DATA_UNAVAILABLE`, `RETRY_REQUIRED`, `MISMATCH` (+ `FAILED` para erro inesperado ou documento inválido; `OUT_OF_SCOPE` para grupo configurado mas fora do escopo; `NOT_FOUND` para componente pedido em `scope.selection` e ausente).
 
 `NO_TEMPLATE` (contrato ou modelo ausente) nunca interrompe a execução: o aviso informa metadata type, componente, referência (`referenceDoc`), contrato e modelo esperados, os dados extraídos são preservados e as demais unidades continuam.
 

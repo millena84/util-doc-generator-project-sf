@@ -27,6 +27,8 @@ Atividades:
 
 ### Prioridade 2 — selecionar tudo ou somente metadata/componentes no `config.json`
 
+> **Implementada** (`config.json` → `scope`, `src/salesforce_docs/config/scope.py`, `tests/test_scope.py`). Ver README, seção "Escopo da execução".
+
 **Objetivo:** permitir modo `ALL` e modo de seleção explícita, preservando o comportamento de CLI de forma previsível.
 
 Atividades:

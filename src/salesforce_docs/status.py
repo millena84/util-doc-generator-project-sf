@@ -17,6 +17,7 @@ ENABLED = "ENABLED"
 EXCLUDED = "EXCLUDED"
 INTERRUPTED = "INTERRUPTED"
 PARTIAL_SUCCESS = "PARTIAL_SUCCESS"
+NOT_FOUND = "NOT_FOUND"  # componente pedido em scope.selection e ausente do inventário/filtro
 OUT_OF_SCOPE = "OUT_OF_SCOPE"  # grupo configurado, mas excluído do escopo da execução
 
 # Componentes nestes estados são reprocessados na retomada.

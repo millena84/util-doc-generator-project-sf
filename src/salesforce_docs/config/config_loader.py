@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from salesforce_docs.config.scope import ScopeConfig
 from salesforce_docs.errors import ConfigError
 from salesforce_docs.utils import api_major, read_json
 
@@ -29,6 +30,11 @@ class AppConfig:
         if missing:
             raise ConfigError(f"config.json sem paths obrigatórios: {', '.join(missing)}")
         self.paths = {k: (self.project_root / v) for k, v in paths.items()}
+        # Arquivo de grupos/tipos (opcional; padrão config/metadata-types-mvp.json).
+        self.metadata_types_path = self.paths.get(
+            "metadataTypesConfig", self.project_root / "config" / "metadata-types-mvp.json")
+        # Escopo: ALL (tudo o que estiver configurado) ou SELECTED (tipos/componentes listados).
+        self.scope = ScopeConfig(data.get("scope"))
 
     # Diretórios por org/versão -------------------------------------------
     def catalog_dir(self, alias: str, api_version: str) -> Path:

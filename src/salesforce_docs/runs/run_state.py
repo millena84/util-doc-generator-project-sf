@@ -83,7 +83,8 @@ class RunState:
         self.data["metadataTypes"] = [
             t for t in self.data["metadataTypes"]
             if not (t["metadataType"] == metadata_type and t.get("group") == group
-                    and t.get("stage") == extra.get("stage"))
+                    and t.get("stage") == extra.get("stage")
+                    and t.get("component") == extra.get("component"))
         ]
         self.data["metadataTypes"].append(entry)
         self.save()

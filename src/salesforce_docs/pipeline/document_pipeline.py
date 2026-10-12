@@ -7,6 +7,7 @@ from pathlib import Path
 from salesforce_docs import status as st
 from salesforce_docs.config.config_loader import load_config
 from salesforce_docs.config.metadata_types_loader import load_metadata_types
+from salesforce_docs.config.scope import WILDCARD, describe_effective, resolve_scope
 from salesforce_docs.errors import ConfigError, GlobalFailure, SessionExpiredError
 from salesforce_docs.extraction import inventory_extractor, metadata_types_extractor, schema_extractor
 from salesforce_docs.extraction.internal_data_extractor import developer_name, extract_internal_data
@@ -65,7 +66,7 @@ class DocumentPipeline:
         self.root = Path(root).resolve()
         self.masker = Masker()
         self.app = load_config(self.root, config_path)
-        self.mvp = load_metadata_types(self.root, metadata_types_path)
+        self.mvp = load_metadata_types(self.root, metadata_types_path or self.app.metadata_types_path)
         self.runner = runner or CliRunner(timeout=self.app.cli_timeout_seconds,
                                           save_raw=self.app.save_raw_responses, masker=self.masker)
         self.runner.masker = self.masker
@@ -77,6 +78,7 @@ class DocumentPipeline:
 
     # ==================================================================
     def run(self, org_alias=None, api_version=None, groups=None, components=None, resume=None):
+        # Precedência do alias: --target-org > config.json (orgAlias).
         alias = org_alias or self.app.org_alias
         previous = None
         if resume:
@@ -96,13 +98,14 @@ class DocumentPipeline:
             warnings = validate_project(self.app, self.mvp, p.contracts)
             for w in warnings:
                 log.warn(w)
+            effective = self._resolve_scope(p, alias, org_alias, groups, components)
             self._step1_cli(p)
             self._step2_org_list(p, alias)
             self._step3_org_display(p, alias, api_version)
-            enabled = self._step4_metadata_types(p, groups)
+            enabled = self._step4_metadata_types(p, effective)
             self._step5_schemas(p, enabled)
             inventories = self._step6_inventories(p, enabled)
-            self._steps7_to_10(p, enabled, inventories, skip_units, components, current_unit)
+            self._steps7_to_10(p, enabled, inventories, skip_units, effective, current_unit)
         except SessionExpiredError as exc:
             if current_unit["entry"] is not None:
                 state.upsert_component(dict(current_unit["entry"], status=st.RETRY_REQUIRED,
@@ -135,8 +138,27 @@ class DocumentPipeline:
         log.info(f"Log: {rel(state.path, self.root)}")
         return (EXIT_OK if final in (st.SUCCESS, st.PARTIAL_SUCCESS) else EXIT_FAILURE), state
 
+    def _resolve_scope(self, p, alias, cli_alias, groups, components):
+        """Valida e registra o escopo antes de qualquer chamada à org."""
+        effective = resolve_scope(self.app.scope, self.mvp, groups, components)
+        if self.mvp.org_alias and self.mvp.org_alias != self.app.org_alias:
+            p.log.warn(f"orgAlias de metadata-types-mvp.json ({self.mvp.org_alias}) difere do config.json "
+                       f"({self.app.org_alias}); vale o config.json")
+        p.run_state.set("scope", {
+            "mode": self.app.scope.mode,
+            "requested": self.app.scope.describe()["selection"],
+            "cli": {"targetOrg": cli_alias, "groups": groups or [], "components": components or []},
+            "orgAlias": alias,
+            "orgAliasSource": "--target-org" if cli_alias else "config.json",
+            "effective": describe_effective(effective),
+            "notFound": [],
+        })
+        p.log.info(f"Escopo {self.app.scope.mode}: {describe_effective(effective)}")
+        return effective
+
     def _final_status(self, state):
         statuses = [c.get("status") for c in state.data["components"] if c.get("role") == "primary"]
+        statuses += [st.NOT_FOUND for _ in (state.data.get("scope") or {}).get("notFound", [])]
         bad = [s for s in statuses if s not in (st.SUCCESS, st.NO_TEMPLATE)]
         if not bad:
             return st.SUCCESS
@@ -184,16 +206,17 @@ class DocumentPipeline:
                    f"(detectada {session.detected_api_version}, fonte: {session.api_version_source})")
 
     # Passo 4 ------------------------------------------------------------
-    def _step4_metadata_types(self, p, group_filter):
+    def _step4_metadata_types(self, p, effective):
+        group_filter = set(effective)
         index, raw_path, _ = metadata_types_extractor.extract_metadata_types(
             p.runner, p.session, p.catalog_dir, p.errors_dir)
         p.run_state.step("4-metadata-types", st.SUCCESS, rel(raw_path, self.root))
         enabled = {}
         for group in self.mvp.groups:
-            if group_filter and group.name not in group_filter:
+            if group.name not in group_filter:
                 # Configurado, mas fora do escopo desta execução (≠ NOT_ENABLED / NO_TEMPLATE).
                 p.run_state.type_status(group.primary_type, st.OUT_OF_SCOPE, group=group.name,
-                                        stage="scope", detail="--group")
+                                        stage="scope", detail=f"scope.mode={self.app.scope.mode}")
                 continue
             types = list(group.all_types)
             if group.type_definition:
@@ -257,18 +280,20 @@ class DocumentPipeline:
         return inventories
 
     # Passos 7–10 --------------------------------------------------------
-    def _steps7_to_10(self, p, enabled, inventories, skip_units, component_filter, current_unit):
+    def _steps7_to_10(self, p, enabled, inventories, skip_units, effective, current_unit):
         p.docs_dir = self.app.output_docs_dir / f"doc-org-{now_local().strftime('%m%d%y')}"
         processor = ComponentProcessor(p)
         for group_name, types in enabled.items():
             group = self.mvp.group(group_name)
             units = deviation_handler.build_units(group, inventories, self.mvp)
+            component_filter = effective.get(group_name)
+            self._report_not_found(p, group, units, inventories, component_filter)
             if not units:
                 p.run_state.type_status(group.primary_type, st.NO_COMPONENTS, group=group.name, stage="units")
                 continue
             for unit in units:
-                if component_filter and unit["fullName"] not in component_filter:
-                    continue
+                if component_filter is not None and unit["fullName"] not in component_filter:
+                    continue  # fora do escopo: não é recuperado
                 if unit["unitId"] in skip_units:
                     p.log.info(f"{unit['unitId']}: SUCCESS em execução anterior, ignorado")
                     continue
@@ -286,6 +311,25 @@ class DocumentPipeline:
                     p.log.error(f"{unit['unitId']}: FAILED {exc}")
                 p.run_state.upsert_component(entry)
                 current_unit["entry"] = None
+
+    def _report_not_found(self, p, group, units, inventories, component_filter):
+        """Componentes pedidos em scope.selection que não viraram unidade de documento."""
+        if self.app.scope.mode != "SELECTED" or component_filter is None:
+            return
+        requested = next((set(i["components"]) for i in self.app.scope.selection
+                          if i["metadataType"] == group.primary_type), set())
+        requested -= {WILDCARD}
+        listed = {i["fullName"] for i in inventories.get(group.primary_type) or []}
+        built = {u["fullName"] for u in units}
+        for name in sorted((requested & component_filter) - built):
+            reason = ("existe no inventário, mas foi excluído por componentFilter do grupo"
+                      if name in listed else "não encontrado no inventário da org")
+            p.run_state.data["scope"]["notFound"].append(
+                {"group": group.name, "metadataType": group.primary_type, "component": name,
+                 "reason": reason})
+            p.run_state.type_status(group.primary_type, st.NOT_FOUND, group=group.name,
+                                    stage="selection", component=name, detail=reason)
+            p.log.warn(f"{group.primary_type}:{name} pedido em scope.selection: NOT_FOUND ({reason})")
 
     def _process_unit(self, p, group, unit, types, inventories, processor):
         log = p.log

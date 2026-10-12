@@ -11,7 +11,11 @@
     "models": "documentation/models",
     "contracts": "documentation/contracts",
     "runs": "runs",
-    "outputDocs": "saida/docs"
+    "outputDocs": "saida/docs",
+    "metadataTypesConfig": "config/metadata-types-mvp.json"
+  },
+  "scope": {
+    "mode": "ALL"
   },
   "execution": {
     "mode": "MVP_MOCKED_METADATA_TYPES",

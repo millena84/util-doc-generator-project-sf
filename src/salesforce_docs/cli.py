@@ -30,9 +30,9 @@ def build_parser():
     run.add_argument("--target-org", "-o", help="Alias da org (padrão: config.json orgAlias)")
     run.add_argument("--api-version", help="Sobrepõe a API version detectada em `sf org display`")
     run.add_argument("--group", action="append",
-                     help="Processa apenas o(s) grupo(s) informado(s) (ex.: --group Flow)")
+                     help="Restringe o escopo do config.json ao(s) grupo(s) informado(s) (ex.: --group Flow)")
     run.add_argument("--component", action="append",
-                     help="Processa apenas o(s) componente(s) informado(s) (fullName)")
+                     help="Restringe o escopo do config.json ao(s) componente(s) informado(s) (fullName)")
     run.add_argument("--resume", metavar="RUN_ID",
                      help="Retoma execução (ou 'latest') sem reprocessar componentes SUCCESS")
 
@@ -65,6 +65,12 @@ def main(argv=None):
                                         ContractStore(pipeline.app.contracts_dir, pipeline.mvp))
             for w in warnings:
                 print(f"AVISO: {w}", file=sys.stderr)
+            from salesforce_docs.config.scope import describe_effective, resolve_scope
+            effective = resolve_scope(pipeline.app.scope, pipeline.mvp)
+            print(f"Org alias: {pipeline.app.org_alias} (config.json)")
+            print(f"Escopo: {pipeline.app.scope.mode}")
+            for group, comps in describe_effective(effective).items():
+                print(f"  - {group}: {', '.join(comps)}")
             print("Configuração válida.")
             return 0
     except (ConfigError, ValueError) as exc:
