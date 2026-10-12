@@ -955,6 +955,9 @@ class DocumentPipeline:
             namespace_prefix=primary.get("namespacePrefix"))
         if res["status"] == st.INTERNAL_DATA_UNAVAILABLE:
             p.log.warn(f"{unit['unitId']}: INTERNAL_DATA_UNAVAILABLE ({res.get('error')})")
+        res["namespaceWarning"] = namespace_warning(cfg, primary.get("namespacePrefix"), res.get("records"))
+        if res["namespaceWarning"]:
+            p.log.warn(f"{unit['unitId']}: {res['namespaceWarning']}")
         return res
 
     # Passo 10 -----------------------------------------------------------
@@ -986,10 +989,14 @@ class DocumentPipeline:
         if leak:
             p.log.error(f"{unit['unitId']}: {leak}")
             return {"status": st.FAILED, "document": None, "warnings": result.warnings, "error": leak}
-        doc_path = p.writer.write(f"doc-{slugify(unit['fullName'])}-{doc_slug}.md", result.text,
+        ns_note = (internal or {}).get("namespaceWarning")
+        doc_path = p.writer.write(f"doc-{slugify(unit['fullName'])}-{doc_slug}.md",
+                                  with_internal_note(result.text, ns_note),
                                   f"{unit['documentType']}:{unit['fullName']}")
         subdocs = self._render_subdocuments(p, group, unit, primary, ctx)
         warnings = list(result.warnings) + [w for s in subdocs for w in s.pop("warnings", [])]
+        if ns_note:
+            warnings.append(ns_note)
         return {"status": st.SUCCESS, "document": rel(doc_path, self.root),
                 "template": p.templates.resolve_name(contract["template"]),
                 "contract": group.contract_file,
@@ -1042,7 +1049,8 @@ class DocumentPipeline:
                 p.log.error(f"{unit['unitId']} ({name}): {leak}")
                 out.append({"component": name, "status": st.FAILED, "error": leak})
                 continue
-            path = p.writer.write(f"doc-{slugify(name)}-{suffix}.md", res.text,
+            path = p.writer.write(f"doc-{slugify(name)}-{suffix}.md",
+                                  with_internal_note(res.text, ctx.internal.get("namespaceWarning")),
                                   f"{unit['documentType']}:{name}:{suffix}")
             out.append({"component": name, "status": st.SUCCESS, "document": rel(path, self.root),
                         "template": p.templates.resolve_name(contract["template"])})
@@ -1114,6 +1122,9 @@ class DocumentPipeline:
             unit = {"unitId": unit_id, "metadataType": _record_type(group),
                     "documentType": group.primary_type, "fullName": primary_entry["component"]}
             contract = p.contracts.get_file(group.contract_file)
+            internal["namespaceWarning"] = namespace_warning(
+                (contract or {}).get("internalData") or {}, primary_entry.get("namespacePrefix"),
+                internal.get("records"))
             result = self.render_unit(
                 p, group, unit, primary, related, internal, contract,
                 unresolved_types={u["metadataType"] for u in primary_entry.get("relatedNotResolved") or []})
@@ -1166,6 +1177,42 @@ def classify_error(text):
     if "conteúdo sensível" in t:
         return "SENSITIVE_CONTENT_BLOCKED"
     return "ERROR"
+
+
+def namespace_warning(internal_cfg, namespace_prefix, records):
+    """DA-05: componente de pacote (com namespace) e consulta sem filtro de namespace.
+
+    O filtro definitivo depende de confirmar, na org, o campo de namespace de cada objeto
+    interno; até lá o documento avisa que pode haver homônimo de outro namespace.
+    """
+    query = str((internal_cfg or {}).get("query") or "")
+    # Só `{developerName}` remove o prefixo do namespace; `{fullName}` (ex.: QualifiedApiName)
+    # já identifica o componente com o namespace.
+    if (not namespace_prefix or not records or "{developerName}" not in query
+            or "namespaceprefix" in query.lower()):
+        return None
+    return (f"Componente do namespace '{namespace_prefix}': a consulta de dados internos não filtra "
+            "namespace e pode incluir componente homônimo de outro namespace (DA-05, pendente de piloto).")
+
+
+def with_internal_note(text, note):
+    """Insere o aviso logo após a tabela da seção "Dados internos" (ou no fim do documento)."""
+    if not note:
+        return text
+    lines = text.split("\n")
+    block = ["", f"> **Atenção:** {note}"]
+    try:
+        start = lines.index("## Dados internos")
+    except ValueError:
+        return text.rstrip("\n") + "\n" + "\n".join(block) + "\n"
+    i, seen_table = start + 1, False
+    while i < len(lines):
+        if lines[i].startswith("|"):
+            seen_table = True
+        elif seen_table or lines[i].startswith("## "):
+            break
+        i += 1
+    return "\n".join(lines[:i] + block + lines[i:])
 
 
 def _entry_fields(record):

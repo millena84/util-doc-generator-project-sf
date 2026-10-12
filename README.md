@@ -61,7 +61,7 @@ Códigos de saída: `0` sucesso (inclui `PARTIAL_SUCCESS` e `COMPLETED_WITH_GAPS
 | 5 | `describeValueType()` via Metadata API (SOAP, `urllib`) | `catalog/.../schemas/<tipo>.describevaluetype.raw.json` | `<tipo>.schema.json` |
 | 6 | `sf org list metadata --metadata-type <tipo>` | `inventory/.../<pasta>/inventory.raw.json` | `inventory.index.json` |
 | 7 | `sf project retrieve start --metadata <tipo>:<nome>` | `inventory/.../<pasta>/retrieve/<comp>.raw.json` + XML original em `components/` | — |
-| 8 | XML → JSON | — | `inventory/.../<pasta>/normalized/<comp>.json` |
+| 8 | XML → JSON | — | `inventory/.../<pasta>/normalized/<comp>.json` (filhos: `<tipo>--<comp>.json`, ex.: `record-type--pedido-c-padrao.json`) |
 | 9 | `sf data query` (se o contrato prever) | `inventory/.../<pasta>/internal-data/<comp>.raw.json` | — |
 | 10 | Modelo + contrato → Markdown | — | `saida/docs/doc-<alias>-<MMDDAA>/doc-<comp>-<tipo>.md` |
 
@@ -102,6 +102,9 @@ Registro da auditoria de segurança de 2026-10-11 (10 riscos: 1 crítico, 2 alto
 | R3 | Raw × segredo; confirmação de org; CLI sem token no `org display`; erro inesperado sem estado; retomada/regeneração com fonte alterada; retenção | **Tratados na Refatoração 3** (seção abaixo). | CLI real ainda não validada (só simulada). |
 | DA-08 | 🟡 Documentação de uma mesma coleta dividida entre pastas após `--resume`; orgs diferentes na mesma pasta do dia | **Resolvido**: padrão `BY_DATE` com pasta por org (`doc-<alias>-MMDDAA`, dono registrado em `.org.json`); retomada/regeneração gravam na pasta da coleta original (`resumeOutput`). | Retomada muito antiga mistura datas na pasta: o `resumo.md` lista componentes por dia e recomenda execução nova. |
 | DA-12 | 🟢 `org-display.sanitized.json` (identidade da org, sem segredo) fora do `.gitignore` | **Decisão**: mantido acessível e não ignorado para uso local; tabela de `protecao-de-dados.md` corrigida. | Reavaliar (ignorar no Git) ao adotar GitHub Actions. |
+| DA-03 | 🟡 Normalizado de um filho sobrescrito por outro filho de tipo diferente com o mesmo fullName (ex.: RecordType e ValidationRule `Pedido__c.Padrao`) | **Resolvido**: o nome do normalizado de filho inclui o tipo (`<tipo>--<comp>.json`). | Normalizados antigos (sem o tipo) ficam órfãos após a próxima execução/`regenerate`; podem ser apagados. |
+| DA-05 | 🟡 Dados internos de componente de pacote podem incluir homônimo de outro namespace (consultas não filtram `NamespacePrefix`) | **Mitigado**: o documento (logo após "Dados internos"), o run state e o log avisam quando o componente tem namespace e a consulta não filtra. | Filtrar por namespace depois de confirmar os campos no piloto (`documentation/piloto-org-real.md`, item 4). |
+| DA-10, DA-13, DA-14 | 🟢 Premissas da CLI/org não confirmadas: `connectedStatus` em JWT/scratch, `ConnectedApplication.Name` × fullName, formato de `sf org auth show-access-token --json` | **Pendente de piloto**: erro nessas premissas não vaza dados (a execução para com mensagem clara ou a seção fica "Não informado"). | Roteiro com comandos e resultado esperado: `documentation/piloto-org-real.md`. |
 | 2–10 | Demais riscos da auditoria (2 altos, 5 médios, 2 baixos) | **Não detalhados** neste registro. | Incluir descrição, localização e decisão quando o relatório completo estiver disponível. |
 
 ## Desvios (configuráveis em `config/metadata-types-mvp.json`)
@@ -171,6 +174,7 @@ Comportamento:
 - **Cobertura**: `coverage` no run state e linha "Cobertura: COMPLETE/INCOMPLETE" no log.
 - **Retomada**: só reaproveita o que for compatível (org, API, política, escopo, contratos/modelos); motivos em `resume.reprocessed`.
 - Inventário de artefatos, sensibilidade e retenção: [`documentation/protecao-de-dados.md`](documentation/protecao-de-dados.md).
+- Premissas a confirmar numa org real (comandos e resultado esperado): [`documentation/piloto-org-real.md`](documentation/piloto-org-real.md).
 
 ## Refatoração 3 — riscos de segurança, cobertura e execução
 

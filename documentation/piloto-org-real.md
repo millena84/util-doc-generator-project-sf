@@ -1,0 +1,87 @@
+# Roteiro de piloto com org real
+
+Os testes automatizados usam uma Salesforce CLI **simulada**. Este roteiro confirma, numa org real, as premissas que o código ainda não pôde validar. Cada item indica o que rodar, o que se espera e o que muda no utilitário conforme o resultado.
+
+> **Segurança:** nenhum comando abaixo imprime o access token. Não cole tokens, senhas ou o conteúdo de `inventory/**/components/` ao relatar resultados. Use uma org de desenvolvimento ou sandbox aprovada em `approvedOrgs`.
+
+Substitua `dev` pelo alias da org e `<Nome>` pelo nome de API de um componente real.
+
+## 1. Token pelo comando novo da CLI (DA-14)
+
+Confirma o formato de `sf org auth show-access-token --json` mostrando só a **estrutura** da resposta:
+
+```bash
+sf org auth show-access-token --target-org dev --json | python3 -c "import json,sys; d=json.load(sys.stdin); r=d.get('result'); print('status:', d.get('status'), '| result:', type(r).__name__, sorted(r) if isinstance(r, dict) else '(texto)')"
+```
+
+- **Esperado:** `status: 0 | result: dict ['accessToken', ...]` ou `result: str (texto)`. O utilitário aceita os dois.
+- **Se for diferente:** a execução para com `ACCESS_TOKEN_UNAVAILABLE`. Relate a lista de chaves para ajustar `_acquire_token`.
+
+## 2. `connectedStatus` por tipo de autenticação (DA-10)
+
+```bash
+sf org display --target-org dev --json | python3 -c "import json,sys; r=json.load(sys.stdin)['result']; print(r.get('connectedStatus'), '| chaves:', sorted(r))"
+```
+
+- **Esperado:** `Connected`. Repita para cada forma de login usada (web, JWT, scratch org).
+- **Se vier outro valor ou nada:** o passo 3 para com `ORG_DISPLAY_INCOMPLETE`/`ORG_NOT_CONNECTED`. Relate o valor para ampliar a regra.
+
+## 3. Dados internos (`validationPending` nos contratos)
+
+Para cada consulta, rode com um componente real e anote: funcionou? quantos registros? Execute só as consultas dos tipos existentes na org.
+
+| Contrato | Comando |
+|---|---|
+| Flow (versões) | `sf data query --use-tooling-api --target-org dev --json --query "SELECT Id, VersionNumber, Status FROM Flow WHERE Definition.DeveloperName = '<Nome>' ORDER BY VersionNumber"` |
+| Custom Object / Custom Metadata | `sf data query --use-tooling-api --target-org dev --json --query "SELECT QualifiedApiName, Label, PluralLabel, KeyPrefix, LastModifiedDate FROM EntityDefinition WHERE QualifiedApiName = '<Objeto__c>'"` |
+| Connected App | `sf data query --target-org dev --json --query "SELECT Id, Name, OptionsAllowAdminApprovedUsersOnly FROM ConnectedApplication WHERE Name = '<Nome>'"` |
+| Named Credential | `sf data query --target-org dev --json --query "SELECT Id, DeveloperName FROM NamedCredential WHERE DeveloperName = '<Nome>'"` |
+| Certificate | `sf data query --use-tooling-api --target-org dev --json --query "SELECT DeveloperName, ExpirationDate, KeySize FROM Certificate WHERE DeveloperName = '<Nome>'"` |
+| External Credential | `sf data query --target-org dev --json --query "SELECT Id, DeveloperName, MasterLabel, CreatedDate, LastModifiedDate FROM ExternalCredential WHERE DeveloperName = '<Nome>'"` |
+
+- **Esperado:** `status: 0` e `totalSize` = 1 (ou o número de versões, no Flow).
+- **Erro `INVALID_FIELD` ou `INVALID_TYPE`:** o objeto ou campo não existe na org/API. Relate a mensagem; o contrato será ajustado (a execução não para: a seção fica "Não informado").
+- **Erro de permissão:** relate o perfil usado; a seção depende de acesso à configuração (ex.: *View Setup and Configuration*).
+
+### Connected App: `Name` é o nome de API? (DA-13)
+
+```bash
+sf sobject describe --sobject ConnectedApplication --target-org dev --json | python3 -c "import json,sys; f={x['name']: x['label'] for x in json.load(sys.stdin)['result']['fields']}; print({k: f[k] for k in f if 'Name' in k})"
+```
+
+E compare o valor de `Name` (consulta acima, sem filtro, com `LIMIT 5`) com o nome do arquivo `*.connectedApp-meta.xml` recuperado:
+
+```bash
+sf data query --target-org dev --json --query "SELECT Name FROM ConnectedApplication LIMIT 5"
+```
+
+- **Se `Name` for o rótulo (com espaços, por exemplo):** a consulta por `DeveloperName` do metadata não encontra o app. Relate quais campos existem para trocar o filtro.
+
+## 4. Campos de namespace (DA-05)
+
+O filtro de namespace só entra nos contratos depois de confirmar que o campo existe em cada objeto. Rode uma vez por objeto:
+
+```bash
+sf data query --use-tooling-api --target-org dev --json --query "SELECT Id, Definition.NamespacePrefix FROM Flow LIMIT 1"
+sf data query --target-org dev --json --query "SELECT Id, NamespacePrefix FROM NamedCredential LIMIT 1"
+sf data query --use-tooling-api --target-org dev --json --query "SELECT Id, NamespacePrefix FROM Certificate LIMIT 1"
+sf data query --target-org dev --json --query "SELECT Id, NamespacePrefix FROM ExternalCredential LIMIT 1"
+```
+
+- **Sucesso:** o campo existe; o contrato passa a filtrar `NamespacePrefix` e o aviso "pode incluir componente homônimo de outro namespace" deixa de aparecer.
+- **`INVALID_FIELD`:** o objeto não tem o campo; o aviso continua para componentes de pacote.
+
+## 5. Execução completa
+
+Depois dos itens acima:
+
+```bash
+bin/sf-docs.sh validate-config
+bin/sf-docs.sh run --group Flow --non-interactive
+```
+
+Confira em `runs/<runId>/resumo.md`: cobertura, `tokenSource`, avisos de dados internos e a pasta `saida/docs/doc-<alias>-MMDDAA/`.
+
+## Como relatar
+
+Para cada item: comando, resultado (`status`, `totalSize`, mensagem de erro) e a forma de login. Não inclua token, senha, `consumerSecret` nem conteúdo dos XMLs recuperados.
