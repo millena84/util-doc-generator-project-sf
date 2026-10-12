@@ -55,36 +55,55 @@ def sha256_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
-def write_text_raw(path, text: str, private: bool = False) -> None:
-    """Grava resposta bruta exatamente como recebida (sem reformatar).
+# Proteção de dados: raws, cópias de XML, normalizados e run state são gravados com
+# permissão 0600 (somente o dono) quando habilitado (config.json → dataProtection.privateFiles).
+_PRIVATE_FILES = {"enabled": True}
 
-    private=True cria o arquivo com permissão 0600 (somente o dono lê), para raws
-    que contêm credenciais, como `sf org display --json`.
-    """
-    path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_name(path.name + ".tmp")
+
+def set_private_files(enabled: bool) -> None:
+    _PRIVATE_FILES["enabled"] = bool(enabled)
+
+
+def _open_for_write(tmp: Path, private: bool):
     if private:
         if tmp.exists():
             tmp.unlink()
         fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
-        f = os.fdopen(fd, "w", encoding="utf-8", newline="")
-    else:
-        f = open(tmp, "w", encoding="utf-8", newline="")
-    with f:
+        return os.fdopen(fd, "w", encoding="utf-8", newline="")
+    return open(tmp, "w", encoding="utf-8", newline="")
+
+
+def write_text_raw(path, text: str, private=None) -> None:
+    """Grava resposta bruta exatamente como recebida (sem reformatar).
+
+    private=None segue dataProtection.privateFiles (padrão: 0600). Raws com
+    credenciais (`sf org display`) sempre usam private=True.
+    """
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_name(path.name + ".tmp")
+    with _open_for_write(tmp, _PRIVATE_FILES["enabled"] if private is None else private) as f:
         f.write(text)
     os.replace(tmp, path)
 
 
-def write_json(path, data) -> None:
+def write_json(path, data, private: bool = False) -> None:
     """Grava derivado JSON de forma determinística."""
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_name(path.name + ".tmp")
-    with open(tmp, "w", encoding="utf-8", newline="\n") as f:
+    with _open_for_write(tmp, private and _PRIVATE_FILES["enabled"]) as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
         f.write("\n")
     os.replace(tmp, path)
+
+
+def copy_private(src, dest) -> None:
+    """Cópia byte a byte (raw intacto), com permissão 0600 se habilitado."""
+    import shutil
+    shutil.copyfile(src, dest)
+    if _PRIVATE_FILES["enabled"]:
+        os.chmod(dest, 0o600)
 
 
 def write_text(path, text: str) -> None:

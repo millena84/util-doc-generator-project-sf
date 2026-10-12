@@ -69,7 +69,7 @@ def as_list(value):
 REDACTED = "[REDACTED]"
 
 
-def redact(data, secret_keys, prefix=""):
+def redact(data, secret_keys, prefix="", on_secret=None):
     """Substitui valores de elementos secretos por REDACTED; retorna os caminhos afetados.
 
     O XML original (raw) não é alterado; só o derivado normalizado recebe a máscara,
@@ -80,22 +80,24 @@ def redact(data, secret_keys, prefix=""):
         for k, v in data.items():
             path = f"{prefix}.{k}" if prefix else k
             if k in secret_keys and v not in (None, ""):
+                if on_secret is not None and isinstance(v, str):
+                    on_secret(v)  # o valor passa a ser mascarado em logs/run state
                 data[k] = REDACTED
                 hits.append(path)
             else:
-                hits.extend(redact(v, secret_keys, path))
+                hits.extend(redact(v, secret_keys, path, on_secret))
     elif isinstance(data, list):
         for i, v in enumerate(data):
             if isinstance(v, (dict, list)):
-                hits.extend(redact(v, secret_keys, f"{prefix}[{i}]"))
+                hits.extend(redact(v, secret_keys, f"{prefix}[{i}]", on_secret))
     return hits
 
 
 def normalize_component(metadata_type, full_name, xml_path, project_root, schema=None,
-                        role="primary", retrieve_raw=None, secret_keys=()):
+                        role="primary", retrieve_raw=None, secret_keys=(), on_secret=None):
     """Gera o documento normalizado de um componente."""
     root_name, data = parse_xml_file(xml_path)
-    redacted = sorted(redact(data, set(secret_keys))) if secret_keys else []
+    redacted = sorted(redact(data, set(secret_keys), on_secret=on_secret)) if secret_keys else []
     present = sorted(data.keys())
     schema_fields = schema_field_names(schema) if schema else None
     absent = []

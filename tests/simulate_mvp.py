@@ -18,7 +18,7 @@ import shutil
 import tempfile
 from pathlib import Path
 
-from tests.helpers import FAKE_SF, ROOT, FakeMetadataClient, fake_sf_env
+from tests.helpers import SIMULATED_ORG_ID, FAKE_SF, ROOT, FakeMetadataClient, fake_sf_env
 from salesforce_docs.pipeline.document_pipeline import DocumentPipeline
 from salesforce_docs.salesforce.cli_runner import CliRunner
 
@@ -61,6 +61,11 @@ def simulate(out_dir):
     out_dir.mkdir(parents=True, exist_ok=True)
     for d in ("config", "documentation"):
         shutil.copytree(ROOT / d, out_dir / d)
+    # Aprova a org SIMULADA (sem aprovação o utilitário para antes de qualquer coleta).
+    cfg_path = out_dir / "config" / "config.json"
+    cfg = json.loads(cfg_path.read_text())
+    cfg["approvedOrgs"] = [{"orgId": SIMULATED_ORG_ID, "alias": "dev", "note": "org SIMULADA"}]
+    cfg_path.write_text(json.dumps(cfg, indent=2))
     calls = out_dir / "sf-calls.log"
     fake_sf_env("mvp_complete")
     os.environ["FAKE_SF_STATE"] = str(calls)
@@ -79,7 +84,10 @@ def build_report(out_dir, code, state, log_text, calls):
          "Metadata API simulada. Nenhum dado veio de uma org real. Gerado por "
          "`python3 -m tests.simulate_mvp`.\n",
          f"- Execução: `{data['runId']}` — status **{data['status']}** — código de saída `{code}`",
-         f"- Org: `{data['orgAlias']}` — API `{data['apiVersion']}`\n",
+         f"- Org: `{data['orgAlias']}` — API `{data['apiVersion']}`",
+         f"- Cobertura: **{data['coverage']['status']}** — {data['coverage']['documented']} documentada(s) "
+         f"de {data['coverage']['inScope']} no escopo; lacunas: {data['coverage']['gapCount']} "
+         f"({', '.join(k for k, v in data['coverage']['gaps'].items() if v) or 'nenhuma'})\n",
          "## 1. Saída no terminal\n", fence(log_text),
          "## 2. Comandos executados na CLI (por passo)\n",
          "| # | Passo | Comando |", "|---|---|---|"]

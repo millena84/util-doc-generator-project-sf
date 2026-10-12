@@ -44,6 +44,8 @@ Atividades:
 
 ### Prioridade 3 — mitigação dos riscos de segurança e execução
 
+> **Implementada** (`approvedOrgs`, `dataProtection`, `execution.outputLayout`, `coverage`, fingerprint de retomada; `tests/test_prioridade3.py`). Ver `documentation/protecao-de-dados.md`.
+
 **Objetivo:** melhorar validação da org-alvo, proteção de dados, cobertura, resumabilidade, saídas e operação em org grande.
 
 Atividades:

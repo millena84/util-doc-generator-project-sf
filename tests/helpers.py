@@ -1,5 +1,6 @@
 """Utilitários de teste: projeto temporário, CLI simulada e Metadata API simulada."""
 
+import json
 import os
 import shutil
 import sys
@@ -15,6 +16,7 @@ from salesforce_docs.salesforce.metadata_api_client import MD_NS, SOAP_NS, Metad
 FIXTURES = ROOT / "tests" / "fixtures"
 FAKE_SF = FIXTURES / "bin" / "sf"
 FAKE_TOKEN = "00DFAKE!TOKEN.SIMULADO.NAO.REAL.1234567890"
+SIMULATED_ORG_ID = "00D000000000000AAA"
 
 # Campos simulados por tipo (apenas para testes; não representam a org real).
 SIMULATED_SCHEMA_FIELDS = {
@@ -90,6 +92,12 @@ class TempProject:
         self.dir = Path(tempfile.mkdtemp(prefix="sfdocs-test-"))
         shutil.copytree(ROOT / "config", self.dir / "config")
         shutil.copytree(ROOT / "documentation", self.dir / "documentation")
+        # A org SIMULADA precisa estar aprovada (Prioridade 3: nenhuma coleta sem aprovação).
+        cfg_path = self.dir / "config" / "config.json"
+        cfg = json.loads(cfg_path.read_text())
+        cfg["approvedOrgs"] = [{"orgId": SIMULATED_ORG_ID, "alias": "dev",
+                                "note": "org SIMULADA dos testes"}]
+        cfg_path.write_text(json.dumps(cfg, indent=2))
 
     def cleanup(self):
         shutil.rmtree(self.dir, ignore_errors=True)

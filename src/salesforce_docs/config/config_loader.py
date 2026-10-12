@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 from salesforce_docs.config.scope import ScopeConfig
@@ -35,6 +36,18 @@ class AppConfig:
             "metadataTypesConfig", self.project_root / "config" / "metadata-types-mvp.json")
         # Escopo: ALL (tudo o que estiver configurado) ou SELECTED (tipos/componentes listados).
         self.scope = ScopeConfig(data.get("scope"))
+        # Orgs aprovadas: nenhuma coleta (inventário/retrieve) sem identidade aprovada.
+        self.approved_orgs = _parse_approved_orgs(data.get("approvedOrgs"))
+        protection = data.get("dataProtection") or {}
+        if not isinstance(protection, dict):
+            raise ConfigError("config.json: dataProtection deve ser um objeto")
+        self.private_files = bool(protection.get("privateFiles", True))
+        self.org_display_raw_policy = str(protection.get("orgDisplayRaw", "KEEP_PRIVATE")).upper()
+        if self.org_display_raw_policy not in ("KEEP_PRIVATE", "DELETE_AFTER_RUN"):
+            raise ConfigError("config.json: dataProtection.orgDisplayRaw deve ser KEEP_PRIVATE ou DELETE_AFTER_RUN")
+        self.output_layout = str(execution.get("outputLayout", "BY_DATE")).upper()
+        if self.output_layout not in ("BY_DATE", "BY_RUN"):
+            raise ConfigError("config.json: execution.outputLayout deve ser BY_DATE ou BY_RUN")
 
     # Diretórios por org/versão -------------------------------------------
     def catalog_dir(self, alias: str, api_version: str) -> Path:
@@ -57,6 +70,30 @@ class AppConfig:
     @property
     def output_docs_dir(self) -> Path:
         return self.paths["outputDocs"]
+
+
+_ORG_ID = re.compile(r"^00D[0-9A-Za-z]{12}([0-9A-Za-z]{3})?$")
+_APPROVAL_KEYS = {"orgId", "alias", "username", "instanceUrl", "note"}
+
+
+def _parse_approved_orgs(value):
+    if value is None:
+        return []
+    if not isinstance(value, list):
+        raise ConfigError("config.json: approvedOrgs deve ser uma lista")
+    out = []
+    for i, item in enumerate(value):
+        where = f"config.json: approvedOrgs[{i}]"
+        if not isinstance(item, dict):
+            raise ConfigError(f"{where}: deve ser um objeto")
+        extra = set(item) - _APPROVAL_KEYS
+        if extra:
+            raise ConfigError(f"{where}: chaves desconhecidas {sorted(extra)}")
+        org_id = item.get("orgId")
+        if not isinstance(org_id, str) or not _ORG_ID.match(org_id):
+            raise ConfigError(f"{where}: orgId obrigatório no formato 00D... (15 ou 18 caracteres)")
+        out.append({k: v for k, v in item.items() if k != "note"})
+    return out
 
 
 def load_config(project_root, config_path=None) -> AppConfig:

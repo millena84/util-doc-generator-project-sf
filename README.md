@@ -71,7 +71,8 @@ Registro da auditoria de segurança de 2026-10-11 (10 riscos: 1 crítico, 2 alto
 | # | Risco | Situação | Possível tratamento futuro |
 |---|---|---|---|
 | 1 | 🔴 `accessToken` mantido em memória durante a execução | **Mitigado**: mascarado em `repr`/`str`, serialização bloqueada, descartado em `finally` ao fim da execução; `MetadataApiClient` obtém o token da sessão a cada chamada (sem cópia própria). | Risco residual: Python não permite zerar uma `str` na memória; um dump do processo durante a execução ainda expõe o token. Aceitável para uso local. |
-| 1a | 🔴 `accessToken` gravado em disco em `catalog/.../org-display.raw.json` (e em `runs/*/errors/`) | **Parcialmente mitigado**: `.gitignore` + permissão `0600`. O token fica no arquivo até expirar. | Há conflito entre as regras 2/3 (salvar raw inalterado) e 7 (credenciais) do `CLAUDE.md`. Opções: tratar `sf org display` como dado local da CLI e não persistir (como já ocorre com `sf org list`), ou apagar o arquivo ao fim da execução. Exige decisão sobre as regras. |
+| 1a | 🔴 `accessToken` gravado em disco em `catalog/.../org-display.raw.json` (e em `runs/*/errors/`) | **Mitigado e configurável**: `.gitignore` + `0600`; `dataProtection.orgDisplayRaw = DELETE_AFTER_RUN` apaga o raw ao fim da execução (padrão `KEEP_PRIVATE` preserva a regra do raw). | Decisão registrada em `documentation/protecao-de-dados.md`. |
+| P3 | Coleta em org errada; segredos em mensagens; sobrescrita silenciosa; retomada incompatível; cobertura não informada | **Tratados na Prioridade 3**: `approvedOrgs` (nada é coletado sem aprovação), máscara de valores secretos do XML e run state mascarado recursivamente, arquivos `0600`, manifesto/`_substituidos`/`BY_RUN`, fingerprint de retomada, `coverage`. | Ver `documentation/protecao-de-dados.md`. |
 | 2–10 | Demais riscos da auditoria (2 altos, 5 médios, 2 baixos) | **Não detalhados** neste registro. | Incluir descrição, localização e decisão quando o relatório completo estiver disponível. |
 
 ## Desvios (configuráveis em `config/metadata-types-mvp.json`)
@@ -119,6 +120,15 @@ Regras:
 - Componentes fora do escopo **não são recuperados**. Dependências do principal selecionado são: `FlowDefinition` de mesmo nome, filhos do objeto, records do `__mdt`, EC referenciada pela NC. Exceção documentada: para ligar `ExtlClntApp*` a uma ECA (`FIELD_EQUALS_PRIMARY`), os candidatos do tipo relacionado são recuperados para ler `externalClientApplication`; só os que apontam para a ECA selecionada entram no documento.
 - O run state registra o escopo pedido (`scope.requested`, `scope.cli`), o efetivo (`scope.effective`), o alias e sua origem; grupos fora do escopo aparecem como `OUT_OF_SCOPE`.
 - `bin/sf-docs.sh validate-config` mostra alias e escopo efetivo.
+
+## Segurança e execução (Prioridade 3)
+
+- **Org aprovada**: preencha `approvedOrgs` no `config.json` (o `run` informa o `orgId` detectado). Sem aprovação, nada é coletado (`ORG_NOT_APPROVED`).
+- **Proteção de dados**: `dataProtection.privateFiles` (padrão `true`, arquivos `0600`), `dataProtection.orgDisplayRaw` (`KEEP_PRIVATE` | `DELETE_AFTER_RUN`).
+- **Saída**: `execution.outputLayout` (`BY_DATE` com manifesto e `_substituidos/`, ou `BY_RUN`).
+- **Cobertura**: `coverage` no run state e linha "Cobertura: COMPLETE/INCOMPLETE" no log.
+- **Retomada**: só reaproveita o que for compatível (org, API, política, escopo, contratos/modelos); motivos em `resume.reprocessed`.
+- Inventário de artefatos, sensibilidade e retenção: [`documentation/protecao-de-dados.md`](documentation/protecao-de-dados.md).
 
 ## Refatoração 1 — modelos adaptados das referências `ajudAI`
 

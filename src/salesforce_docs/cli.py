@@ -68,6 +68,15 @@ def main(argv=None):
             from salesforce_docs.config.scope import describe_effective, resolve_scope
             effective = resolve_scope(pipeline.app.scope, pipeline.mvp)
             print(f"Org alias: {pipeline.app.org_alias} (config.json)")
+            if pipeline.app.approved_orgs:
+                ids = ", ".join(e["orgId"] for e in pipeline.app.approved_orgs)
+                print(f"Orgs aprovadas: {ids}")
+            else:
+                print("AVISO: approvedOrgs vazio — `run` para antes de qualquer coleta até a org ser aprovada",
+                      file=sys.stderr)
+            print(f"Proteção de dados: privateFiles={pipeline.app.private_files}, "
+                  f"orgDisplayRaw={pipeline.app.org_display_raw_policy}, "
+                  f"outputLayout={pipeline.app.output_layout}")
             print(f"Escopo: {pipeline.app.scope.mode}")
             for group, comps in describe_effective(effective).items():
                 print(f"  - {group}: {', '.join(comps)}")

@@ -107,6 +107,16 @@ Antes de qualquer piloto real:
 
 A versão atual ainda precisa das refatorações de seleção explícita e das proteções descritas em `proximos-passos.md`. Portanto, não trate um alias como proteção suficiente contra executar na org errada.
 
+### Aprovar a org-alvo (obrigatório)
+
+Na primeira execução sem `approvedOrgs`, o utilitário para depois de `sf org display` com `ORG_NOT_APPROVED` e mostra `orgId`, `alias`, `username` e `instanceUrl` detectados — **nenhum inventário ou retrieve é feito**. Confira se é a org pretendida e registre-a no `config.json`:
+
+```json
+"approvedOrgs": [ { "orgId": "00D...", "alias": "dev", "note": "motivo/ambiente" } ]
+```
+
+Detalhes de proteção e retenção dos arquivos gerados: `documentation/protecao-de-dados.md`.
+
 ## 6. Executar
 
 ### Todos os grupos atualmente configurados

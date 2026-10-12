@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from salesforce_docs import status as st
 from salesforce_docs.config.config_loader import load_config
 from salesforce_docs.config.metadata_types_loader import load_metadata_types
+from salesforce_docs import __version__
 from salesforce_docs.config.scope import WILDCARD, describe_effective, resolve_scope
 from salesforce_docs.errors import ConfigError, GlobalFailure, SessionExpiredError
 from salesforce_docs.extraction import inventory_extractor, metadata_types_extractor, schema_extractor
@@ -22,7 +24,9 @@ from salesforce_docs.salesforce.cli_runner import CliRunner
 from salesforce_docs.salesforce.metadata_api_client import MetadataApiClient
 from salesforce_docs.salesforce.org_session import OrgSession
 from salesforce_docs.salesforce.tooling_api_client import ToolingApiClient
-from salesforce_docs.utils import Masker, now_local, read_json, rel, slugify, write_text, write_text_raw
+from salesforce_docs.pipeline.output_writer import OutputWriter
+from salesforce_docs.utils import (Masker, now_local, read_json, rel, set_private_files, sha256_file,
+                                   sha256_text, slugify, write_text_raw)
 from salesforce_docs.validation import cli_validator, org_session_validator
 from salesforce_docs.validation.metadata_type_validator import check_enabled
 from salesforce_docs.validation.project_validator import validate_project
@@ -47,6 +51,7 @@ class PipelineContext:
         self.inventory_dir = None
         self.errors_dir = None
         self.docs_dir = None
+        self.writer = None
         self.contracts = ContractStore(app.contracts_dir, mvp)
         self.templates = None
         self.tooling = None
@@ -86,13 +91,12 @@ class DocumentPipeline:
             if prev_path is None:
                 raise ConfigError(f"Execução para retomar não encontrada: {resume}")
             previous = RunState.load(prev_path)
+        set_private_files(self.app.private_files)
         state = RunState.create(self.app.runs_dir, alias, resumed_from=previous.run_id if previous else None)
+        state.masker = self.masker
         log = RunLogger(self.masker, stream=self.stream, run_state=state)
         p = PipelineContext(self.root, self.app, self.mvp, self.runner, state, log, self.masker)
         p.errors_dir = self.app.runs_dir / state.run_id / "errors"
-        skip_units = state.carry_successes_from(previous) if previous else set()
-        if skip_units:
-            log.info(f"Retomando {previous.run_id}: {len(skip_units)} unidade(s) SUCCESS não serão reprocessadas")
         current_unit = {"entry": None}
         try:
             warnings = validate_project(self.app, self.mvp, p.contracts)
@@ -102,6 +106,10 @@ class DocumentPipeline:
             self._step1_cli(p)
             self._step2_org_list(p, alias)
             self._step3_org_display(p, alias, api_version)
+            self._check_org_approval(p, alias)  # nenhuma coleta antes de aprovar a org
+            fingerprint = self._fingerprint(p, alias, effective)
+            state.set("fingerprint", fingerprint)
+            skip_units = self._carry_compatible(p, previous, fingerprint, effective) if previous else set()
             enabled = self._step4_metadata_types(p, effective)
             self._step5_schemas(p, enabled)
             inventories = self._step6_inventories(p, enabled)
@@ -131,12 +139,176 @@ class DocumentPipeline:
             # O token só vive durante a execução, inclusive em caso de exceção não tratada.
             if p.session is not None:
                 p.session.clear()
+            self._apply_org_display_policy(p)
+            state.set("coverage", self._coverage(state))
         final = self._final_status(state)
         state.data["commands"] = self.runner.history
         state.finish(final)
+        cov = state.data["coverage"]
         log.info(f"Execução {state.run_id} finalizada: {final} {state.summary()}")
+        log.info(f"Cobertura: {cov['status']} — {cov['documented']} documentada(s) de {cov['inScope']} "
+                 f"no escopo; lacunas: {cov['gapCount']}")
         log.info(f"Log: {rel(state.path, self.root)}")
         return (EXIT_OK if final in (st.SUCCESS, st.PARTIAL_SUCCESS) else EXIT_FAILURE), state
+
+    # Aprovação da org (Prioridade 3) -----------------------------------
+    def _check_org_approval(self, p, alias):
+        s = p.session
+        identity = {"orgId": s.org_id, "alias": alias, "username": s.username, "instanceUrl": s.instance_url}
+        shown = ", ".join(f"{k}={v}" for k, v in identity.items())
+        if not self.app.approved_orgs:
+            raise GlobalFailure(
+                "ORG_NOT_APPROVED",
+                f"Nenhuma org aprovada em config.json (approvedOrgs). Org detectada: {shown}.",
+                f'Confirme que é a org pretendida e adicione {{"orgId": "{s.org_id}", "alias": "{alias}"}} '
+                "em approvedOrgs do config.json.")
+        candidates = [e for e in self.app.approved_orgs
+                      if s.org_id and e["orgId"][:15] == s.org_id[:15]]
+        if not candidates:
+            raise GlobalFailure("ORG_NOT_APPROVED",
+                                f"Org {s.org_id} não está em approvedOrgs. Org detectada: {shown}.",
+                                "Use uma org aprovada ou inclua esta após confirmação.")
+        mismatches = []
+        for entry in candidates:
+            diff = []
+            if entry.get("alias") and entry["alias"] != alias:
+                diff.append(f"alias ({entry['alias']} ≠ {alias})")
+            if entry.get("username") and entry["username"].lower() != (s.username or "").lower():
+                diff.append(f"username ({entry['username']} ≠ {s.username})")
+            if entry.get("instanceUrl") and entry["instanceUrl"].rstrip("/").lower() != s.instance_url.lower():
+                diff.append(f"instanceUrl ({entry['instanceUrl']} ≠ {s.instance_url})")
+            if not diff:
+                p.run_state.set("orgApproval", {"approved": True, "entry": entry, "detected": identity})
+                p.run_state.step("3b-org-approval", st.SUCCESS, f"orgId {s.org_id}")
+                p.log.info(f"Passo 3b: org {s.org_id} aprovada (approvedOrgs)")
+                return
+            mismatches.append("; ".join(diff))
+        raise GlobalFailure("ORG_NOT_APPROVED",
+                            f"Org {s.org_id} aprovada, mas a identidade diverge: {' | '.join(mismatches)}.",
+                            "Revise approvedOrgs ou o alias usado.")
+
+    def _apply_org_display_policy(self, p):
+        if self.app.org_display_raw_policy != "DELETE_AFTER_RUN":
+            return
+        removed = []
+        for path in ([p.catalog_dir / "org-display.raw.json"] if p.catalog_dir else []) + \
+                [p.errors_dir / "org-display.raw.json"]:
+            if path.is_file():
+                path.unlink()
+                removed.append(rel(path, self.root))
+        p.run_state.data["dataProtection"] = {"orgDisplayRaw": "DELETE_AFTER_RUN", "removed": removed}
+
+    # Retomada compatível (Prioridade 3) --------------------------------
+    def _group_files(self, group, contracts_store, templates):
+        """Contratos e modelos que influenciam os documentos de um grupo."""
+        contracts = [group.contract_file] + [s.get("contract") for s in group.sub_documents]
+        contracts += [self.mvp.contract_file(t) for t in group.related_types]
+        models = []
+        for name in contracts:
+            c = contracts_store.get_file(name)
+            if c and c.get("template"):
+                models.append(templates.resolve_name(c["template"]))
+        return sorted(set(x for x in contracts if x)), sorted(set(models))
+
+    def _fingerprint(self, p, alias, effective):
+        contracts = {f.name: sha256_file(f) for f in sorted(self.app.contracts_dir.glob("*.schema.json"))}
+        models_dir = p.templates.models_dir
+        models = {f.name: sha256_file(f) for f in sorted(models_dir.glob("*.md"))} if models_dir.is_dir() else {}
+        policy = {"sensitive": sorted(self.mvp.sensitive_elements),
+                  "omit": sorted(self.mvp.omit_from_documentation)}
+        return {"orgId": p.session.org_id, "orgAlias": alias, "apiVersion": p.session.api_version,
+                "utilVersion": __version__, "scope": describe_effective(effective),
+                "contracts": contracts, "models": models,
+                "policySha256": sha256_text(json.dumps(policy, sort_keys=True))}
+
+    def _carry_compatible(self, p, previous, fp, effective):
+        prev_fp = previous.data.get("fingerprint")
+        report = {"from": previous.run_id, "reused": [], "reprocessed": []}
+        p.run_state.data["resume"] = report
+        global_reasons = []
+        if not prev_fp:
+            global_reasons.append("execução anterior sem fingerprint (formato antigo)")
+        else:
+            for key, label in (("orgId", "org"), ("apiVersion", "API version"),
+                               ("policySha256", "política de dados sensíveis"),
+                               ("utilVersion", "versão do utilitário")):
+                if prev_fp.get(key) != fp.get(key):
+                    global_reasons.append(f"{label} mudou ({prev_fp.get(key)} → {fp.get(key)})")
+        candidates = previous.successful_units()
+        if global_reasons:
+            for unit_id in sorted(candidates):
+                report["reprocessed"].append({"unitId": unit_id, "reasons": global_reasons})
+            p.log.warn(f"Retomada de {previous.run_id}: nada reaproveitado — {'; '.join(global_reasons)}")
+            p.run_state.save()
+            return set()
+        allowed = set()
+        for unit_id, entry in sorted(candidates.items()):
+            reasons = []
+            group = self.mvp.group(entry.get("group"))
+            comps = effective.get(entry.get("group"), "OUT")
+            if group is None or comps == "OUT" or (comps is not None and entry.get("component") not in comps):
+                reasons.append("fora do escopo atual")
+            else:
+                contracts, models = self._group_files(group, p.contracts, p.templates)
+                for name in contracts:
+                    if prev_fp["contracts"].get(name) != fp["contracts"].get(name):
+                        reasons.append(f"contrato {name} mudou")
+                for name in models:
+                    if prev_fp["models"].get(name) != fp["models"].get(name):
+                        reasons.append(f"modelo {name} mudou")
+            doc = entry.get("document")
+            if doc and not (self.root / doc).is_file():
+                reasons.append(f"documento {doc} não existe mais")
+            if reasons:
+                report["reprocessed"].append({"unitId": unit_id, "reasons": reasons})
+            else:
+                allowed.add(unit_id)
+                report["reused"].append(unit_id)
+        p.run_state.carry_successes_from(previous, only=allowed)
+        p.log.info(f"Retomando {previous.run_id}: {len(allowed)} unidade(s) reaproveitada(s), "
+                   f"{len(report['reprocessed'])} reprocessada(s)")
+        for item in report["reprocessed"]:
+            p.log.warn(f"{item['unitId']}: reprocessado — {'; '.join(item['reasons'])}")
+        return allowed
+
+    # Cobertura (Prioridade 3) ------------------------------------------
+    def _coverage(self, state):
+        prim = [c for c in state.data["components"] if c.get("role") == "primary"]
+        gaps = {"noTemplate": [], "failed": [], "subDocuments": [], "internalDataUnavailable": [],
+                "notFound": list((state.data.get("scope") or {}).get("notFound") or []),
+                "notEnabled": [], "schemaUnavailable": []}
+        documented = 0
+        for c in prim:
+            key = f"{c.get('metadataType')}:{c.get('component')}"
+            if c.get("status") == st.SUCCESS and c.get("document"):
+                documented += 1
+            elif c.get("status") == st.NO_TEMPLATE:
+                gaps["noTemplate"].append(key)
+            else:
+                gaps["failed"].append({"component": key, "status": c.get("status")})
+            for sub in c.get("subDocuments") or []:
+                if sub.get("status") != st.SUCCESS:
+                    gaps["subDocuments"].append({"component": sub.get("component"), "status": sub.get("status")})
+            if c.get("internalDataStatus") == st.INTERNAL_DATA_UNAVAILABLE:
+                gaps["internalDataUnavailable"].append(key)
+        for t in state.data.get("metadataTypes") or []:
+            if t.get("stage") == "enabled" and t.get("status") == st.NOT_ENABLED:
+                gaps["notEnabled"].append(f"{t.get('group')}/{t.get('metadataType')}")
+            if t.get("stage") == "schema" and t.get("status") == st.SCHEMA_UNAVAILABLE:
+                gaps["schemaUnavailable"].append(t.get("metadataType"))
+        gap_count = sum(len(v) for v in gaps.values())
+        finished = state.data.get("failure") is None
+        out_of_scope = sorted(t.get("group") for t in state.data.get("metadataTypes") or []
+                              if t.get("stage") == "scope")
+        return {
+            "status": "COMPLETE" if finished and gap_count == 0 else "INCOMPLETE",
+            "executionFinished": finished,
+            "inScope": len(prim) + len(gaps["notFound"]),
+            "documented": documented,
+            "gapCount": gap_count,
+            "gaps": gaps,
+            "outOfScopeGroups": out_of_scope,
+        }
 
     def _resolve_scope(self, p, alias, cli_alias, groups, components):
         """Valida e registra o escopo antes de qualquer chamada à org."""
@@ -282,6 +454,8 @@ class DocumentPipeline:
     # Passos 7–10 --------------------------------------------------------
     def _steps7_to_10(self, p, enabled, inventories, skip_units, effective, current_unit):
         p.docs_dir = self.app.output_docs_dir / f"doc-org-{now_local().strftime('%m%d%y')}"
+        p.writer = OutputWriter(p.docs_dir, p.run_state.run_id, self.app.output_layout, self.root,
+                                p.run_state, p.log)
         processor = ComponentProcessor(p)
         for group_name, types in enabled.items():
             group = self.mvp.group(group_name)
@@ -409,12 +583,13 @@ class DocumentPipeline:
             p.log.error(f"{unit['unitId']}: documento inválido: {result.errors}")
             return {"status": st.FAILED, "document": None, "warnings": result.warnings,
                     "error": "; ".join(result.errors)}
-        doc_path = p.docs_dir / f"doc-{slugify(unit['fullName'])}-{doc_slug}.md"
-        write_text(doc_path, result.text)
+        doc_path = p.writer.write(f"doc-{slugify(unit['fullName'])}-{doc_slug}.md", result.text,
+                                  f"{unit['documentType']}:{unit['fullName']}")
         subdocs = self._render_subdocuments(p, group, unit, primary, ctx)
         warnings = list(result.warnings) + [w for s in subdocs for w in s.pop("warnings", [])]
         return {"status": st.SUCCESS, "document": rel(doc_path, self.root),
                 "template": p.templates.resolve_name(contract["template"]),
+                "contract": group.contract_file,
                 "subDocuments": subdocs, "warnings": warnings,
                 "omittedProperties": sorted(ctx.omitted)}
 
@@ -451,8 +626,8 @@ class DocumentPipeline:
             if not res.ok:
                 out.append({"component": name, "status": st.FAILED, "error": "; ".join(res.errors)})
                 continue
-            path = p.docs_dir / f"doc-{slugify(name)}-{suffix}.md"
-            write_text(path, res.text)
+            path = p.writer.write(f"doc-{slugify(name)}-{suffix}.md", res.text,
+                                  f"{unit['documentType']}:{name}:{suffix}")
             out.append({"component": name, "status": st.SUCCESS, "document": rel(path, self.root),
                         "template": p.templates.resolve_name(contract["template"])})
         return out
@@ -468,10 +643,14 @@ class DocumentPipeline:
                              source.data.get("apiVersion") or self.app.default_api_version)
         state = RunState.create(self.app.runs_dir, session.alias, resumed_from=source.run_id)
         state.data["mode"] = "REGENERATE"
+        state.masker = self.masker
+        set_private_files(self.app.private_files)
         log = RunLogger(self.masker, stream=self.stream, run_state=state)
         p = PipelineContext(self.root, self.app, self.mvp, self.runner, state, log, self.masker)
         p.bind_session(session)
         p.docs_dir = self.app.output_docs_dir / f"doc-org-{now_local().strftime('%m%d%y')}"
+        p.writer = OutputWriter(p.docs_dir, p.run_state.run_id, self.app.output_layout, self.root,
+                                p.run_state, p.log)
         state.set("apiVersion", session.api_version)
         if (p.catalog_dir / "metadata-types.raw.json").is_file():
             metadata_types_extractor.regenerate_index(p.catalog_dir)

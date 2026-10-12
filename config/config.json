@@ -17,9 +17,15 @@
   "scope": {
     "mode": "ALL"
   },
+  "approvedOrgs": [],
+  "dataProtection": {
+    "privateFiles": true,
+    "orgDisplayRaw": "KEEP_PRIVATE"
+  },
   "execution": {
     "mode": "MVP_MOCKED_METADATA_TYPES",
     "saveRawResponses": true,
-    "allowPartialSuccess": true
+    "allowPartialSuccess": true,
+    "outputLayout": "BY_DATE"
   }
 }
