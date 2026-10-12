@@ -157,6 +157,7 @@ class OutputIsolationTest(P3Base):
         return self.root / self.primary(state, comp)["document"]
 
     def test_second_run_archives_different_content(self):
+        self.config(execution={"outputLayout": "BY_DATE"})  # layout compartilhado por data
         code, s1 = self.run_pipeline(groups=["RemoteSiteSetting"])
         first = self.doc(s1, "Meu_Site")
         original = first.read_text()

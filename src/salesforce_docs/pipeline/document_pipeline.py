@@ -20,15 +20,16 @@ from salesforce_docs.rendering.markdown_renderer import MarkdownRenderer
 from salesforce_docs.rendering.template_loader import ContractStore, TemplateLoader
 from salesforce_docs.runs.run_logger import RunLogger
 from salesforce_docs.runs.run_state import RunState
-from salesforce_docs.salesforce.cli_runner import CliRunner
+from salesforce_docs.salesforce.cli_runner import CliRunner, sanitized_error_path
 from salesforce_docs.salesforce.metadata_api_client import MetadataApiClient
 from salesforce_docs.salesforce.org_session import OrgSession
 from salesforce_docs.salesforce.tooling_api_client import ToolingApiClient
 from salesforce_docs.pipeline.output_writer import OutputWriter
 from salesforce_docs.utils import (Masker, now_local, read_json, rel, set_private_files, sha256_file,
-                                   sha256_text, slugify, write_text_raw)
+                                   sha256_text, slugify, write_json, write_text_raw)
 from salesforce_docs.validation import cli_validator, org_session_validator
 from salesforce_docs.validation.metadata_type_validator import check_enabled
+from salesforce_docs.validation.git_guard import check_git
 from salesforce_docs.validation.project_validator import validate_project
 
 EXIT_OK, EXIT_FAILURE, EXIT_SESSION, EXIT_GAPS = 0, 1, 2, 3
@@ -105,6 +106,7 @@ class DocumentPipeline:
             for w in warnings:
                 log.warn(w)
             effective = self._resolve_scope(p, alias, org_alias, groups, components)
+            self._git_guard(p)
             self._step1_cli(p)
             self._step2_org_list(p, alias)
             self._step3_org_display(p, alias, api_version)
@@ -164,6 +166,24 @@ class DocumentPipeline:
         return (EXIT_OK if final in (st.SUCCESS, st.PARTIAL_SUCCESS, st.COMPLETED_WITH_GAPS)
                 else EXIT_FAILURE), state
 
+    def _git_guard(self, p):
+        """O .gitignore não basta: arquivo sensível já rastreado bloqueia a execução
+        antes de qualquer chamada à org; caminho sensível não ignorado gera aviso."""
+        result = check_git(self.app)
+        p.run_state.set("gitGuard", result)
+        if not result["available"]:
+            p.log.warn(f"Verificação de Git indisponível ({result['reason']}): proteção de versionamento "
+                       "não verificada")
+            return
+        if result["tracked"]:
+            raise GlobalFailure(
+                "SENSITIVE_FILES_TRACKED",
+                f"{len(result['tracked'])} arquivo(s) sensível(is) rastreado(s) pelo Git: "
+                f"{', '.join(result['tracked'][:5])}{' ...' if len(result['tracked']) > 5 else ''}",
+                "Remova do índice (git rm --cached <arquivo>) e avalie expurgo do histórico.")
+        for path in result["notIgnored"]:
+            p.log.warn(f"Caminho sensível não ignorado pelo .gitignore: {path}")
+
     # Aprovação da org (Prioridade 3) -----------------------------------
     def _check_org_approval(self, p, alias):
         s = p.session
@@ -205,7 +225,7 @@ class DocumentPipeline:
             return
         removed = []
         for path in ([p.catalog_dir / "org-display.raw.json"] if p.catalog_dir else []) + \
-                [p.errors_dir / "org-display.raw.json"]:
+                [sanitized_error_path(p.errors_dir / "org-display.raw.json")]:
             if path.is_file():
                 path.unlink()
                 removed.append(rel(path, self.root))
@@ -439,8 +459,12 @@ class DocumentPipeline:
         display = result.result if isinstance(result.result, dict) else {}
         p.masker.add(display.get("accessToken"))
         if not (result.ok and display.get("apiVersion") and display.get("connectedStatus") == "Connected"):
-            if self.app.save_raw_responses and result.stdout.strip():
-                write_text_raw(p.errors_dir / "org-display.raw.json", result.stdout, private=True)
+            if self.app.save_raw_responses and (result.stdout.strip() or result.stderr.strip()):
+                # Erro de `org display` pode conter token: só envelope sanitizado.
+                write_json(sanitized_error_path(p.errors_dir / "org-display.raw.json"), {
+                    "sanitized": True, "note": "Resposta de erro mascarada; não é raw intacto.",
+                    "returncode": result.returncode, "stdout": self.masker(result.stdout),
+                    "stderr": self.masker(result.stderr)}, private=True)
             org_session_validator.validate_display(result, alias)
             raise GlobalFailure("ORG_DISPLAY_INCOMPLETE", "`sf org display` sem apiVersion",
                                 org_session_validator.login_suggestion(alias))
@@ -673,6 +697,10 @@ class DocumentPipeline:
             p.log.error(f"{unit['unitId']}: documento inválido: {result.errors}")
             return {"status": st.FAILED, "document": None, "warnings": result.warnings,
                     "error": "; ".join(result.errors)}
+        leak = self._sensitive_leak(result.text)
+        if leak:
+            p.log.error(f"{unit['unitId']}: {leak}")
+            return {"status": st.FAILED, "document": None, "warnings": result.warnings, "error": leak}
         doc_path = p.writer.write(f"doc-{slugify(unit['fullName'])}-{doc_slug}.md", result.text,
                                   f"{unit['documentType']}:{unit['fullName']}")
         subdocs = self._render_subdocuments(p, group, unit, primary, ctx)
@@ -682,6 +710,14 @@ class DocumentPipeline:
                 "contract": group.contract_file,
                 "subDocuments": subdocs, "warnings": warnings,
                 "omittedProperties": sorted(ctx.omitted)}
+
+    def _sensitive_leak(self, text):
+        """Barreira final: o Markdown não pode conter token nem valor de elemento sensível
+        visto no XML (mesmo que chegue por outro campo, ex.: description)."""
+        if self.masker(text) != text:
+            return ("conteúdo sensível conhecido detectado no documento (token ou valor de elemento "
+                    "sensível); documento NÃO gravado")
+        return None
 
     def _missing_message(self, p, metadata_type, component, contract_file, template, reference):
         """Aviso de NO_TEMPLATE: tipo, componente, referência ajudAI, contrato e modelo esperados."""
@@ -715,6 +751,11 @@ class DocumentPipeline:
             res = self.renderer.render(template, contract, sctx)
             if not res.ok:
                 out.append({"component": name, "status": st.FAILED, "error": "; ".join(res.errors)})
+                continue
+            leak = self._sensitive_leak(res.text)
+            if leak:
+                p.log.error(f"{unit['unitId']} ({name}): {leak}")
+                out.append({"component": name, "status": st.FAILED, "error": leak})
                 continue
             path = p.writer.write(f"doc-{slugify(name)}-{suffix}.md", res.text,
                                   f"{unit['documentType']}:{name}:{suffix}")

@@ -47,7 +47,7 @@ class AppConfig:
         self.org_display_raw_policy = str(protection.get("orgDisplayRaw", "KEEP_PRIVATE")).upper()
         if self.org_display_raw_policy not in ("KEEP_PRIVATE", "DELETE_AFTER_RUN"):
             raise ConfigError("config.json: dataProtection.orgDisplayRaw deve ser KEEP_PRIVATE ou DELETE_AFTER_RUN")
-        self.output_layout = str(execution.get("outputLayout", "BY_DATE")).upper()
+        self.output_layout = str(execution.get("outputLayout", "BY_RUN")).upper()
         if self.output_layout not in ("BY_DATE", "BY_RUN"):
             raise ConfigError("config.json: execution.outputLayout deve ser BY_DATE ou BY_RUN")
 

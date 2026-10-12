@@ -7,8 +7,11 @@ from salesforce_docs.errors import ConfigError
 from salesforce_docs.validation.internal_object_validator import validate_internal_data_config
 
 
-def validate_project(app_config, mvp_config, contracts) -> list:
-    """Erros de configuração global (lança) e avisos (retorna)."""
+def validate_project(app_config, mvp_config, contracts, strict=False) -> list:
+    """Erros de configuração global (lança) e avisos (retorna).
+
+    strict=True (opt-in, `validate-config --strict`): avisos também viram erro.
+    """
     errors, warnings = [], []
     used = set()
     for group in mvp_config.groups:
@@ -42,10 +45,30 @@ def validate_project(app_config, mvp_config, contracts) -> list:
             e, w = validate_template(name, contract, app_config)
             errors.extend(e)
             warnings.extend(w)
+        else:
+            warnings.extend(_templateless_usage(name, contract, contracts, mvp_config))
     warnings.extend(_unused_models(app_config, contracts))
+    if strict and warnings:
+        errors.extend(f"[strict] {w}" for w in warnings)
     if errors:
         raise ConfigError("Contratos/modelos inválidos:\n- " + "\n- ".join(errors))
     return warnings
+
+
+def _templateless_usage(name, contract, contracts, mvp_config):
+    """Contrato sem modelo próprio: intencional se outro contrato o renderiza por bloco
+    (related_properties_table) ou se declara `renderedVia`; caso contrário, aviso."""
+    mtype = contract.get("metadataType")
+    for other_name, other in contracts.all().items():
+        for block in (other or {}).get("blocks", []):
+            if block.get("builder") == "related_properties_table" and \
+                    (block.get("args") or {}).get("metadataType") == mtype and \
+                    mvp_config.contract_file(mtype) == name:
+                return []
+    if contract.get("renderedVia"):
+        return []
+    return [f"{name}: contrato sem modelo próprio e sem uso por bloco de outro contrato "
+            "(declare `renderedVia` se for intencional)"]
 
 
 def validate_template(contract_name, contract, app_config):
@@ -58,37 +81,48 @@ def validate_template(contract_name, contract, app_config):
     errors, warnings = [], []
     api = app_config.default_api_version or "67.0"
     loader = TemplateLoader(app_config.models_dir(api), api)
-    text = loader.load(contract["template"])
+    try:
+        text = loader.load(contract["template"])
+    except ValueError as exc:
+        return [f"{contract_name}: {exc}"], warnings
     if text is None:
         ref = contract.get("referenceDoc")
-        warnings.append(f"{contract_name}: modelo {loader.path(contract['template'])} ausente "
+        warnings.append(f"{contract_name}: modelo esperado ausente {loader.path(contract['template'])} "
                         f"(NO_TEMPLATE em execução{'; referência ' + ref if ref else ''})")
         return errors, warnings
     tables = {t["markdownSection"]: t for t in contract.get("tables", [])}
     blocks = {b["placeholder"]: b for b in contract.get("blocks", [])}
     props = contract.get("properties", [])
     tname = loader.resolve_name(contract["template"])
+    where = f"{contract_name} [{contract.get('metadataType')}] / {tname}"
     seen_sections = set()
+    used_placeholders = set()
+    block_sections = {}
     section = None
-    for line in text.splitlines():
+    for lineno, line in enumerate(text.splitlines(), start=1):
         if line.startswith("## "):
             section = line[3:].strip()
             seen_sections.add(section)
         names = PLACEHOLDER_RE.findall(line)
+        leftovers = PLACEHOLDER_RE.sub("", line)
+        if "{{" in leftovers or "}}" in leftovers:
+            errors.append(f"{where}:{lineno}: placeholder malformado: {line.strip()}")
         if not names:
             continue
+        used_placeholders.update(names)
         cells = _cells(line)
         if section in tables and cells is not None:
             t = tables[section]
             if t.get("builder") not in TABLE_BUILDERS:
-                errors.append(f"{contract_name}/{tname}: builder de tabela desconhecido {t.get('builder')!r}")
+                errors.append(f"{where}: builder de tabela desconhecido {t.get('builder')!r} "
+                              f"(seção '{section}')")
             if cells[-1] != t.get("source"):
-                errors.append(f"{contract_name}/{tname}: seção '{section}' com Fonte '{cells[-1]}' "
+                errors.append(f"{where}: seção '{section}' com Fonte '{cells[-1]}' "
                               f"no modelo e '{t.get('source')}' no contrato")
             expected = table_placeholders(t)
             for n in names:
                 if expected is not None and n not in expected:
-                    errors.append(f"{contract_name}/{tname}: placeholder '{n}' (seção '{section}') "
+                    errors.append(f"{where}: placeholder '{n}' (seção '{section}') "
                                   f"não é coluna do builder {t.get('builder')} {sorted(expected)}")
             continue
         for n in names:
@@ -97,19 +131,34 @@ def validate_template(contract_name, contract, app_config):
             prop = _find_prop(props, n, section)
             if prop is not None:
                 if cells is not None and cells[-1] != prop["source"]:
-                    errors.append(f"{contract_name}/{tname}: {prop['name']} com Fonte '{cells[-1]}' "
+                    errors.append(f"{where}: {prop['name']} com Fonte '{cells[-1]}' "
                                   f"no modelo e '{prop['source']}' no contrato")
                 continue
             if n in blocks:
+                block_sections[n] = section
                 if blocks[n].get("builder") not in BLOCK_BUILDERS:
-                    errors.append(f"{contract_name}/{tname}: builder de bloco desconhecido "
-                                  f"{blocks[n].get('builder')!r}")
+                    errors.append(f"{where}: builder de bloco desconhecido "
+                                  f"{blocks[n].get('builder')!r} (placeholder '{n}')")
                 continue
-            errors.append(f"{contract_name}/{tname}: placeholder '{n}' (seção '{section}') "
+            errors.append(f"{where}: placeholder '{n}' (seção '{section}') "
                           "sem propriedade, bloco ou tabela no contrato")
     for sec in tables:
         if sec not in seen_sections:
-            errors.append(f"{contract_name}/{tname}: tabela do contrato para seção inexistente '{sec}'")
+            errors.append(f"{where}: tabela do contrato para seção inexistente '{sec}'")
+    for ph, block in blocks.items():
+        if ph not in block_sections:
+            errors.append(f"{where}: bloco '{ph}' declarado no contrato não aparece no modelo")
+        elif block.get("markdownSection") and block["markdownSection"] != block_sections[ph]:
+            errors.append(f"{where}: bloco '{ph}' está na seção '{block_sections[ph]}' do modelo, "
+                          f"mas o contrato declara '{block['markdownSection']}'")
+    for prop in props:
+        ph = prop.get("placeholder")
+        if ph and ph not in used_placeholders and not (ph == "component_name"):
+            if prop.get("intentionallyNotRendered"):
+                continue
+            warnings.append(f"{where}: propriedade {prop.get('name')} (placeholder '{ph}') declarada no "
+                            "contrato e ausente do modelo — não será renderizada "
+                            "(marque `intentionallyNotRendered` se for intencional)")
     return errors, warnings
 
 

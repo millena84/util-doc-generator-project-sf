@@ -40,7 +40,9 @@ def build_parser():
                            help="Regera derivados e Markdown a partir dos raws/XMLs (sem acessar a org)")
     regen.add_argument("--run", default="latest", help="Execução de origem (padrão: latest)")
 
-    sub.add_parser("validate-config", help="Valida config, contratos e modelos (sem acessar a org)")
+    vc = sub.add_parser("validate-config", help="Valida config, contratos e modelos (sem acessar a org)")
+    vc.add_argument("--strict", action="store_true",
+                    help="Trata avisos (modelo ausente, propriedade sem uso etc.) como erro")
     return parser
 
 
@@ -62,9 +64,27 @@ def main(argv=None):
             from salesforce_docs.validation.project_validator import validate_project
             from salesforce_docs.rendering.template_loader import ContractStore
             warnings = validate_project(pipeline.app, pipeline.mvp,
-                                        ContractStore(pipeline.app.contracts_dir, pipeline.mvp))
+                                        ContractStore(pipeline.app.contracts_dir, pipeline.mvp),
+                                        strict=args.strict)
             for w in warnings:
                 print(f"AVISO: {w}", file=sys.stderr)
+            from salesforce_docs.validation.git_guard import check_git
+            git = check_git(pipeline.app)
+            if not git["available"]:
+                print(f"AVISO: verificação de Git indisponível ({git['reason']})", file=sys.stderr)
+            else:
+                if git["tracked"]:
+                    print("ERRO: arquivos sensíveis rastreados pelo Git (o .gitignore não protege "
+                          "o que já foi commitado):", file=sys.stderr)
+                    for f in git["tracked"]:
+                        print(f"  - {f}", file=sys.stderr)
+                    return 1
+                for f in git["notIgnored"]:
+                    print(f"AVISO: caminho sensível não ignorado pelo .gitignore: {f}", file=sys.stderr)
+                if git["notIgnored"] and args.strict:
+                    print("ERRO: [strict] caminhos sensíveis não ignorados", file=sys.stderr)
+                    return 1
+                print("Git: nenhum arquivo sensível rastreado; caminhos sensíveis ignorados.")
             from salesforce_docs.config.scope import describe_effective, resolve_scope
             effective = resolve_scope(pipeline.app.scope, pipeline.mvp)
             print(f"Org alias: {pipeline.app.org_alias} (config.json)")

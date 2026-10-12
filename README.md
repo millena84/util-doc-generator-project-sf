@@ -125,7 +125,10 @@ Regras:
 
 - **Org aprovada**: preencha `approvedOrgs` no `config.json` (o `run` informa o `orgId` detectado). Sem aprovação, nada é coletado (`ORG_NOT_APPROVED`).
 - **Proteção de dados**: `dataProtection.privateFiles` (padrão `true`, arquivos `0600`), `dataProtection.orgDisplayRaw` (`KEEP_PRIVATE` | `DELETE_AFTER_RUN`).
-- **Saída**: `execution.outputLayout` (`BY_DATE` com manifesto e `_substituidos/`, ou `BY_RUN`).
+- **Saída**: `execution.outputLayout` — `BY_RUN` (padrão: `saida/docs/doc-org-MMDDAA/<runId>/`, cada execução isolada) ou `BY_DATE` (pasta por data, com manifesto e `_substituidos/`).
+- **Git**: `.gitignore` não é tratado como controle suficiente. `validate-config` e `run` verificam se há arquivo sensível **rastreado** (raw de `org display`, XMLs, normalizados, erros, `.crt`) — o `run` para antes de qualquer chamada à org (`SENSITIVE_FILES_TRACKED`) — e se os caminhos sensíveis estão de fato ignorados (`git check-ignore`). Fora de repositório Git a verificação fica registrada como indisponível.
+- **Erros**: respostas de erro da CLI são gravadas como envelope `*.sanitized.json` (stdout/stderr mascarados), nunca como raw intacto.
+- **Barreira final**: um documento que contenha o token ou valor de elemento sensível visto no XML (mesmo por outro campo) não é gravado (`FAILED`).
 - **Cobertura**: `coverage` no run state e linha "Cobertura: COMPLETE/INCOMPLETE" no log.
 - **Retomada**: só reaproveita o que for compatível (org, API, política, escopo, contratos/modelos); motivos em `resume.reprocessed`.
 - Inventário de artefatos, sensibilidade e retenção: [`documentation/protecao-de-dados.md`](documentation/protecao-de-dados.md).
@@ -145,7 +148,7 @@ A matriz de rastreabilidade, as divergências entre `ajudAI`, o utilitário e a 
    - `internalData`: consulta SOQL opcional (`{developerName}`, `{fullName}`).
 3. Criar o modelo em `documentation/models/api-v<N>/` (somente quando solicitado).
 4. Criar parser/builder em `src/salesforce_docs/parsing/` **apenas se** os builders genéricos não bastarem.
-5. `bin/sf-docs.sh validate-config` (confere cada placeholder de cada modelo contra propriedades, blocos, colunas e builders do contrato, a fonte declarada e elementos bloqueados) e `python3 -m unittest discover -s tests -t .`.
+5. `bin/sf-docs.sh validate-config [--strict]` (confere cada placeholder de cada modelo contra propriedades, blocos, colunas e builders do contrato, a fonte declarada e elementos bloqueados; blocos ausentes do modelo ou em seção divergente; propriedades do contrato que não aparecem no modelo — aviso, ou `intentionallyNotRendered`; contratos sem modelo próprio e sem uso — aviso, ou `renderedVia`; placeholders malformados; nome de modelo que tente sair de `documentation/models/api-vN/`. `--strict` transforma avisos em erro) e `python3 -m unittest discover -s tests -t .`.
 
 ## Estados
 
