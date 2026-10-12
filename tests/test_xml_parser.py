@@ -57,8 +57,8 @@ class XmlParserTest(unittest.TestCase):
 
     def test_xsi_nil_and_namespaced_values(self):
         _, data = parse_xml_file(SRC / "customMetadata" / "Config.Padrao.md-meta.xml")
-        self.assertEqual(data["values"]["field"], "Ativo__c")
-        self.assertEqual(data["values"]["value"], "true")
+        self.assertEqual(data["values"][0]["field"], "Ativo__c")
+        self.assertEqual(data["values"][0]["value"], "true")
 
 
 if __name__ == "__main__":

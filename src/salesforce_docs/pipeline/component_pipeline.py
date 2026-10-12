@@ -100,7 +100,8 @@ def normalize_record(pctx, record):
     schema = load_schema(pctx.schemas_dir, metadata_type)
     normalized = normalize_component(metadata_type, full_name, pctx.root / record["xml"],
                                      pctx.root, schema, role=record.get("role", "primary"),
-                                     retrieve_raw=record.get("retrieveRaw"))
+                                     retrieve_raw=record.get("retrieveRaw"),
+                                     secret_keys=pctx.mvp.sensitive_elements)
     norm_path = type_dir / "normalized" / f"{slugify(full_name)}.json"
     write_json(norm_path, normalized)
     record.update(normalized=rel(norm_path, pctx.root), data=normalized["data"],
@@ -111,7 +112,8 @@ def normalize_record(pctx, record):
             continue
         child_schema = load_schema(pctx.schemas_dir, f["type"])
         child_norm = normalize_component(f["type"], f["fullName"], pctx.root / f["path"], pctx.root,
-                                         child_schema, role="child", retrieve_raw=record.get("retrieveRaw"))
+                                         child_schema, role="child", retrieve_raw=record.get("retrieveRaw"),
+                                         secret_keys=pctx.mvp.sensitive_elements)
         child_path = type_dir / "normalized" / f"{slugify(f['fullName'])}.json"
         write_json(child_path, child_norm)
         children.append({"metadataType": f["type"], "fullName": f["fullName"], "xml": f["path"],

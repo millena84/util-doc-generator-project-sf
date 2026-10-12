@@ -34,6 +34,19 @@
     "refreshToken",
     "oauthToken"
   ],
+  "omitFromDocumentation": [
+    "consumerKey",
+    "callbackUrl",
+    "contactEmail",
+    "contactPhone",
+    "certificate",
+    "jsonWebKey",
+    "parameterValue",
+    "commaSeparatedPermissionSet",
+    "commaSeparatedProfile",
+    "clientCredentialsFlowUser",
+    "executeHandlerAs"
+  ],
   "metadataTypeGroups": [
     {
       "group": "Flow",
@@ -48,6 +61,14 @@
           "contract": "flow-trigger.schema.json",
           "when": { "path": "start.triggerType", "present": true },
           "documentSuffix": "flow-trigger"
+        },
+        {
+          "contract": "flow-autolaunched.schema.json",
+          "when": [
+            { "path": "processType", "equals": "AutoLaunchedFlow" },
+            { "path": "start.triggerType", "present": false }
+          ],
+          "documentSuffix": "flow-autolaunched"
         },
         {
           "contract": "flow-screen.schema.json",
@@ -100,8 +121,11 @@
     {
       "group": "CustomMetadata",
       "primaryMetadataType": "CustomMetadata",
-      "relatedMetadataTypes": [],
+      "relatedMetadataTypes": ["CustomField"],
       "documentStrategy": "ONE_DOCUMENT_PER_TYPE_AND_RECORDS",
+      "relations": [
+        { "metadataType": "CustomField", "match": "CHILD_OF_PRIMARY" }
+      ],
       "typeDefinition": {
         "metadataType": "CustomObject",
         "typeNameSuffix": "__mdt",

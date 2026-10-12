@@ -87,6 +87,16 @@
       "type": "CustomObject",
       "fullName": "Config__mdt",
       "path": "objects/Config__mdt/Config__mdt.object-meta.xml"
+    },
+    {
+      "type": "CustomField",
+      "fullName": "Config__mdt.Ativo__c",
+      "path": "objects/Config__mdt/fields/Ativo__c.field-meta.xml"
+    },
+    {
+      "type": "CustomField",
+      "fullName": "Config__mdt.Chave_API__c",
+      "path": "objects/Config__mdt/fields/Chave_API__c.field-meta.xml"
     }
   ],
   "CustomMetadata:Config.Padrao": [
@@ -101,6 +111,13 @@
       "type": "CustomMetadata",
       "fullName": "Config.Secundario",
       "path": "customMetadata/Config.Secundario.md-meta.xml"
+    }
+  ],
+  "Flow:Processa_Pedido": [
+    {
+      "type": "Flow",
+      "fullName": "Processa_Pedido",
+      "path": "flows/Processa_Pedido.flow-meta.xml"
     }
   ]
 }

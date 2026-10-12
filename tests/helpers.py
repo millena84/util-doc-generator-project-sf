@@ -22,6 +22,10 @@ SIMULATED_SCHEMA_FIELDS = {
     "FlowDefinition": ["activeVersionNumber", "description", "masterLabel"],
     "ExternalClientApplication": ["contactEmail", "description", "distributionState", "isProtected", "label"],
     "ConnectedApp": ["contactEmail", "label", "oauthConfig"],
+    "CustomObject": ["deploymentStatus", "description", "label", "pluralLabel", "sharingModel",
+                     "visibility"],
+    "ExtlClntAppConfigurablePolicies": ["externalClientApplication", "isEnabled",
+                                        "isOauthPluginEnabled", "label", "startPage", "startUrl"],
 }
 
 

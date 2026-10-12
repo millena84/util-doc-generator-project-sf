@@ -24,6 +24,15 @@
       "markdownSection": "Identificação"
     },
     {
+      "name": "RecordTriggerType",
+      "placeholder": "record_trigger_type",
+      "path": "start.recordTriggerType",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação",
+      "notes": "Ausente em fluxos Scheduled/PlatformEvent: renderizado conforme regra de ausência."
+    },
+    {
       "name": "Object",
       "placeholder": "object",
       "path": "start.object",
@@ -46,5 +55,14 @@
     "source": null,
     "object": null,
     "query": null
-  }
+  },
+  "referenceDoc": "_sf_utilities/ajudAI/contexto-flow-trigger.md",
+  "evidence": [
+    "Metadata API Flow: campo `start` (API 47+) confirmado via índice oficial; demais elementos validados só por fixture simulada — página Flow da API 67.0 pendente de leitura direta"
+  ],
+  "notSupported": [
+    "Seção 7 (variáveis globais $Record/$User...): inferência sobre expressões, não propriedade do metadata",
+    "OptimizationMode via start.elementSubtype: não confirmado",
+    "scheduledPaths / start.schedule: nomes de campos pendentes de confirmação oficial"
+  ]
 }

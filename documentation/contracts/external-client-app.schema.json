@@ -31,6 +31,30 @@
       "required": false,
       "markdownSection": "Identificação",
       "notes": "Se o describeValueType não listar o campo, é renderizado 'Não aplicável'."
+    },
+    {
+      "name": "Description",
+      "placeholder": "description",
+      "path": "description",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "DistributionState",
+      "placeholder": "distribution_state",
+      "path": "distributionState",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "IsProtected",
+      "placeholder": "is_protected",
+      "path": "isProtected",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
     }
   ],
   "tables": [
@@ -56,5 +80,39 @@
     "source": null,
     "object": null,
     "query": null
-  }
+  },
+  "blocks": [
+    {
+      "placeholder": "oauth_settings",
+      "markdownSection": "Configuração OAuth",
+      "builder": "related_properties_table",
+      "args": {
+        "metadataType": "ExtlClntAppOauthSettings"
+      },
+      "source": "XML"
+    },
+    {
+      "placeholder": "oauth_policies",
+      "markdownSection": "Políticas OAuth",
+      "builder": "related_properties_table",
+      "args": {
+        "metadataType": "ExtlClntAppOauthConfigurablePolicies"
+      },
+      "source": "XML"
+    },
+    {
+      "placeholder": "app_policies",
+      "markdownSection": "Políticas do app",
+      "builder": "related_properties_table",
+      "args": {
+        "metadataType": "ExtlClntAppConfigurablePolicies"
+      },
+      "source": "XML"
+    }
+  ],
+  "referenceDoc": "_sf_utilities/ajudAI/sf-eca.md (contexto-external-client-app.md rejeitado como fonte estrutural: sufixos/pastas/campos divergentes)",
+  "evidence": [
+    "Metadata API ExternalClientApplication (.eca, externalClientApps, API 59+): contactEmail, description, distributionState, isProtected, label"
+  ],
+  "security": "contactEmail/contactPhone omitidos (omitFromDocumentation). ExtlClntAppGlobalOauthSettings excluído (consumerKey/consumerSecret)."
 }

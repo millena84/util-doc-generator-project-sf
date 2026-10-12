@@ -106,12 +106,12 @@ class FullRunTest(PipelineTestBase):
         code, state = self.run_pipeline(groups=["CustomObject", "CustomMetadata"])
         obj = self.read(self.primary(state, "Pedido__c")["document"])
         self.assertIn("| Valor__c | Valor | Currency | XML |", obj)
-        self.assertIn("| Pedido__c.Padrao | RecordType | XML |", obj)
+        self.assertIn("| Pedido__c.Padrao | Padrão | true | XML |", obj)
         cmdt = self.primary(state, "Config__mdt")
         self.assertEqual(cmdt["metadataType"], "CustomMetadata")
         self.assertIn("inventory/org-dev/api-v67/custom-metadata/", cmdt["xml"])
         doc = self.read(cmdt["document"])
-        self.assertIn("| Config.Padrao | Config Padrao | XML |", doc)
+        self.assertIn("| Config.Padrao | Config Padrao | false | XML |", doc)
         self.assertIn("| Visibility | Public | XML |", doc)
 
     def test_token_never_leaks(self):

@@ -16,7 +16,7 @@ PRESENT, ABSENT, NOT_APPLICABLE = "PRESENT", "ABSENT", "NOT_APPLICABLE"
 class RenderContext:
     def __init__(self, metadata_type, full_name, data, schema_fields=None, internal=None,
                  related=None, files=None, parent=None, contracts=None, sensitive=(),
-                 developer_name=None, normalized_path=None):
+                 developer_name=None, normalized_path=None, omitted=None):
         self.metadata_type = metadata_type
         self.full_name = full_name
         self.data = data or {}
@@ -29,12 +29,18 @@ class RenderContext:
         self.sensitive = set(sensitive)
         self.developer_name = developer_name or full_name
         self.normalized_path = normalized_path
+        # Propriedades encontradas no XML e omitidas por política (compartilhado com filhos).
+        self.omitted = omitted if omitted is not None else set()
 
-    def child(self, data, full_name=None, schema_fields=None):
-        return RenderContext(self.metadata_type, full_name or self.full_name, data,
+    def omit(self, name):
+        self.omitted.add(f"{self.metadata_type}:{self.full_name}:{name}")
+
+    def child(self, data, full_name=None, schema_fields=None, metadata_type=None):
+        return RenderContext(metadata_type or self.metadata_type, full_name or self.full_name, data,
                              schema_fields=schema_fields, internal=self.internal,
                              related=self.related, files=self.files, parent=self,
-                             contracts=self.contracts, sensitive=self.sensitive)
+                             contracts=self.contracts, sensitive=self.sensitive,
+                             omitted=self.omitted)
 
     def related_of(self, metadata_type):
         return [r for r in self.related if r["metadataType"] == metadata_type]

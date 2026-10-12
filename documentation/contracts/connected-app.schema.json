@@ -40,9 +40,12 @@
       "args": {
         "path": "oauthConfig",
         "keyPlaceholder": "oauth_property",
-        "valuePlaceholder": "value"
+        "valuePlaceholder": "value",
+        "allow": [
+          "scopes"
+        ]
       },
-      "notes": "Elementos em sensitiveXmlElements (ex.: consumerSecret) nunca são renderizados."
+      "notes": "Somente propriedades em `allow` são renderizadas; as demais (callbackUrl, consumerKey, certificate...) são omitidas e registradas em omittedProperties do run."
     }
   ],
   "relatedMetadataTypes": [],
@@ -51,5 +54,12 @@
     "source": null,
     "object": null,
     "query": null
-  }
+  },
+  "referenceDoc": "_sf_utilities/ajudAI/contexto-connected-app.md",
+  "security": "consumerKey, callbackUrl, certificate, contactEmail/Phone em omitFromDocumentation; consumerSecret em sensitiveXmlElements.",
+  "notSupported": [
+    "ConnectedAppPolicies via Tooling API: objeto não confirmado",
+    "samlConfig/canvasConfig: campos pendentes",
+    "Permission Sets/Profiles autorizados: exigem outros metadata types"
+  ]
 }

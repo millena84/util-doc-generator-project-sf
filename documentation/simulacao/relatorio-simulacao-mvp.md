@@ -2,42 +2,44 @@
 
 > **SIMULADO.** CLI `sf` simulada (`tests/fixtures/bin/sf`, cenário `mvp_complete`) e Metadata API simulada. Nenhum dado veio de uma org real. Gerado por `python3 -m tests.simulate_mvp`.
 
-- Execução: `run-20261011-021246` — status **SUCCESS** — código de saída `0`
+- Execução: `run-20261012-024548` — status **SUCCESS** — código de saída `0`
 - Org: `dev` — API `67.0`
 
 ## 1. Saída no terminal
 
 ```
-[02:12:46] INFO  Passo 1: Salesforce CLI 2.60.0 (mínima 2.0.0)
-[02:12:46] INFO  Passo 2: alias 'dev' autenticado
-[02:12:46] INFO  Passo 3: usuario.simulado@example.com conectado; API 67.0 (detectada 67.0, fonte: sf org display)
-[02:12:46] INFO  Passo 4: grupos habilitados: Flow, ExternalClientApp, ExternalCredential, ConnectedApp, CustomObject, CustomMetadata
-[02:12:47] INFO  Passo 6: Flow -> 2 componente(s)
-[02:12:47] INFO  Passo 6: FlowDefinition -> 1 componente(s)
-[02:12:47] INFO  Passo 6: ExternalClientApplication -> 1 componente(s)
-[02:12:47] INFO  Passo 6: ExtlClntAppOauthSettings -> 2 componente(s)
-[02:12:47] INFO  Passo 6: ExtlClntAppConfigurablePolicies -> 1 componente(s)
-[02:12:47] INFO  Passo 6: ExtlClntAppOauthConfigurablePolicies -> 1 componente(s)
-[02:12:47] INFO  Passo 6: ExternalCredential -> 1 componente(s)
-[02:12:47] INFO  Passo 6: ConnectedApp -> 1 componente(s)
-[02:12:47] INFO  Passo 6: CustomObject -> 3 componente(s)
-[02:12:47] INFO  Passo 6: CustomMetadata -> 2 componente(s)
-[02:12:47] INFO  Flow:Flow:Meu_Flow: processando
-[02:12:47] INFO  Flow:Flow:Meu_Flow: SUCCESS -> saida/docs/doc-org-101126/doc-meu-flow-flow.md
-[02:12:47] INFO  Flow:Flow:Tela_Cadastro: processando
-[02:12:47] INFO  Flow:Flow:Tela_Cadastro: SUCCESS -> saida/docs/doc-org-101126/doc-tela-cadastro-flow.md
-[02:12:47] INFO  ExternalClientApp:ExternalClientApplication:Minha_ECA: processando
-[02:12:47] INFO  ExternalClientApp:ExternalClientApplication:Minha_ECA: SUCCESS -> saida/docs/doc-org-101126/doc-minha-eca-external-client-app.md
-[02:12:47] INFO  ExternalCredential:ExternalCredential:Minha_EC: processando
-[02:12:47] INFO  ExternalCredential:ExternalCredential:Minha_EC: SUCCESS -> saida/docs/doc-org-101126/doc-minha-ec-external-credential.md
-[02:12:47] INFO  ConnectedApp:ConnectedApp:Meu_App: processando
-[02:12:47] INFO  ConnectedApp:ConnectedApp:Meu_App: SUCCESS -> saida/docs/doc-org-101126/doc-meu-app-connected-app.md
-[02:12:47] INFO  CustomObject:CustomObject:Pedido__c: processando
-[02:12:47] INFO  CustomObject:CustomObject:Pedido__c: SUCCESS -> saida/docs/doc-org-101126/doc-pedido-c-custom-object.md
-[02:12:47] INFO  CustomMetadata:CustomMetadata:Config__mdt: processando
-[02:12:47] INFO  CustomMetadata:CustomMetadata:Config__mdt: SUCCESS -> saida/docs/doc-org-101126/doc-config-mdt-custom-metadata.md
-[02:12:47] INFO  Execução run-20261011-021246 finalizada: SUCCESS {'SUCCESS': 7}
-[02:12:47] INFO  Log: runs/run-20261011-021246.json
+[02:45:48] INFO  Passo 1: Salesforce CLI 2.60.0 (mínima 2.0.0)
+[02:45:48] INFO  Passo 2: alias 'dev' autenticado
+[02:45:48] INFO  Passo 3: usuario.simulado@example.com conectado; API 67.0 (detectada 67.0, fonte: sf org display)
+[02:45:48] INFO  Passo 4: grupos habilitados: Flow, ExternalClientApp, ExternalCredential, ConnectedApp, CustomObject, CustomMetadata
+[02:45:48] INFO  Passo 6: Flow -> 3 componente(s)
+[02:45:48] INFO  Passo 6: FlowDefinition -> 1 componente(s)
+[02:45:48] INFO  Passo 6: ExternalClientApplication -> 1 componente(s)
+[02:45:48] INFO  Passo 6: ExtlClntAppOauthSettings -> 2 componente(s)
+[02:45:48] INFO  Passo 6: ExtlClntAppConfigurablePolicies -> 1 componente(s)
+[02:45:48] INFO  Passo 6: ExtlClntAppOauthConfigurablePolicies -> 1 componente(s)
+[02:45:48] INFO  Passo 6: ExternalCredential -> 1 componente(s)
+[02:45:48] INFO  Passo 6: ConnectedApp -> 1 componente(s)
+[02:45:48] INFO  Passo 6: CustomObject -> 3 componente(s)
+[02:45:48] INFO  Passo 6: CustomMetadata -> 2 componente(s)
+[02:45:48] INFO  Flow:Flow:Meu_Flow: processando
+[02:45:49] INFO  Flow:Flow:Meu_Flow: SUCCESS -> saida/docs/doc-org-101226/doc-meu-flow-flow.md
+[02:45:49] INFO  Flow:Flow:Processa_Pedido: processando
+[02:45:49] INFO  Flow:Flow:Processa_Pedido: SUCCESS -> saida/docs/doc-org-101226/doc-processa-pedido-flow.md
+[02:45:49] INFO  Flow:Flow:Tela_Cadastro: processando
+[02:45:49] INFO  Flow:Flow:Tela_Cadastro: SUCCESS -> saida/docs/doc-org-101226/doc-tela-cadastro-flow.md
+[02:45:49] INFO  ExternalClientApp:ExternalClientApplication:Minha_ECA: processando
+[02:45:49] INFO  ExternalClientApp:ExternalClientApplication:Minha_ECA: SUCCESS -> saida/docs/doc-org-101226/doc-minha-eca-external-client-app.md
+[02:45:49] INFO  ExternalCredential:ExternalCredential:Minha_EC: processando
+[02:45:49] INFO  ExternalCredential:ExternalCredential:Minha_EC: SUCCESS -> saida/docs/doc-org-101226/doc-minha-ec-external-credential.md
+[02:45:49] INFO  ConnectedApp:ConnectedApp:Meu_App: processando
+[02:45:49] INFO  ConnectedApp:ConnectedApp:Meu_App: SUCCESS -> saida/docs/doc-org-101226/doc-meu-app-connected-app.md
+[02:45:49] INFO  CustomObject:CustomObject:Pedido__c: processando
+[02:45:49] INFO  CustomObject:CustomObject:Pedido__c: SUCCESS -> saida/docs/doc-org-101226/doc-pedido-c-custom-object.md
+[02:45:49] INFO  CustomMetadata:CustomMetadata:Config__mdt: processando
+[02:45:49] INFO  CustomMetadata:CustomMetadata:Config__mdt: SUCCESS -> saida/docs/doc-org-101226/doc-config-mdt-custom-metadata.md
+[02:45:49] INFO  Execução run-20261012-024548 finalizada: SUCCESS {'SUCCESS': 8}
+[02:45:49] INFO  Log: runs/run-20261012-024548.json
 ```
 
 ## 2. Comandos executados na CLI (por passo)
@@ -61,20 +63,22 @@
 | 15 | 7 | `sf project retrieve start --metadata Flow:Meu_Flow --target-org dev --api-version 67.0 --json` |
 | 16 | 7 | `sf project retrieve start --metadata FlowDefinition:Meu_Flow --target-org dev --api-version 67.0 --json` |
 | 17 | 9 | `sf data query --query SELECT Id, VersionNumber, Status FROM Flow WHERE Definition.DeveloperName = 'Meu_Flow' ORDER BY VersionNumber --use-tooling-api --target-org dev --api-version 67.0 --json` |
-| 18 | 7 | `sf project retrieve start --metadata Flow:Tela_Cadastro --target-org dev --api-version 67.0 --json` |
-| 19 | 9 | `sf data query --query SELECT Id, VersionNumber, Status FROM Flow WHERE Definition.DeveloperName = 'Tela_Cadastro' ORDER BY VersionNumber --use-tooling-api --target-org dev --api-version 67.0 --json` |
-| 20 | 7 | `sf project retrieve start --metadata ExternalClientApplication:Minha_ECA --target-org dev --api-version 67.0 --json` |
-| 21 | 7 | `sf project retrieve start --metadata ExtlClntAppOauthSettings:Minha_ECA_oauth --target-org dev --api-version 67.0 --json` |
-| 22 | 7 | `sf project retrieve start --metadata ExtlClntAppOauthSettings:Outra_ECA_oauth --target-org dev --api-version 67.0 --json` |
-| 23 | 7 | `sf project retrieve start --metadata ExtlClntAppConfigurablePolicies:Minha_ECA_plcy --target-org dev --api-version 67.0 --json` |
-| 24 | 7 | `sf project retrieve start --metadata ExtlClntAppOauthConfigurablePolicies:Minha_ECA_oauthPlcy --target-org dev --api-version 67.0 --json` |
-| 25 | 7 | `sf project retrieve start --metadata ExternalCredential:Minha_EC --target-org dev --api-version 67.0 --json` |
-| 26 | 9 | `sf data query --query SELECT Id, DeveloperName, MasterLabel, CreatedDate, LastModifiedDate FROM ExternalCredential WHERE DeveloperName = 'Minha_EC' --target-org dev --api-version 67.0 --json` |
-| 27 | 7 | `sf project retrieve start --metadata ConnectedApp:Meu_App --target-org dev --api-version 67.0 --json` |
-| 28 | 7 | `sf project retrieve start --metadata CustomObject:Pedido__c --target-org dev --api-version 67.0 --json` |
-| 29 | 7 | `sf project retrieve start --metadata CustomObject:Config__mdt --target-org dev --api-version 67.0 --json` |
-| 30 | 7 | `sf project retrieve start --metadata CustomMetadata:Config.Padrao --target-org dev --api-version 67.0 --json` |
-| 31 | 7 | `sf project retrieve start --metadata CustomMetadata:Config.Secundario --target-org dev --api-version 67.0 --json` |
+| 18 | 7 | `sf project retrieve start --metadata Flow:Processa_Pedido --target-org dev --api-version 67.0 --json` |
+| 19 | 9 | `sf data query --query SELECT Id, VersionNumber, Status FROM Flow WHERE Definition.DeveloperName = 'Processa_Pedido' ORDER BY VersionNumber --use-tooling-api --target-org dev --api-version 67.0 --json` |
+| 20 | 7 | `sf project retrieve start --metadata Flow:Tela_Cadastro --target-org dev --api-version 67.0 --json` |
+| 21 | 9 | `sf data query --query SELECT Id, VersionNumber, Status FROM Flow WHERE Definition.DeveloperName = 'Tela_Cadastro' ORDER BY VersionNumber --use-tooling-api --target-org dev --api-version 67.0 --json` |
+| 22 | 7 | `sf project retrieve start --metadata ExternalClientApplication:Minha_ECA --target-org dev --api-version 67.0 --json` |
+| 23 | 7 | `sf project retrieve start --metadata ExtlClntAppOauthSettings:Minha_ECA_oauth --target-org dev --api-version 67.0 --json` |
+| 24 | 7 | `sf project retrieve start --metadata ExtlClntAppOauthSettings:Outra_ECA_oauth --target-org dev --api-version 67.0 --json` |
+| 25 | 7 | `sf project retrieve start --metadata ExtlClntAppConfigurablePolicies:Minha_ECA_plcy --target-org dev --api-version 67.0 --json` |
+| 26 | 7 | `sf project retrieve start --metadata ExtlClntAppOauthConfigurablePolicies:Minha_ECA_oauthPlcy --target-org dev --api-version 67.0 --json` |
+| 27 | 7 | `sf project retrieve start --metadata ExternalCredential:Minha_EC --target-org dev --api-version 67.0 --json` |
+| 28 | 9 | `sf data query --query SELECT Id, DeveloperName, MasterLabel, CreatedDate, LastModifiedDate FROM ExternalCredential WHERE DeveloperName = 'Minha_EC' --target-org dev --api-version 67.0 --json` |
+| 29 | 7 | `sf project retrieve start --metadata ConnectedApp:Meu_App --target-org dev --api-version 67.0 --json` |
+| 30 | 7 | `sf project retrieve start --metadata CustomObject:Pedido__c --target-org dev --api-version 67.0 --json` |
+| 31 | 7 | `sf project retrieve start --metadata CustomObject:Config__mdt --target-org dev --api-version 67.0 --json` |
+| 32 | 7 | `sf project retrieve start --metadata CustomMetadata:Config.Padrao --target-org dev --api-version 67.0 --json` |
+| 33 | 7 | `sf project retrieve start --metadata CustomMetadata:Config.Secundario --target-org dev --api-version 67.0 --json` |
 
 O passo 5 (`describeValueType`) é SOAP direto na Metadata API, fora da CLI; o passo 8 (XML → JSON) e o passo 10 (Markdown) são locais.
 
@@ -91,7 +95,7 @@ O passo 5 (`describeValueType`) é SOAP direto na Metadata API, fora da CLI; o p
 | ExtlClntAppConfigurablePolicies | ENABLED | SUCCESS | SUCCESS | 1 |
 | ExtlClntAppOauthConfigurablePolicies | ENABLED | SUCCESS | SUCCESS | 1 |
 | ExtlClntAppOauthSettings | ENABLED | SUCCESS | SUCCESS | 2 |
-| Flow | ENABLED | SUCCESS | SUCCESS | 2 |
+| Flow | ENABLED | SUCCESS | SUCCESS | 3 |
 | FlowDefinition | ENABLED | SUCCESS | SUCCESS | 1 |
 | RecordType | ENABLED | SUCCESS | via retrieve do CustomObject | — |
 | ValidationRule | ENABLED | SUCCESS | via retrieve do CustomObject | — |
@@ -103,13 +107,15 @@ O passo 5 (`describeValueType`) é SOAP direto na Metadata API, fora da CLI; o p
 |---|---|---|---|---|
 | `doc-meu-flow-flow.md` | `modelo-doc-flow-vapi-67.md` | Flow:Meu_Flow | Meu_Flow (FlowDefinition) | SUCCESS |
 | `doc-meu-flow-flow-trigger.md` | `modelo-doc-flow-trigger-vapi-67.md` | Flow:Meu_Flow | (subdocumento) | SUCCESS |
+| `doc-processa-pedido-flow.md` | `modelo-doc-flow-vapi-67.md` | Flow:Processa_Pedido | — | SUCCESS |
+| `doc-processa-pedido-flow-autolaunched.md` | `modelo-doc-flow-autolaunched-vapi-67.md` | Flow:Processa_Pedido | (subdocumento) | SUCCESS |
 | `doc-tela-cadastro-flow.md` | `modelo-doc-flow-vapi-67.md` | Flow:Tela_Cadastro | — | SUCCESS |
 | `doc-tela-cadastro-dados-cliente-flow-screen.md` | `modelo-doc-flow-screen-vapi-67.md` | Flow:Tela_Cadastro | (subdocumento) | SUCCESS |
 | `doc-minha-eca-external-client-app.md` | `modelo-doc-cea-vapi-67.md` | ExternalClientApplication:Minha_ECA | Minha_ECA_oauth (ExtlClntAppOauthSettings), Minha_ECA_plcy (ExtlClntAppConfigurablePolicies), Minha_ECA_oauthPlcy (ExtlClntAppOauthConfigurablePolicies) | SUCCESS |
 | `doc-minha-ec-external-credential.md` | `modelo-doc-external-credential-vapi-67.md` | ExternalCredential:Minha_EC | — | SUCCESS |
 | `doc-meu-app-connected-app.md` | `modelo-doc-connectedapp-vapi-67.md` | ConnectedApp:Meu_App | — | SUCCESS |
 | `doc-pedido-c-custom-object.md` | `modelo-doc-custom-object-vapi-67.md` | CustomObject:Pedido__c | Pedido__c.Status__c (CustomField), Pedido__c.Valor__c (CustomField), Pedido__c.Padrao (RecordType), Pedido__c.Valor_Positivo (ValidationRule), Pedido__c.Imprimir_Pedido (WebLink) | SUCCESS |
-| `doc-config-mdt-custom-metadata.md` | `modelo-doc-custom-metadata-vapi-67.md` | CustomMetadata:Config__mdt | Config.Padrao (CustomMetadata), Config.Secundario (CustomMetadata) | SUCCESS |
+| `doc-config-mdt-custom-metadata.md` | `modelo-doc-custom-metadata-vapi-67.md` | CustomMetadata:Config__mdt | Config.Padrao (CustomMetadata), Config.Secundario (CustomMetadata), Config__mdt.Ativo__c (CustomField), Config__mdt.Chave_API__c (CustomField) | SUCCESS |
 
 ## 5. Rastreamento de um componente: `Flow:Meu_Flow`
 
@@ -189,7 +195,7 @@ O passo 5 (`describeValueType`) é SOAP direto na Metadata API, fora da CLI; o p
 {
   "metadataType": "Flow",
   "sourceRaw": "inventory.raw.json",
-  "count": 2,
+  "count": 3,
   "components": [
     {
       "fullName": "Meu_Flow",
@@ -201,12 +207,12 @@ O passo 5 (`describeValueType`) é SOAP direto na Metadata API, fora da CLI; o p
       "lastModifiedDate": "2026-10-01T00:00:00.000Z"
     },
     {
-      "fullName": "Tela_Cadastro",
+      "fullName": "Processa_Pedido",
       "type": "Flow",
-      "fileName": "x/Tela_Cadastro",
+      "fileName": "x/Processa_Pedido",
       "id": "000000000000000AAA",
       "namespacePrefix": "",
-... (5 linhas omitidas)
+... (14 linhas omitidas)
 ```
 
 **Passo 7** — `inventory/org-dev/api-v67/flows/retrieve/meu-flow.raw.json`
@@ -223,7 +229,7 @@ O passo 5 (`describeValueType`) é SOAP direto na Metadata API, fora da CLI; o p
         "fullName": "Meu_Flow",
         "type": "Flow",
         "state": "Created",
-        "filePath": "/tmp/sfdocs-retrieve-6nw7sni0/force-app/main/default/flows/Meu_Flow.flow-meta.xml"
+        "filePath": "/tmp/sfdocs-retrieve-c2mo9meo/force-app/main/default/flows/Meu_Flow.flow-meta.xml"
       }
     ]
   }
@@ -293,7 +299,8 @@ O passo 5 (`describeValueType`) é SOAP direto na Metadata API, fora da CLI; o p
     "absent": [
       "description",
       "screens"
-    ]
+    ],
+    "redacted": []
   },
   "data": {
     "apiVersion": "67.0",
@@ -393,8 +400,12 @@ inventory/org-dev/api-v67/connected-apps/retrieve/meu-app.raw.json
 inventory/org-dev/api-v67/custom-metadata/components/customMetadata/Config.Padrao.md-meta.xml
 inventory/org-dev/api-v67/custom-metadata/components/customMetadata/Config.Secundario.md-meta.xml
 inventory/org-dev/api-v67/custom-metadata/components/objects/Config__mdt/Config__mdt.object-meta.xml
+inventory/org-dev/api-v67/custom-metadata/components/objects/Config__mdt/fields/Ativo__c.field-meta.xml
+inventory/org-dev/api-v67/custom-metadata/components/objects/Config__mdt/fields/Chave_API__c.field-meta.xml
 inventory/org-dev/api-v67/custom-metadata/inventory.index.json
 inventory/org-dev/api-v67/custom-metadata/inventory.raw.json
+inventory/org-dev/api-v67/custom-metadata/normalized/config-mdt-ativo-c.json
+inventory/org-dev/api-v67/custom-metadata/normalized/config-mdt-chave-api-c.json
 inventory/org-dev/api-v67/custom-metadata/normalized/config-mdt.json
 inventory/org-dev/api-v67/custom-metadata/normalized/config-padrao.json
 inventory/org-dev/api-v67/custom-metadata/normalized/config-secundario.json
@@ -451,30 +462,36 @@ inventory/org-dev/api-v67/flow-definitions/inventory.raw.json
 inventory/org-dev/api-v67/flow-definitions/normalized/meu-flow.json
 inventory/org-dev/api-v67/flow-definitions/retrieve/meu-flow.raw.json
 inventory/org-dev/api-v67/flows/components/flows/Meu_Flow.flow-meta.xml
+inventory/org-dev/api-v67/flows/components/flows/Processa_Pedido.flow-meta.xml
 inventory/org-dev/api-v67/flows/components/flows/Tela_Cadastro.flow-meta.xml
 inventory/org-dev/api-v67/flows/internal-data/meu-flow.raw.json
+inventory/org-dev/api-v67/flows/internal-data/processa-pedido.raw.json
 inventory/org-dev/api-v67/flows/internal-data/tela-cadastro.raw.json
 inventory/org-dev/api-v67/flows/inventory.index.json
 inventory/org-dev/api-v67/flows/inventory.raw.json
 inventory/org-dev/api-v67/flows/normalized/meu-flow.json
+inventory/org-dev/api-v67/flows/normalized/processa-pedido.json
 inventory/org-dev/api-v67/flows/normalized/tela-cadastro.json
 inventory/org-dev/api-v67/flows/retrieve/meu-flow.raw.json
+inventory/org-dev/api-v67/flows/retrieve/processa-pedido.raw.json
 inventory/org-dev/api-v67/flows/retrieve/tela-cadastro.raw.json
-runs/run-20261011-021246.json
-saida/docs/doc-org-101126/doc-config-mdt-custom-metadata.md
-saida/docs/doc-org-101126/doc-meu-app-connected-app.md
-saida/docs/doc-org-101126/doc-meu-flow-flow-trigger.md
-saida/docs/doc-org-101126/doc-meu-flow-flow.md
-saida/docs/doc-org-101126/doc-minha-ec-external-credential.md
-saida/docs/doc-org-101126/doc-minha-eca-external-client-app.md
-saida/docs/doc-org-101126/doc-pedido-c-custom-object.md
-saida/docs/doc-org-101126/doc-tela-cadastro-dados-cliente-flow-screen.md
-saida/docs/doc-org-101126/doc-tela-cadastro-flow.md
+runs/run-20261012-024548.json
+saida/docs/doc-org-101226/doc-config-mdt-custom-metadata.md
+saida/docs/doc-org-101226/doc-meu-app-connected-app.md
+saida/docs/doc-org-101226/doc-meu-flow-flow-trigger.md
+saida/docs/doc-org-101226/doc-meu-flow-flow.md
+saida/docs/doc-org-101226/doc-minha-ec-external-credential.md
+saida/docs/doc-org-101226/doc-minha-eca-external-client-app.md
+saida/docs/doc-org-101226/doc-pedido-c-custom-object.md
+saida/docs/doc-org-101226/doc-processa-pedido-flow-autolaunched.md
+saida/docs/doc-org-101226/doc-processa-pedido-flow.md
+saida/docs/doc-org-101226/doc-tela-cadastro-dados-cliente-flow-screen.md
+saida/docs/doc-org-101226/doc-tela-cadastro-flow.md
 ```
 
 ## 7. Conteúdo dos documentos finais
 
-### `saida/docs/doc-org-101126/doc-meu-flow-flow.md`
+### `saida/docs/doc-org-101226/doc-meu-flow-flow.md`
 
 ```markdown
 # Flow: Meu_Flow
@@ -485,12 +502,17 @@ saida/docs/doc-org-101126/doc-tela-cadastro-flow.md
 |---|---|---|
 | DeveloperName | Meu_Flow | XML |
 | MasterLabel | Meu Flow | XML |
+| ProcessType | AutoLaunchedFlow | XML |
 | ApiVersion | 67.0 | XML |
+| Description | Não informado | XML |
+| Status (versão recuperada) | Active | XML |
 | Status | v1: Obsolete; v2: Active | Objeto interno |
 
 ## Definição
 
 **FlowDefinition: Meu_Flow**
+
+_Arquivo: `inventory/org-dev/api-v67/flow-definitions/components/flowDefinitions/Meu_Flow.flowDefinition-meta.xml` · sha256 `b5580d18adf4bdb1…`_
 
 | Propriedade | Valor | Fonte |
 |---|---|---|
@@ -508,7 +530,7 @@ _Fonte: XML_
 | Meu_Flow | FlowDefinition | XML |
 ```
 
-### `saida/docs/doc-org-101126/doc-meu-flow-flow-trigger.md`
+### `saida/docs/doc-org-101226/doc-meu-flow-flow-trigger.md`
 
 ```markdown
 # Flow Trigger: Meu_Flow
@@ -519,6 +541,7 @@ _Fonte: XML_
 |---|---|---|
 | DeveloperName | Meu_Flow | XML |
 | TriggerType | RecordAfterSave | XML |
+| RecordTriggerType | Update | XML |
 | Object | Pedido__c | XML |
 
 ## Condições
@@ -529,18 +552,21 @@ _Fonte: XML_
 _Fonte: XML_
 ```
 
-### `saida/docs/doc-org-101126/doc-tela-cadastro-flow.md`
+### `saida/docs/doc-org-101226/doc-processa-pedido-flow.md`
 
 ```markdown
-# Flow: Tela_Cadastro
+# Flow: Processa_Pedido
 
 ## Identificação
 
 | Propriedade | Valor | Fonte |
 |---|---|---|
-| DeveloperName | Tela_Cadastro | XML |
-| MasterLabel | Tela Cadastro | XML |
+| DeveloperName | Processa_Pedido | XML |
+| MasterLabel | Processa Pedido | XML |
+| ProcessType | AutoLaunchedFlow | XML |
 | ApiVersion | 67.0 | XML |
+| Description | Processa pedidos \| lote<br>linha 2 – ação ✓ çãõ; Texto longo xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx | XML |
+| Status (versão recuperada) | Active | XML |
 | Status | v1: Obsolete; v2: Active | Objeto interno |
 
 ## Definição
@@ -556,7 +582,67 @@ _Fonte: XML_
 | Não aplicável | Não aplicável | XML |
 ```
 
-### `saida/docs/doc-org-101126/doc-tela-cadastro-dados-cliente-flow-screen.md`
+### `saida/docs/doc-org-101226/doc-processa-pedido-flow-autolaunched.md`
+
+```markdown
+# Autolaunched Flow: Processa_Pedido
+
+## Identificação
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| DeveloperName | Processa_Pedido | XML |
+| Label | Processa Pedido | XML |
+| ProcessType | AutoLaunchedFlow | XML |
+| ApiVersion | 67.0 | XML |
+| Description | Processa pedidos \| lote<br>linha 2 – ação ✓ çãõ; Texto longo xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx | XML |
+| Status (versão recuperada) | Active | XML |
+
+## Variáveis de entrada
+
+| Variável | Tipo de dado | Objeto | Coleção | Fonte |
+|---|---|---|---|---|
+| recordId | String | Não informado | false | XML |
+| pedidos | SObject | Pedido__c | true | XML |
+
+## Variáveis de saída
+
+| Variável | Tipo de dado | Objeto | Coleção | Fonte |
+|---|---|---|---|---|
+| sucesso | Boolean | Não informado | false | XML |
+```
+
+### `saida/docs/doc-org-101226/doc-tela-cadastro-flow.md`
+
+```markdown
+# Flow: Tela_Cadastro
+
+## Identificação
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| DeveloperName | Tela_Cadastro | XML |
+| MasterLabel | Tela Cadastro | XML |
+| ProcessType | Flow | XML |
+| ApiVersion | 67.0 | XML |
+| Description | Não informado | XML |
+| Status (versão recuperada) | Draft | XML |
+| Status | v1: Obsolete; v2: Active | Objeto interno |
+
+## Definição
+
+Não aplicável
+
+_Fonte: XML_
+
+## Componentes relacionados
+
+| Componente | Tipo | Fonte |
+|---|---|---|
+| Não aplicável | Não aplicável | XML |
+```
+
+### `saida/docs/doc-org-101226/doc-tela-cadastro-dados-cliente-flow-screen.md`
 
 ```markdown
 # Flow Screen: Dados_Cliente
@@ -568,6 +654,11 @@ _Fonte: XML_
 | Name | Dados_Cliente | XML |
 | Label | Dados do Cliente | XML |
 | Flow | Tela_Cadastro | XML |
+| AllowBack | Não informado | XML |
+| AllowFinish | Não informado | XML |
+| AllowPause | Não informado | XML |
+| ShowHeader | Não informado | XML |
+| ShowFooter | Não informado | XML |
 
 ## Campos da tela
 
@@ -577,7 +668,7 @@ _Fonte: XML_
 | Observacao | LargeTextArea | Não informado | XML |
 ```
 
-### `saida/docs/doc-org-101126/doc-minha-eca-external-client-app.md`
+### `saida/docs/doc-org-101226/doc-minha-eca-external-client-app.md`
 
 ```markdown
 # External Client App: Minha_ECA
@@ -589,6 +680,56 @@ _Fonte: XML_
 | DeveloperName | Minha_ECA | XML |
 | Label | Minha ECA | XML |
 | ApiVersion | Não aplicável | XML |
+| Description | Não informado | XML |
+| DistributionState | Local | XML |
+| IsProtected | false | XML |
+
+## Configuração OAuth
+
+**ExtlClntAppOauthSettings: Minha_ECA_oauth**
+
+_Arquivo: `inventory/org-dev/api-v67/extl-clnt-app-oauth-settings/components/extlClntAppOauthSettings/Minha_ECA_oauth.ecaOauth-meta.xml` · sha256 `0876b78309cb2972…`_
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| DeveloperName | Minha_ECA_oauth | XML |
+| Label | Minha ECA oauth | XML |
+| ExternalClientApplication | Minha_ECA | XML |
+| CommaSeparatedOauthScopes | Api, RefreshToken | XML |
+
+_Fonte: XML_
+
+## Políticas OAuth
+
+**ExtlClntAppOauthConfigurablePolicies: Minha_ECA_oauthPlcy**
+
+_Arquivo: `inventory/org-dev/api-v67/extl-clnt-app-oauth-configurable-policies/components/extlClntAppOauthPolicies/Minha_ECA_oauthPlcy.ecaOauthPlcy-meta.xml` · sha256 `4686e2b22fdc507c…`_
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| DeveloperName | Minha_ECA_oauthPlcy | XML |
+| Label | Minha_ECA_oauthPlcy | XML |
+| ExternalClientApplication | Minha_ECA | XML |
+
+_Fonte: XML_
+
+## Políticas do app
+
+**ExtlClntAppConfigurablePolicies: Minha_ECA_plcy**
+
+_Arquivo: `inventory/org-dev/api-v67/extl-clnt-app-configurable-policies/components/extlClntAppPolicies/Minha_ECA_plcy.ecaPlcy-meta.xml` · sha256 `4036b9fb899849a2…`_
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| DeveloperName | Minha_ECA_plcy | XML |
+| Label | Minha_ECA_plcy | XML |
+| ExternalClientApplication | Minha_ECA | XML |
+| IsEnabled | true | XML |
+| IsOauthPluginEnabled | true | XML |
+| StartPage | None | XML |
+| StartUrl | Não informado | XML |
+
+_Fonte: XML_
 
 ## Componentes relacionados
 
@@ -608,7 +749,7 @@ _Fonte: XML_
 | extlClntAppPolicies | ExtlClntAppConfigurablePolicies | XML |
 ```
 
-### `saida/docs/doc-org-101126/doc-minha-ec-external-credential.md`
+### `saida/docs/doc-org-101226/doc-minha-ec-external-credential.md`
 
 ```markdown
 # External Credential: Minha_EC
@@ -632,7 +773,7 @@ _Fonte: XML_
 | LastModifiedDate | 2026-10-01T12:00:00.000+0000 | Objeto interno |
 ```
 
-### `saida/docs/doc-org-101126/doc-meu-app-connected-app.md`
+### `saida/docs/doc-org-101226/doc-meu-app-connected-app.md`
 
 ```markdown
 # Connected App: Meu_App
@@ -649,12 +790,10 @@ _Fonte: XML_
 
 | Propriedade | Valor | Fonte |
 |---|---|---|
-| callbackUrl | https://example.com/callback | XML |
-| consumerKey | CHAVE_SIMULADA | XML |
 | scopes | Api, RefreshToken | XML |
 ```
 
-### `saida/docs/doc-org-101126/doc-pedido-c-custom-object.md`
+### `saida/docs/doc-org-101226/doc-pedido-c-custom-object.md`
 
 ```markdown
 # Custom Object: Pedido__c
@@ -666,6 +805,8 @@ _Fonte: XML_
 | DeveloperName | Pedido__c | XML |
 | Label | Pedido | XML |
 | PluralLabel | Pedidos | XML |
+| SharingModel | ReadWrite | XML |
+| DeploymentStatus | Deployed | XML |
 
 ## Custom Fields
 
@@ -674,16 +815,26 @@ _Fonte: XML_
 | Status__c | Status | Picklist | XML |
 | Valor__c | Valor | Currency | XML |
 
+## Validation Rules
+
+| Regra | Ativa | Condição de erro | Mensagem de erro | Fonte |
+|---|---|---|---|---|
+| Pedido__c.Valor_Positivo | true | Valor__c < 0 | Valor deve ser positivo | XML |
+
+## Record Types
+
+| Record Type | Label | Ativo | Fonte |
+|---|---|---|---|
+| Pedido__c.Padrao | Padrão | true | XML |
+
 ## Componentes relacionados
 
 | Componente | Tipo | Fonte |
 |---|---|---|
-| Pedido__c.Padrao | RecordType | XML |
-| Pedido__c.Valor_Positivo | ValidationRule | XML |
 | Pedido__c.Imprimir_Pedido | WebLink | XML |
 ```
 
-### `saida/docs/doc-org-101126/doc-config-mdt-custom-metadata.md`
+### `saida/docs/doc-org-101226/doc-config-mdt-custom-metadata.md`
 
 ```markdown
 # Custom Metadata: Config__mdt
@@ -694,13 +845,22 @@ _Fonte: XML_
 |---|---|---|
 | DeveloperName | Config__mdt | XML |
 | Label | Config | XML |
+| PluralLabel | Configs | XML |
+| Description | Não informado | XML |
 | Visibility | Public | XML |
+
+## Campos do tipo
+
+| Field | Label | Type | Fonte |
+|---|---|---|---|
+| Ativo__c | Ativo | Checkbox | XML |
+| Chave_API__c | Chave API | Text | XML |
 
 ## Records
 
-| Record | Label | Fonte |
-|---|---|---|
-| Config.Padrao | Config Padrao | XML |
-| Config.Secundario | Config Secundario | XML |
+| Record | Label | Protected | Fonte |
+|---|---|---|---|
+| Config.Padrao | Config Padrao | false | XML |
+| Config.Secundario | Config Secundario | false | XML |
 ```
 

@@ -1,0 +1,77 @@
+{
+  "metadataType": "ExtlClntAppConfigurablePolicies",
+  "apiVersion": "67.0",
+  "documentStrategy": "RELATED_TO_EXTERNAL_CLIENT_APP",
+  "xmlFilePattern": "**/*.ecaPlcy-meta.xml",
+  "template": null,
+  "referenceDoc": "_sf_utilities/ajudAI/sf-eca.md",
+  "properties": [
+    {
+      "name": "DeveloperName",
+      "placeholder": "developer_name",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Políticas do app"
+    },
+    {
+      "name": "Label",
+      "placeholder": "label",
+      "path": "label",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Políticas do app"
+    },
+    {
+      "name": "ExternalClientApplication",
+      "placeholder": "external_client_application",
+      "path": "externalClientApplication",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Políticas do app"
+    },
+    {
+      "name": "IsEnabled",
+      "placeholder": "is_enabled",
+      "path": "isEnabled",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Políticas do app"
+    },
+    {
+      "name": "IsOauthPluginEnabled",
+      "placeholder": "is_oauth_plugin_enabled",
+      "path": "isOauthPluginEnabled",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Políticas do app",
+      "notes": "Documentado a partir da API 60.0; pode não constar na versão mais recente — sem schema, ausente => Não informado."
+    },
+    {
+      "name": "StartPage",
+      "placeholder": "start_page",
+      "path": "startPage",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Políticas do app"
+    },
+    {
+      "name": "StartUrl",
+      "placeholder": "start_url",
+      "path": "startUrl",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Políticas do app"
+    }
+  ],
+  "evidence": [
+    "Metadata API ExtlClntAppConfigurablePolicies (.ecaPlcy, extlClntAppPolicies, API 60+): externalClientApplication e isEnabled obrigatórios; label, startPage, startUrl em versões recentes"
+  ],
+  "relatedMetadataTypes": [],
+  "internalData": {
+    "enabled": false,
+    "source": null,
+    "object": null,
+    "query": null
+  }
+}

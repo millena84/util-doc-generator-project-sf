@@ -59,7 +59,9 @@ Estado da execução: `runs/run-<AAAAMMDD-HHMMSS>.json`. Respostas de erro ficam
 - **Token**: lido em tempo de execução de `sf org display`, mantido só em memória, mascarado em logs/`repr`/`str`, não serializável (pickle/deepcopy) e descartado (`OrgSession.clear()`) ao fim de cada execução. O `org-display.raw.json` é salvo inalterado (regra do raw), com permissão `0600` e no `.gitignore`.
 - **Retrieve**: roda em um projeto SFDX temporário; o XML é copiado byte a byte, preservando as pastas do formato source (ex.: `objects/Obj__c/fields/...`).
 - **Valores ausentes**: `Não aplicável` quando o `describeValueType` comprova que o campo não existe no tipo; `Não informado` quando existe mas não veio no XML/dado interno.
-- **Dados sensíveis**: elementos listados em `sensitiveXmlElements` (ex.: `consumerSecret`) nunca são renderizados; o run log avisa quando um XML recuperado os contém. `ExtlClntAppGlobalOauthSettings` é tipo excluído (contém consumer secret).
+- **Dados sensíveis**: elementos listados em `sensitiveXmlElements` (ex.: `consumerSecret`) nunca são renderizados e são substituídos por `[REDACTED]` no JSON normalizado (o XML original fica intacto); o run log avisa quando um XML recuperado os contém. `ExtlClntAppGlobalOauthSettings` é tipo excluído (contém consumer secret).
+- **Valores sujeitos a decisão de segurança** (`omitFromDocumentation`: `consumerKey`, `callbackUrl`, `contactEmail/Phone`, `certificate`, `parameterValue`, permission sets/perfis, usuários de execução): nunca entram no Markdown. A linha é **omitida** (sem criar valor além de `Não informado`/`Não aplicável`) e o nome da propriedade fica em `omittedProperties` no run state. Valores (`<values>`) de records de Custom Metadata também não são renderizados.
+- **`inventory/**/components/` e `inventory/**/normalized/` estão no `.gitignore`**: o raw é preservado em disco, mas pode conter valores sensíveis.
 - **External Client App**: o nome correto do metadata type é `ExternalClientApplication` (Metadata API). O grupo continua chamado `ExternalClientApp`.
 
 ## Riscos conhecidos (tratar futuramente, se necessário)
@@ -76,13 +78,17 @@ Registro da auditoria de segurança de 2026-10-11 (10 riscos: 1 crítico, 2 alto
 
 | Grupo | `documentStrategy` | Como os relacionados são encontrados (`relations`) |
 |---|---|---|
-| Flow | `SINGLE_DOCUMENT_PER_FLOW_WITH_RELATED_COMPONENTS` | `FlowDefinition` com mesmo fullName (`SAME_FULL_NAME`); subdocumentos de trigger/tela via `subDocuments` |
+| Flow | `SINGLE_DOCUMENT_PER_FLOW_WITH_RELATED_COMPONENTS` | `FlowDefinition` com mesmo fullName (`SAME_FULL_NAME`); subdocumentos via `subDocuments`: trigger (`start.triggerType` presente), autolaunched (`processType = AutoLaunchedFlow` **e** sem `start.triggerType`) e uma tela por `screens` |
 | ExternalClientApp | `SINGLE_DOCUMENT_PER_APP_WITH_RELATED_COMPONENTS` | `ExtlClntAppOauthSettings`, `ExtlClntAppConfigurablePolicies` e `ExtlClntAppOauthConfigurablePolicies` cujo `externalClientApplication` = app (`FIELD_EQUALS_PRIMARY`). ExternalCredential e ConnectedApp têm documento próprio e não fazem parte da ECA. |
 | CustomObject | `SINGLE_DOCUMENT_PER_OBJECT_WITH_RELATED_COMPONENTS` | filhos retornados no retrieve do objeto (`CHILD_OF_PRIMARY`) |
-| CustomMetadata | `ONE_DOCUMENT_PER_TYPE_AND_RECORDS` | records `Tipo.Record` agrupados no tipo `Tipo__mdt` (`typeDefinition`) |
+| CustomMetadata | `ONE_DOCUMENT_PER_TYPE_AND_RECORDS` | records `Tipo.Record` agrupados no tipo `Tipo__mdt` (`typeDefinition`); campos do `__mdt` como filhos (`CHILD_OF_PRIMARY`) |
 | ExternalCredential, ConnectedApp | `ONE_DOCUMENT_PER_COMPONENT` | — |
 
 Cada componente (principal ou relacionado) é extraído e normalizado de forma independente; a agregação acontece apenas no documento.
+
+## Refatoração 1 — modelos adaptados das referências `ajudAI`
+
+A matriz de rastreabilidade, as divergências entre `ajudAI`, o utilitário e a documentação Salesforce, as decisões aplicadas e as pendências estão em [`documentation/refatoracao-1-matriz-ajudai.md`](documentation/refatoracao-1-matriz-ajudai.md). Cada contrato registra `referenceDoc`, `evidence` e o que ficou `notSupported`/`pendingVerification`.
 
 ## Como adicionar um metadata type
 
@@ -90,15 +96,18 @@ Cada componente (principal ou relacionado) é extraído e normalizado de forma i
 2. Criar o contrato `documentation/contracts/<tipo-kebab>.schema.json`:
    - `template`: nome do modelo (`{apiMajor}` é substituído pela API version);
    - `properties`: `name`, `placeholder`, `path` (`@fullName`, `@parent.fullName`, `internal:records`, `internal:first.Campo` ou caminho pontuado no XML normalizado), `source`, `required`, `markdownSection`;
-   - `tables` / `blocks`: seção, `builder` (`related_components`, `related_rows`, `path_rows`, `child_properties`, `internal_record_properties`, `related_folders`, `related_properties_table`, `flow_trigger_conditions`) e `source`;
+   - `tables` / `blocks`: seção, `builder` (`related_components`, `related_rows`, `path_rows` — com filtro `where` —, `child_properties` — com lista `allow` —, `internal_record_properties`, `related_folders`, `related_properties_table` — com arquivo/sha256 de origem —, `flow_trigger_conditions`) e `source`;
+   - `referenceDoc`: referência documental (ex.: arquivo `ajudAI`) citada no aviso de `NO_TEMPLATE`;
    - `internalData`: consulta SOQL opcional (`{developerName}`, `{fullName}`).
 3. Criar o modelo em `documentation/models/api-v<N>/` (somente quando solicitado).
 4. Criar parser/builder em `src/salesforce_docs/parsing/` **apenas se** os builders genéricos não bastarem.
-5. `bin/sf-docs.sh validate-config` e `python3 -m unittest discover -s tests -t .`.
+5. `bin/sf-docs.sh validate-config` (confere cada placeholder de cada modelo contra propriedades, blocos, colunas e builders do contrato, a fonte declarada e elementos bloqueados) e `python3 -m unittest discover -s tests -t .`.
 
 ## Estados
 
-`SUCCESS`, `NO_TEMPLATE`, `NO_COMPONENTS`, `NOT_ENABLED`, `SCHEMA_UNAVAILABLE`, `RETRIEVE_FAILED`, `INTERNAL_DATA_UNAVAILABLE`, `RETRY_REQUIRED`, `MISMATCH` (+ `FAILED` para erro inesperado ou documento inválido).
+`SUCCESS`, `NO_TEMPLATE`, `NO_COMPONENTS`, `NOT_ENABLED`, `SCHEMA_UNAVAILABLE`, `RETRIEVE_FAILED`, `INTERNAL_DATA_UNAVAILABLE`, `RETRY_REQUIRED`, `MISMATCH` (+ `FAILED` para erro inesperado ou documento inválido; `OUT_OF_SCOPE` para grupo configurado mas excluído por `--group`).
+
+`NO_TEMPLATE` (contrato ou modelo ausente) nunca interrompe a execução: o aviso informa metadata type, componente, referência (`referenceDoc`), contrato e modelo esperados, os dados extraídos são preservados e as demais unidades continuam.
 
 ## Testes
 
@@ -111,20 +120,20 @@ Os testes usam uma Salesforce CLI **simulada** (`tests/fixtures/bin/sf`) e respo
 ### Simulação de todas as documentações do MVP
 
 ```bash
-python3 -m unittest tests.test_mvp_simulation        # verifica os 8 modelos e os 14 metadata types
+python3 -m unittest tests.test_mvp_simulation        # verifica os 9 modelos e os 14 metadata types
 python3 -m tests.simulate_mvp --out /tmp/sim-mvp     # executa e gera o relatório passo a passo
 ```
 
-O cenário `mvp_complete` da CLI simulada sobrepõe `tests/fixtures/mvp-complete/` às fixtures base, de modo que todo metadata type do MVP tenha ao menos um componente. O relatório versionado em `documentation/simulacao/relatorio-simulacao-mvp.md` mostra, para essa simulação, a saída no terminal, os comandos por passo, a situação de cada tipo, a árvore de arquivos e o conteúdo dos 9 documentos gerados.
+O cenário `mvp_complete` da CLI simulada sobrepõe `tests/fixtures/mvp-complete/` às fixtures base, de modo que todo metadata type do MVP tenha ao menos um componente. O relatório versionado em `documentation/simulacao/relatorio-simulacao-mvp.md` mostra, para essa simulação, a saída no terminal, os comandos por passo, a situação de cada tipo, a árvore de arquivos e o conteúdo dos 11 documentos gerados.
 
 | Grupo | Documento(s) / modelo | Tipos que aparecem dentro do documento |
 |---|---|---|
-| Flow | `modelo-doc-flow` + subdocumentos `modelo-doc-flow-trigger` e `modelo-doc-flow-screen` | FlowDefinition |
+| Flow | `modelo-doc-flow` + subdocumentos `modelo-doc-flow-trigger`, `modelo-doc-flow-autolaunched` e `modelo-doc-flow-screen` | FlowDefinition |
 | ExternalClientApp | `modelo-doc-cea` | ExtlClntAppOauthSettings, ExtlClntAppConfigurablePolicies, ExtlClntAppOauthConfigurablePolicies |
 | ExternalCredential | `modelo-doc-external-credential` | — |
 | ConnectedApp | `modelo-doc-connectedapp` | — |
 | CustomObject | `modelo-doc-custom-object` | CustomField, RecordType, ValidationRule, WebLink |
-| CustomMetadata | `modelo-doc-custom-metadata` | records do tipo `__mdt` |
+| CustomMetadata | `modelo-doc-custom-metadata` | campos e records do tipo `__mdt` |
 
 ## Estrutura
 

@@ -11,10 +11,12 @@ from salesforce_docs import status as st
 
 API = "inventory/org-dev/api-v67"
 
-# Documento -> modelo esperado (os 8 modelos de documentation/models/api-v67).
+# Documento -> modelo esperado (os 9 modelos de documentation/models/api-v67).
 EXPECTED_DOCS = {
     "doc-meu-flow-flow.md": "modelo-doc-flow-vapi-67.md",
     "doc-tela-cadastro-flow.md": "modelo-doc-flow-vapi-67.md",
+    "doc-processa-pedido-flow.md": "modelo-doc-flow-vapi-67.md",
+    "doc-processa-pedido-flow-autolaunched.md": "modelo-doc-flow-autolaunched-vapi-67.md",
     "doc-meu-flow-flow-trigger.md": "modelo-doc-flow-trigger-vapi-67.md",
     "doc-tela-cadastro-dados-cliente-flow-screen.md": "modelo-doc-flow-screen-vapi-67.md",
     "doc-minha-eca-external-client-app.md": "modelo-doc-cea-vapi-67.md",
@@ -34,12 +36,12 @@ EXPECTED_RELATED = {
     "doc-pedido-c-custom-object.md": [
         "| Status__c | Status | Picklist | XML |",
         "| Valor__c | Valor | Currency | XML |",
-        "| Pedido__c.Padrao | RecordType | XML |",
-        "| Pedido__c.Valor_Positivo | ValidationRule | XML |",
+        "| Pedido__c.Padrao | Padrão | true | XML |",
+        "| Pedido__c.Valor_Positivo | true | Valor__c < 0 | Valor deve ser positivo | XML |",
         "| Pedido__c.Imprimir_Pedido | WebLink | XML |"],
     "doc-config-mdt-custom-metadata.md": [
-        "| Config.Padrao | Config Padrao | XML |",
-        "| Config.Secundario | Config Secundario | XML |"],
+        "| Config.Padrao | Config Padrao | false | XML |",
+        "| Config.Secundario | Config Secundario | false | XML |"],
     "doc-minha-ec-external-credential.md": ["| DeveloperName | Minha_EC | Objeto interno |"],
 }
 
@@ -93,7 +95,7 @@ class MvpCompleteSimulationTest(PipelineTestBase):
                     if t["metadataType"] == "ExtlClntAppGlobalOauthSettings"]
         self.assertEqual(excluded, [])
 
-    def test_all_eight_models_rendered(self):
+    def test_all_nine_models_rendered(self):
         docs = self.all_documents()
         self.assertEqual(set(docs), set(EXPECTED_DOCS))
         for name, template in EXPECTED_DOCS.items():

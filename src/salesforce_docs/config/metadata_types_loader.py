@@ -85,6 +85,8 @@ class MetadataTypesConfig:
         self.type_settings = data.get("metadataTypeSettings") or {}
         self.excluded = {e["metadataType"]: e.get("reason", "") for e in data.get("excludedMetadataTypes") or []}
         self.sensitive_elements = set(data.get("sensitiveXmlElements") or [])
+        # Não são segredos, mas exigem decisão de segurança: nunca vão para o Markdown.
+        self.omit_from_documentation = set(data.get("omitFromDocumentation") or [])
         groups = data.get("metadataTypeGroups")
         if not isinstance(groups, list) or not groups:
             raise ConfigError("metadata-types-mvp.json sem metadataTypeGroups")
@@ -96,6 +98,10 @@ class MetadataTypesConfig:
             for t in g.all_types:
                 if t in self.excluded:
                     raise ConfigError(f"Grupo {g.name} usa tipo excluído {t}: {self.excluded[t]}")
+
+    @property
+    def render_blocked_elements(self):
+        return self.sensitive_elements | self.omit_from_documentation
 
     def setting(self, metadata_type: str, key: str, default=None):
         return (self.type_settings.get(metadata_type) or {}).get(key, default)

@@ -189,7 +189,9 @@ def validate_document(text: str):
         value = cells[fonte_idx] if fonte_idx < len(cells) else ""
         if value not in st.ALLOWED_SOURCES:
             errors.append(f"Fonte não permitida/ausente na linha: {line.strip()}")
-    for bad in ("N/A", "None", "null"):
+    # "N/A" é proibido (prompt, 6.2). "None"/"null" não entram: são valores legítimos de
+    # enums Salesforce (ex.: startPage=None) e o formatador nunca converte None em texto.
+    for bad in ("N/A",):
         for line in text.splitlines():
             cells = _cells(line) or []
             if bad in cells:

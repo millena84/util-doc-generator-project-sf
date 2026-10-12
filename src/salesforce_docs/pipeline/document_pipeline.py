@@ -191,6 +191,9 @@ class DocumentPipeline:
         enabled = {}
         for group in self.mvp.groups:
             if group_filter and group.name not in group_filter:
+                # Configurado, mas fora do escopo desta execução (≠ NOT_ENABLED / NO_TEMPLATE).
+                p.run_state.type_status(group.primary_type, st.OUT_OF_SCOPE, group=group.name,
+                                        stage="scope", detail="--group")
                 continue
             types = list(group.all_types)
             if group.type_definition:
@@ -342,17 +345,20 @@ class DocumentPipeline:
     def render_unit(self, p, group, unit, primary, related, internal, contract):
         doc_slug = self.mvp.document_slug(unit["documentType"])
         if contract is None:
-            return {"status": st.NO_TEMPLATE, "document": None,
-                    "warnings": [f"Contrato {group.contract_file} ausente: documento não gerado"]}
+            msg = self._missing_message(p, unit["documentType"], unit["fullName"],
+                                        group.contract_file, None, group.data.get("referenceDoc"))
+            p.log.warn(msg)
+            return {"status": st.NO_TEMPLATE, "document": None, "warnings": [msg]}
         template = p.templates.load(contract.get("template"))
         if template is None:
-            name = p.templates.resolve_name(contract.get("template") or "(sem template)")
-            return {"status": st.NO_TEMPLATE, "document": None,
-                    "warnings": [f"Modelo {name} ausente em {rel(p.templates.models_dir, self.root)}"]}
+            msg = self._missing_message(p, unit["documentType"], unit["fullName"], group.contract_file,
+                                        contract.get("template"), contract.get("referenceDoc"))
+            p.log.warn(msg)
+            return {"status": st.NO_TEMPLATE, "document": None, "warnings": [msg]}
         ctx = RenderContext(unit["metadataType"], unit["fullName"], primary.get("data"),
                             schema_fields=primary.get("schemaFields"), internal=internal,
                             related=related, files=primary.get("files"), contracts=p.contracts,
-                            sensitive=self.mvp.sensitive_elements,
+                            sensitive=self.mvp.render_blocked_elements,
                             developer_name=developer_name(unit["fullName"], primary.get("namespacePrefix")))
         result = self.renderer.render(template, contract, ctx)
         if not result.ok:
@@ -362,9 +368,23 @@ class DocumentPipeline:
         doc_path = p.docs_dir / f"doc-{slugify(unit['fullName'])}-{doc_slug}.md"
         write_text(doc_path, result.text)
         subdocs = self._render_subdocuments(p, group, unit, primary, ctx)
+        warnings = list(result.warnings) + [w for s in subdocs for w in s.pop("warnings", [])]
         return {"status": st.SUCCESS, "document": rel(doc_path, self.root),
                 "template": p.templates.resolve_name(contract["template"]),
-                "subDocuments": subdocs, "warnings": result.warnings}
+                "subDocuments": subdocs, "warnings": warnings,
+                "omittedProperties": sorted(ctx.omitted)}
+
+    def _missing_message(self, p, metadata_type, component, contract_file, template, reference):
+        """Aviso de NO_TEMPLATE: tipo, componente, referência ajudAI, contrato e modelo esperados."""
+        contract_path = rel(self.app.contracts_dir / contract_file, self.root) if contract_file else "(nenhum)"
+        if template:
+            model = rel(p.templates.path(template), self.root)
+            what = f"modelo ausente: {model}"
+        else:
+            what = f"contrato ausente: {contract_path}"
+        return (f"NO_TEMPLATE {metadata_type}:{component} — {what}; contrato {contract_path}; "
+                f"referência {reference or 'não declarada'}. Dados extraídos preservados; "
+                "documento não gerado.")
 
     def _render_subdocuments(self, p, group, unit, primary, ctx):
         out = []
@@ -375,7 +395,12 @@ class DocumentPipeline:
             suffix = sub.get("documentSuffix") or slugify(sub.get("contract", "sub"))
             name = unit["fullName"] if item_name is None else f"{unit['fullName']}.{item_name}"
             if contract is None or template is None:
-                out.append({"component": name, "status": st.NO_TEMPLATE, "document": None})
+                msg = self._missing_message(p, unit["documentType"], name, sub.get("contract"),
+                                            (contract or {}).get("template"),
+                                            (contract or {}).get("referenceDoc") or sub.get("referenceDoc"))
+                p.log.warn(msg)
+                out.append({"component": name, "status": st.NO_TEMPLATE, "document": None,
+                            "warnings": [msg]})
                 continue
             sctx = ctx if item is None else ctx.child(item, full_name=item_name)
             res = self.renderer.render(template, contract, sctx)

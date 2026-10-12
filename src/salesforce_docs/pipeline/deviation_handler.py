@@ -14,6 +14,7 @@ from salesforce_docs.parsing.custom_object_parser import child_files
 from salesforce_docs.parsing.external_client_app_parser import (field_equals_primary, leaf_values,
                                                                 reference_scan)
 from salesforce_docs.parsing.flow_parser import flow_definition_matches
+from salesforce_docs.parsing.generic_builders import matches_conditions
 from salesforce_docs.parsing.xml_parser import as_list
 
 
@@ -130,12 +131,12 @@ def sub_document_targets(group, primary_data, primary_full_name):
                     if name:
                         targets.append((sub, item, name))
         elif sub.get("when"):
-            cond = sub["when"]
-            cur = primary_data or {}
-            for part in cond["path"].split("."):
-                cur = cur.get(part) if isinstance(cur, dict) else None
-            present = cur not in (None, "", [], {})
-            if present == bool(cond.get("present", True)):
+            # `when`: condição ou lista de condições (todas devem valer) sobre o XML do Flow:
+            # {path, present} | {path, equals} | {path, in}
+            conds = sub["when"] if isinstance(sub["when"], list) else [sub["when"]]
+            conds = [dict(c, present=c.get("present", True))
+                     if not ({"equals", "in", "present"} & set(c)) else c for c in conds]
+            if matches_conditions(primary_data or {}, conds):
                 targets.append((sub, None, None))
         else:
             targets.append((sub, None, None))

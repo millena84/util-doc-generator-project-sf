@@ -17,6 +17,7 @@ ENABLED = "ENABLED"
 EXCLUDED = "EXCLUDED"
 INTERRUPTED = "INTERRUPTED"
 PARTIAL_SUCCESS = "PARTIAL_SUCCESS"
+OUT_OF_SCOPE = "OUT_OF_SCOPE"  # grupo configurado, mas excluído do escopo da execução
 
 # Componentes nestes estados são reprocessados na retomada.
 REPROCESS_STATES = {RETRY_REQUIRED, FAILED, IN_PROGRESS}

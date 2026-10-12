@@ -30,6 +30,22 @@
       "source": "XML",
       "required": false,
       "markdownSection": "Identificação"
+    },
+    {
+      "name": "SharingModel",
+      "placeholder": "sharing_model",
+      "path": "sharingModel",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "DeploymentStatus",
+      "placeholder": "deployment_status",
+      "path": "deploymentStatus",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
     }
   ],
   "tables": [
@@ -47,12 +63,41 @@
       }
     },
     {
+      "markdownSection": "Validation Rules",
+      "builder": "related_rows",
+      "source": "XML",
+      "args": {
+        "metadataType": "ValidationRule",
+        "columns": {
+          "rule": "@fullName",
+          "active": "active",
+          "condition": "errorConditionFormula",
+          "error_message": "errorMessage"
+        }
+      }
+    },
+    {
+      "markdownSection": "Record Types",
+      "builder": "related_rows",
+      "source": "XML",
+      "args": {
+        "metadataType": "RecordType",
+        "columns": {
+          "record_type": "@fullName",
+          "label": "label",
+          "active": "active"
+        }
+      }
+    },
+    {
       "markdownSection": "Componentes relacionados",
       "builder": "related_components",
       "source": "XML",
       "args": {
         "excludeTypes": [
-          "CustomField"
+          "CustomField",
+          "ValidationRule",
+          "RecordType"
         ]
       }
     }
@@ -68,5 +113,13 @@
     "source": null,
     "object": null,
     "query": null
-  }
+  },
+  "referenceDoc": "_sf_utilities/ajudAI/contexto-object.md",
+  "evidence": [
+    "Source format decompõe CustomObject (Salesforce DX: Decomposed Metadata Types); filhos tratados: CustomField, RecordType, ValidationRule, WebLink"
+  ],
+  "notSupported": [
+    "FieldSet, ListView, CompactLayout, BusinessProcess, CustomObjectSharingReason, Index: não confirmado se retornam no retrieve do pai nem configurados",
+    "enableStreamingApi descrito como Change Data Capture no ajudAI: não confirmado"
+  ]
 }
