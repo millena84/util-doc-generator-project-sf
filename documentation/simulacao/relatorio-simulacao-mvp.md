@@ -2,59 +2,60 @@
 
 > **SIMULADO.** CLI `sf` simulada (`tests/fixtures/bin/sf`, cenário `mvp_complete`) e Metadata API simulada. Nenhum dado veio de uma org real. Gerado por `python3 -m tests.simulate_mvp`.
 
-- Execução: `run-20261012-031718` — status **SUCCESS** — código de saída `0`
+- Execução: `run-20261012-032525` — status **SUCCESS** — código de saída `0`
 - Org: `dev` — API `67.0`
 - Cobertura: **COMPLETE** — 12 documentada(s) de 12 no escopo; lacunas: 0 (nenhuma)
 
 ## 1. Saída no terminal
 
 ```
-[03:17:18] INFO  Escopo ALL: {'Certificate': ['*'], 'ConnectedApp': ['*'], 'CustomMetadata': ['*'], 'CustomObject': ['*'], 'ExternalClientApp': ['*'], 'ExternalCredential': ['*'], 'Flow': ['*'], 'NamedCredential': ['*'], 'RemoteSiteSetting': ['*']}
-[03:17:18] INFO  Passo 1: Salesforce CLI 2.60.0 (mínima 2.0.0)
-[03:17:18] INFO  Passo 2: alias 'dev' autenticado
-[03:17:18] INFO  Passo 3: usuario.simulado@example.com conectado; API 67.0 (detectada 67.0, fonte: sf org display)
-[03:17:18] INFO  Passo 3b: org 00D000000000000AAA aprovada (approvedOrgs)
-[03:17:18] INFO  Passo 4: grupos habilitados: Flow, ExternalClientApp, ExternalCredential, ConnectedApp, CustomObject, CustomMetadata, NamedCredential, RemoteSiteSetting, Certificate
-[03:17:18] INFO  Passo 6: Flow -> 3 componente(s)
-[03:17:18] INFO  Passo 6: FlowDefinition -> 1 componente(s)
-[03:17:19] INFO  Passo 6: ExternalClientApplication -> 1 componente(s)
-[03:17:19] INFO  Passo 6: ExtlClntAppOauthSettings -> 2 componente(s)
-[03:17:19] INFO  Passo 6: ExtlClntAppConfigurablePolicies -> 1 componente(s)
-[03:17:19] INFO  Passo 6: ExtlClntAppOauthConfigurablePolicies -> 1 componente(s)
-[03:17:19] INFO  Passo 6: ExternalCredential -> 1 componente(s)
-[03:17:19] INFO  Passo 6: ConnectedApp -> 1 componente(s)
-[03:17:19] INFO  Passo 6: CustomObject -> 3 componente(s)
-[03:17:19] INFO  Passo 6: CustomMetadata -> 2 componente(s)
-[03:17:19] INFO  Passo 6: NamedCredential -> 2 componente(s)
-[03:17:19] INFO  Passo 6: RemoteSiteSetting -> 1 componente(s)
-[03:17:19] INFO  Passo 6: Certificate -> 1 componente(s)
-[03:17:19] INFO  Flow:Flow:Meu_Flow: processando
-[03:17:19] INFO  Flow:Flow:Meu_Flow: SUCCESS -> saida/docs/doc-org-101226/doc-meu-flow-flow.md
-[03:17:19] INFO  Flow:Flow:Processa_Pedido: processando
-[03:17:19] INFO  Flow:Flow:Processa_Pedido: SUCCESS -> saida/docs/doc-org-101226/doc-processa-pedido-flow.md
-[03:17:19] INFO  Flow:Flow:Tela_Cadastro: processando
-[03:17:19] INFO  Flow:Flow:Tela_Cadastro: SUCCESS -> saida/docs/doc-org-101226/doc-tela-cadastro-flow.md
-[03:17:19] INFO  ExternalClientApp:ExternalClientApplication:Minha_ECA: processando
-[03:17:19] INFO  ExternalClientApp:ExternalClientApplication:Minha_ECA: SUCCESS -> saida/docs/doc-org-101226/doc-minha-eca-external-client-app.md
-[03:17:19] INFO  ExternalCredential:ExternalCredential:Minha_EC: processando
-[03:17:20] INFO  ExternalCredential:ExternalCredential:Minha_EC: SUCCESS -> saida/docs/doc-org-101226/doc-minha-ec-external-credential.md
-[03:17:20] INFO  ConnectedApp:ConnectedApp:Meu_App: processando
-[03:17:20] INFO  ConnectedApp:ConnectedApp:Meu_App: SUCCESS -> saida/docs/doc-org-101226/doc-meu-app-connected-app.md
-[03:17:20] INFO  CustomObject:CustomObject:Pedido__c: processando
-[03:17:20] INFO  CustomObject:CustomObject:Pedido__c: SUCCESS -> saida/docs/doc-org-101226/doc-pedido-c-custom-object.md
-[03:17:20] INFO  CustomMetadata:CustomMetadata:Config__mdt: processando
-[03:17:20] INFO  CustomMetadata:CustomMetadata:Config__mdt: SUCCESS -> saida/docs/doc-org-101226/doc-config-mdt-custom-metadata.md
-[03:17:20] INFO  NamedCredential:NamedCredential:Minha_NC: processando
-[03:17:20] INFO  NamedCredential:NamedCredential:Minha_NC: SUCCESS -> saida/docs/doc-org-101226/doc-minha-nc-named-credential.md
-[03:17:20] INFO  NamedCredential:NamedCredential:NC_Legada: processando
-[03:17:20] INFO  NamedCredential:NamedCredential:NC_Legada: SUCCESS -> saida/docs/doc-org-101226/doc-nc-legada-named-credential.md
-[03:17:20] INFO  RemoteSiteSetting:RemoteSiteSetting:Meu_Site: processando
-[03:17:20] INFO  RemoteSiteSetting:RemoteSiteSetting:Meu_Site: SUCCESS -> saida/docs/doc-org-101226/doc-meu-site-remote-site-setting.md
-[03:17:20] INFO  Certificate:Certificate:Meu_Certificado: processando
-[03:17:20] INFO  Certificate:Certificate:Meu_Certificado: SUCCESS -> saida/docs/doc-org-101226/doc-meu-certificado-certificate.md
-[03:17:20] INFO  Execução run-20261012-031718 finalizada: SUCCESS {'SUCCESS': 12}
-[03:17:20] INFO  Cobertura: COMPLETE — 12 documentada(s) de 12 no escopo; lacunas: 0
-[03:17:20] INFO  Log: runs/run-20261012-031718.json
+[03:25:25] INFO  Escopo ALL: {'Certificate': ['*'], 'ConnectedApp': ['*'], 'CustomMetadata': ['*'], 'CustomObject': ['*'], 'ExternalClientApp': ['*'], 'ExternalCredential': ['*'], 'Flow': ['*'], 'NamedCredential': ['*'], 'RemoteSiteSetting': ['*']}
+[03:25:25] INFO  Passo 1: Salesforce CLI 2.60.0 (mínima 2.0.0)
+[03:25:25] INFO  Passo 2: alias 'dev' autenticado
+[03:25:25] INFO  Passo 3: usuario.simulado@example.com conectado; API 67.0 (detectada 67.0, fonte: sf org display)
+[03:25:25] INFO  Passo 3b: org 00D000000000000AAA aprovada (approvedOrgs)
+[03:25:25] INFO  Passo 4: grupos habilitados: Flow, ExternalClientApp, ExternalCredential, ConnectedApp, CustomObject, CustomMetadata, NamedCredential, RemoteSiteSetting, Certificate
+[03:25:25] INFO  Passo 6: Flow -> 3 componente(s)
+[03:25:26] INFO  Passo 6: FlowDefinition -> 1 componente(s)
+[03:25:26] INFO  Passo 6: ExternalClientApplication -> 1 componente(s)
+[03:25:26] INFO  Passo 6: ExtlClntAppOauthSettings -> 2 componente(s)
+[03:25:26] INFO  Passo 6: ExtlClntAppConfigurablePolicies -> 1 componente(s)
+[03:25:26] INFO  Passo 6: ExtlClntAppOauthConfigurablePolicies -> 1 componente(s)
+[03:25:26] INFO  Passo 6: ExternalCredential -> 1 componente(s)
+[03:25:26] INFO  Passo 6: ConnectedApp -> 1 componente(s)
+[03:25:26] INFO  Passo 6: CustomObject -> 3 componente(s)
+[03:25:26] INFO  Passo 6: CustomMetadata -> 2 componente(s)
+[03:25:26] INFO  Passo 6: NamedCredential -> 2 componente(s)
+[03:25:26] INFO  Passo 6: RemoteSiteSetting -> 1 componente(s)
+[03:25:26] INFO  Passo 6: Certificate -> 1 componente(s)
+[03:25:26] INFO  Flow:Flow:Meu_Flow: processando
+[03:25:26] INFO  Flow:Flow:Meu_Flow: SUCCESS -> saida/docs/doc-org-101226/doc-meu-flow-flow.md
+[03:25:26] INFO  Flow:Flow:Processa_Pedido: processando
+[03:25:26] INFO  Flow:Flow:Processa_Pedido: SUCCESS -> saida/docs/doc-org-101226/doc-processa-pedido-flow.md
+[03:25:26] INFO  Flow:Flow:Tela_Cadastro: processando
+[03:25:26] INFO  Flow:Flow:Tela_Cadastro: SUCCESS -> saida/docs/doc-org-101226/doc-tela-cadastro-flow.md
+[03:25:26] INFO  ExternalClientApp:ExternalClientApplication:Minha_ECA: processando
+[03:25:27] INFO  ExternalClientApp:ExternalClientApplication:Minha_ECA: SUCCESS -> saida/docs/doc-org-101226/doc-minha-eca-external-client-app.md
+[03:25:27] INFO  ExternalCredential:ExternalCredential:Minha_EC: processando
+[03:25:27] INFO  ExternalCredential:ExternalCredential:Minha_EC: SUCCESS -> saida/docs/doc-org-101226/doc-minha-ec-external-credential.md
+[03:25:27] INFO  ConnectedApp:ConnectedApp:Meu_App: processando
+[03:25:27] INFO  ConnectedApp:ConnectedApp:Meu_App: SUCCESS -> saida/docs/doc-org-101226/doc-meu-app-connected-app.md
+[03:25:27] INFO  CustomObject:CustomObject:Pedido__c: processando
+[03:25:27] INFO  CustomObject:CustomObject:Pedido__c: SUCCESS -> saida/docs/doc-org-101226/doc-pedido-c-custom-object.md
+[03:25:27] INFO  CustomMetadata:CustomMetadata:Config__mdt: processando
+[03:25:27] INFO  CustomMetadata:CustomMetadata:Config__mdt: SUCCESS -> saida/docs/doc-org-101226/doc-config-mdt-custom-metadata.md
+[03:25:27] INFO  NamedCredential:NamedCredential:Minha_NC: processando
+[03:25:27] INFO  NamedCredential:NamedCredential:Minha_NC: SUCCESS -> saida/docs/doc-org-101226/doc-minha-nc-named-credential.md
+[03:25:27] INFO  NamedCredential:NamedCredential:NC_Legada: processando
+[03:25:27] INFO  NamedCredential:NamedCredential:NC_Legada: SUCCESS -> saida/docs/doc-org-101226/doc-nc-legada-named-credential.md
+[03:25:27] INFO  RemoteSiteSetting:RemoteSiteSetting:Meu_Site: processando
+[03:25:27] INFO  RemoteSiteSetting:RemoteSiteSetting:Meu_Site: SUCCESS -> saida/docs/doc-org-101226/doc-meu-site-remote-site-setting.md
+[03:25:27] INFO  Certificate:Certificate:Meu_Certificado: processando
+[03:25:27] INFO  Certificate:Certificate:Meu_Certificado: SUCCESS -> saida/docs/doc-org-101226/doc-meu-certificado-certificate.md
+[03:25:27] INFO  Execução run-20261012-032525 finalizada: SUCCESS {'SUCCESS': 12}
+[03:25:27] INFO  Cobertura: COMPLETE — 12 documentada(s) de 12 no escopo; lacunas bloqueantes: 0; avisos: 0
+[03:25:27] INFO  Tipos: configurados 17, processados 17, documentados 9, sem modelo 0, fora do escopo 0, não habilitados 0, descobertos e não configurados 3
+[03:25:27] INFO  Log: runs/run-20261012-032525.json
 ```
 
 ## 2. Comandos executados na CLI (por passo)
@@ -258,7 +259,7 @@ O passo 5 (`describeValueType`) é SOAP direto na Metadata API, fora da CLI; o p
         "fullName": "Meu_Flow",
         "type": "Flow",
         "state": "Created",
-        "filePath": "/tmp/sfdocs-retrieve-6ojx2unr/force-app/main/default/flows/Meu_Flow.flow-meta.xml"
+        "filePath": "/tmp/sfdocs-retrieve-eyuk8yrf/force-app/main/default/flows/Meu_Flow.flow-meta.xml"
       }
     ]
   }
@@ -529,7 +530,7 @@ inventory/org-dev/api-v67/remote-site-settings/inventory.index.json
 inventory/org-dev/api-v67/remote-site-settings/inventory.raw.json
 inventory/org-dev/api-v67/remote-site-settings/normalized/meu-site.json
 inventory/org-dev/api-v67/remote-site-settings/retrieve/meu-site.raw.json
-runs/run-20261012-031718.json
+runs/run-20261012-032525.json
 saida/docs/doc-org-101226/.manifest.json
 saida/docs/doc-org-101226/doc-config-mdt-custom-metadata.md
 saida/docs/doc-org-101226/doc-meu-app-connected-app.md

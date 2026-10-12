@@ -130,7 +130,7 @@ class ScopePipelineTest(PipelineTestBase):
                     if t.get("stage") == "selection"]
         self.assertEqual(sorted(statuses), [("Account", st.NOT_FOUND), ("Flow_Inexistente", st.NOT_FOUND)])
         self.assertEqual(self.primary(state, "Meu_Flow")["status"], st.SUCCESS)
-        self.assertEqual(state.data["status"], st.PARTIAL_SUCCESS)
+        self.assertEqual(state.data["status"], st.COMPLETED_WITH_GAPS)
         self.assertNotIn("CustomObject:Account", self.calls())
 
     def test_invalid_scope_fails_before_any_org_call(self):

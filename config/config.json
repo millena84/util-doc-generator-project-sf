@@ -26,6 +26,7 @@
     "mode": "MVP_MOCKED_METADATA_TYPES",
     "saveRawResponses": true,
     "allowPartialSuccess": true,
-    "outputLayout": "BY_DATE"
+    "outputLayout": "BY_DATE",
+    "strictCoverage": false
   }
 }

@@ -46,4 +46,8 @@
 
 ## Cobertura
 
-O run state separa **término da execução** (`status`) de **cobertura** (`coverage.status = COMPLETE | INCOMPLETE`). Lacunas listadas: `noTemplate`, `failed`, `subDocuments`, `internalDataUnavailable`, `notFound`, `notEnabled`, `schemaUnavailable`. Grupos fora do escopo aparecem em `outOfScopeGroups` (não são lacuna).
+O run state separa **término da execução** (`status`) de **cobertura** (`coverage`):
+
+- `coverage.status`: `COMPLETE`, `COMPLETE_WITH_WARNINGS` (só `internalDataUnavailable`, `notEnabled`, `schemaUnavailable`) ou `INCOMPLETE` (lacunas bloqueantes: `noTemplate`, `failed`, `subDocuments`, `notFound`, ou execução interrompida).
+- Execução sem falhas de componente mas com lacuna bloqueante termina como `COMPLETED_WITH_GAPS`, nunca `SUCCESS` (código `3` com `execution.strictCoverage = true`).
+- `coverage.types`: tipos descobertos (`sf org list metadata-types`), configurados, excluídos (por configuração, fora do escopo, não habilitados na org), processados, documentados (como principal ou relacionado) e sem modelo.

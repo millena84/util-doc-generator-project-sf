@@ -137,7 +137,7 @@ class CoverageTest(P3Base):
     def test_gaps_make_coverage_incomplete_even_when_run_succeeds(self):
         (self.root / "documentation/models/api-v67/modelo-doc-flow-autolaunched-vapi-67.md").unlink()
         code, state = self.run_pipeline(groups=["Flow", "ExternalCredential"])
-        self.assertEqual(state.data["status"], st.SUCCESS)  # execução terminou bem...
+        self.assertEqual(state.data["status"], st.COMPLETED_WITH_GAPS)  # terminou, mas não é SUCCESS
         cov = state.data["coverage"]
         self.assertEqual(cov["status"], "INCOMPLETE")      # ...mas a cobertura tem lacunas
         self.assertEqual(cov["gaps"]["subDocuments"],

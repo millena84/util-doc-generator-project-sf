@@ -151,6 +151,10 @@ A matriz de rastreabilidade, as divergências entre `ajudAI`, o utilitário e a 
 
 `SUCCESS`, `NO_TEMPLATE`, `NO_COMPONENTS`, `NOT_ENABLED`, `SCHEMA_UNAVAILABLE`, `RETRIEVE_FAILED`, `INTERNAL_DATA_UNAVAILABLE`, `RETRY_REQUIRED`, `MISMATCH` (+ `FAILED` para erro inesperado ou documento inválido; `OUT_OF_SCOPE` para grupo configurado mas fora do escopo; `NOT_FOUND` para componente pedido em `scope.selection` e ausente).
 
+Status final da execução: `SUCCESS` (sem falhas e sem lacunas bloqueantes), `COMPLETED_WITH_GAPS` (sem falhas de componente, mas com modelo/contrato ausente, subdocumento sem modelo ou componente pedido não encontrado — **nunca** representa cobertura completa), `PARTIAL_SUCCESS` (algum componente falhou), `FAILED`, `INTERRUPTED`. Códigos de saída: `0` (SUCCESS, PARTIAL_SUCCESS, COMPLETED_WITH_GAPS), `1` falha global, `2` sessão expirada, `3` COMPLETED_WITH_GAPS quando `execution.strictCoverage = true`.
+
+`coverage` no run state: `status` (`COMPLETE`, `COMPLETE_WITH_WARNINGS` — só avisos como dado interno ou schema indisponível —, `INCOMPLETE`), lacunas bloqueantes e avisos, e `coverage.types` com os metadata types **descobertos** na org (contagem e `discoveredNotConfigured`), **configurados**, **excluídos** (`byConfig`, `outOfScope`, `notEnabledInOrg`), **processados**, **documentados** (`documented`, `documentedAsRelated`) e **sem modelo** (`withoutModel`).
+
 `NO_TEMPLATE` (contrato ou modelo ausente) nunca interrompe a execução: o aviso informa metadata type, componente, referência (`referenceDoc`), contrato e modelo esperados, os dados extraídos são preservados e as demais unidades continuam.
 
 ## Testes

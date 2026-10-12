@@ -31,7 +31,7 @@ from salesforce_docs.validation import cli_validator, org_session_validator
 from salesforce_docs.validation.metadata_type_validator import check_enabled
 from salesforce_docs.validation.project_validator import validate_project
 
-EXIT_OK, EXIT_FAILURE, EXIT_SESSION = 0, 1, 2
+EXIT_OK, EXIT_FAILURE, EXIT_SESSION, EXIT_GAPS = 0, 1, 2, 3
 
 
 class PipelineContext:
@@ -52,6 +52,8 @@ class PipelineContext:
         self.errors_dir = None
         self.docs_dir = None
         self.writer = None
+        self.discovered_types = None   # passo 4 (None = listagem não executada)
+        self.processed_types = set()   # retrieve + normalização com sucesso
         self.contracts = ContractStore(app.contracts_dir, mvp)
         self.templates = None
         self.tooling = None
@@ -140,16 +142,27 @@ class DocumentPipeline:
             if p.session is not None:
                 p.session.clear()
             self._apply_org_display_policy(p)
-            state.set("coverage", self._coverage(state))
+            state.set("coverage", self._coverage(state, p))
         final = self._final_status(state)
         state.data["commands"] = self.runner.history
         state.finish(final)
         cov = state.data["coverage"]
         log.info(f"Execução {state.run_id} finalizada: {final} {state.summary()}")
-        log.info(f"Cobertura: {cov['status']} — {cov['documented']} documentada(s) de {cov['inScope']} "
-                 f"no escopo; lacunas: {cov['gapCount']}")
+        line = (f"Cobertura: {cov['status']} — {cov['documented']} documentada(s) de {cov['inScope']} "
+                f"no escopo; lacunas bloqueantes: {cov['blockingGapCount']}; avisos: {cov['warningCount']}")
+        (log.info if cov["status"] == "COMPLETE" else log.warn)(line)
+        types = cov["types"]
+        log.info(f"Tipos: configurados {len(types['configured'])}, processados {len(types['processed'])}, "
+                 f"documentados {len(types['documented'])}, sem modelo {len(types['withoutModel'])}, "
+                 f"fora do escopo {len(types['excluded']['outOfScope'])}, "
+                 f"não habilitados {len(types['excluded']['notEnabledInOrg'])}"
+                 + (f", descobertos e não configurados {len(types['discoveredNotConfigured'])}"
+                    if types["discoveredNotConfigured"] is not None else ""))
         log.info(f"Log: {rel(state.path, self.root)}")
-        return (EXIT_OK if final in (st.SUCCESS, st.PARTIAL_SUCCESS) else EXIT_FAILURE), state
+        if final == st.COMPLETED_WITH_GAPS and self.app.strict_coverage:
+            return EXIT_GAPS, state
+        return (EXIT_OK if final in (st.SUCCESS, st.PARTIAL_SUCCESS, st.COMPLETED_WITH_GAPS)
+                else EXIT_FAILURE), state
 
     # Aprovação da org (Prioridade 3) -----------------------------------
     def _check_org_approval(self, p, alias):
@@ -272,42 +285,101 @@ class DocumentPipeline:
         return allowed
 
     # Cobertura (Prioridade 3) ------------------------------------------
-    def _coverage(self, state):
+    # Lacunas que impedem cobertura completa x avisos que só degradam o conteúdo.
+    BLOCKING_GAPS = ("noTemplate", "failed", "subDocuments", "notFound")
+    WARNING_GAPS = ("internalDataUnavailable", "notEnabled", "schemaUnavailable")
+
+    def _coverage(self, state, p=None):
         prim = [c for c in state.data["components"] if c.get("role") == "primary"]
         gaps = {"noTemplate": [], "failed": [], "subDocuments": [], "internalDataUnavailable": [],
                 "notFound": list((state.data.get("scope") or {}).get("notFound") or []),
                 "notEnabled": [], "schemaUnavailable": []}
         documented = 0
+        documented_types, related_types, no_template_types = set(), set(), set()
         for c in prim:
             key = f"{c.get('metadataType')}:{c.get('component')}"
             if c.get("status") == st.SUCCESS and c.get("document"):
                 documented += 1
+                documented_types.add(c.get("metadataType"))
+                related_types.update(r["metadataType"] for r in c.get("relatedComponents") or [])
             elif c.get("status") == st.NO_TEMPLATE:
                 gaps["noTemplate"].append(key)
+                no_template_types.add(c.get("metadataType"))
             else:
                 gaps["failed"].append({"component": key, "status": c.get("status")})
             for sub in c.get("subDocuments") or []:
                 if sub.get("status") != st.SUCCESS:
                     gaps["subDocuments"].append({"component": sub.get("component"), "status": sub.get("status")})
+                    if sub.get("status") == st.NO_TEMPLATE:
+                        no_template_types.add(f"{c.get('metadataType')} (subdocumento)")
             if c.get("internalDataStatus") == st.INTERNAL_DATA_UNAVAILABLE:
                 gaps["internalDataUnavailable"].append(key)
+        not_enabled, out_of_scope_groups = set(), set()
         for t in state.data.get("metadataTypes") or []:
             if t.get("stage") == "enabled" and t.get("status") == st.NOT_ENABLED:
                 gaps["notEnabled"].append(f"{t.get('group')}/{t.get('metadataType')}")
+                not_enabled.add(t.get("metadataType"))
             if t.get("stage") == "schema" and t.get("status") == st.SCHEMA_UNAVAILABLE:
                 gaps["schemaUnavailable"].append(t.get("metadataType"))
-        gap_count = sum(len(v) for v in gaps.values())
+            if t.get("stage") == "scope":
+                out_of_scope_groups.add(t.get("group"))
+        blocking = sum(len(gaps[k]) for k in self.BLOCKING_GAPS)
+        warnings = sum(len(gaps[k]) for k in self.WARNING_GAPS)
         finished = state.data.get("failure") is None
-        out_of_scope = sorted(t.get("group") for t in state.data.get("metadataTypes") or []
-                              if t.get("stage") == "scope")
+        if not finished or blocking:
+            status = "INCOMPLETE"
+        elif warnings:
+            status = "COMPLETE_WITH_WARNINGS"
+        else:
+            status = "COMPLETE"
         return {
-            "status": "COMPLETE" if finished and gap_count == 0 else "INCOMPLETE",
+            "status": status,
             "executionFinished": finished,
             "inScope": len(prim) + len(gaps["notFound"]),
             "documented": documented,
-            "gapCount": gap_count,
+            "gapCount": blocking + warnings,
+            "blockingGapCount": blocking,
+            "warningCount": warnings,
             "gaps": gaps,
-            "outOfScopeGroups": out_of_scope,
+            "outOfScopeGroups": sorted(out_of_scope_groups),
+            "types": self._type_coverage(p, out_of_scope_groups, not_enabled, documented_types,
+                                         related_types, no_template_types),
+        }
+
+    def _type_coverage(self, p, out_of_scope_groups, not_enabled, documented, related, no_template):
+        """Cobertura por metadata type: descobertos, configurados, excluídos, processados,
+        documentados e sem modelo."""
+        configured = set()
+        for g in self.mvp.groups:
+            configured.update(g.all_types)
+            if g.type_definition:
+                configured.add(g.type_definition["metadataType"])
+        out_of_scope = set()
+        for g in self.mvp.groups:
+            if g.name in out_of_scope_groups:
+                out_of_scope.add(g.primary_type)
+        discovered = getattr(p, "discovered_types", None) if p is not None else None
+        processed = set(getattr(p, "processed_types", set())) if p is not None else set()
+        missing_model = set(no_template)
+        for g in self.mvp.groups:
+            contract = p.contracts.get_file(g.contract_file) if p is not None else None
+            if contract is None or (p is not None and p.templates is not None
+                                    and p.templates.load(contract.get("template")) is None):
+                missing_model.add(f"{g.primary_type} (estático: contrato/modelo ausente)")
+        return {
+            "discovered": {"count": len(discovered) if discovered is not None else None,
+                           "available": discovered is not None},
+            "configured": sorted(configured),
+            "discoveredNotConfigured": sorted(discovered - configured) if discovered is not None else None,
+            "excluded": {
+                "byConfig": sorted(self.mvp.excluded),
+                "outOfScope": sorted(out_of_scope),
+                "notEnabledInOrg": sorted(not_enabled),
+            },
+            "processed": sorted(processed),
+            "documented": sorted(documented),
+            "documentedAsRelated": sorted(related - documented),
+            "withoutModel": sorted(missing_model),
         }
 
     def _resolve_scope(self, p, alias, cli_alias, groups, components):
@@ -329,14 +401,22 @@ class DocumentPipeline:
         return effective
 
     def _final_status(self, state):
+        """SUCCESS só com cobertura sem lacunas bloqueantes.
+
+        - componentes com falha => PARTIAL_SUCCESS (ou FAILED);
+        - execução sem falhas, mas com modelo ausente, subdocumento sem modelo ou
+          componente pedido não encontrado => COMPLETED_WITH_GAPS (nunca SUCCESS).
+        """
         statuses = [c.get("status") for c in state.data["components"] if c.get("role") == "primary"]
-        statuses += [st.NOT_FOUND for _ in (state.data.get("scope") or {}).get("notFound", [])]
-        bad = [s for s in statuses if s not in (st.SUCCESS, st.NO_TEMPLATE)]
-        if not bad:
-            return st.SUCCESS
-        if self.app.allow_partial_success and len(bad) < len(statuses):
-            return st.PARTIAL_SUCCESS
-        return st.FAILED
+        failed = [s for s in statuses if s not in (st.SUCCESS, st.NO_TEMPLATE)]
+        if failed:
+            if self.app.allow_partial_success and len(failed) < len(statuses):
+                return st.PARTIAL_SUCCESS
+            return st.FAILED
+        coverage = state.data.get("coverage") or {}
+        if coverage.get("blockingGapCount"):
+            return st.COMPLETED_WITH_GAPS
+        return st.SUCCESS
 
     # Passo 1 ------------------------------------------------------------
     def _step1_cli(self, p):
@@ -382,6 +462,7 @@ class DocumentPipeline:
         group_filter = set(effective)
         index, raw_path, _ = metadata_types_extractor.extract_metadata_types(
             p.runner, p.session, p.catalog_dir, p.errors_dir)
+        p.discovered_types = set(index.get("metadataTypes", {})) | set(index.get("childMetadataTypes", {}))
         p.run_state.step("4-metadata-types", st.SUCCESS, rel(raw_path, self.root))
         enabled = {}
         for group in self.mvp.groups:
@@ -485,6 +566,7 @@ class DocumentPipeline:
                     p.log.error(f"{unit['unitId']}: FAILED {exc}")
                 p.run_state.upsert_component(entry)
                 current_unit["entry"] = None
+                self._record_processed(p, processor)
 
     def _report_not_found(self, p, group, units, inventories, component_filter):
         """Componentes pedidos em scope.selection que não viraram unidade de documento."""
@@ -504,6 +586,14 @@ class DocumentPipeline:
             p.run_state.type_status(group.primary_type, st.NOT_FOUND, group=group.name,
                                     stage="selection", component=name, detail=reason)
             p.log.warn(f"{group.primary_type}:{name} pedido em scope.selection: NOT_FOUND ({reason})")
+
+    def _record_processed(self, p, processor):
+        types = set()
+        for rec in processor._cache.values():
+            if rec.get("status") == st.SUCCESS:
+                types.add(rec["metadataType"])
+                types.update(c["metadataType"] for c in rec.get("children") or [])
+        p.processed_types |= types
 
     def _process_unit(self, p, group, unit, types, inventories, processor):
         log = p.log
@@ -696,9 +786,11 @@ class DocumentPipeline:
             entry["regeneratedFrom"] = source.run_id
             state.upsert_component(entry)
             log.info(f"{unit_id}: regenerado {entry['status']} {entry.get('document') or ''}")
+        state.set("coverage", self._coverage(state, p))
         final = self._final_status(state)
         state.finish(final)
-        return (EXIT_OK if final in (st.SUCCESS, st.PARTIAL_SUCCESS) else EXIT_FAILURE), state
+        return (EXIT_OK if final in (st.SUCCESS, st.PARTIAL_SUCCESS, st.COMPLETED_WITH_GAPS)
+                else EXIT_FAILURE), state
 
 
 def _record_type(group):

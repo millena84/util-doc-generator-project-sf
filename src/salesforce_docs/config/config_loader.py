@@ -24,6 +24,8 @@ class AppConfig:
         self.mode = execution.get("mode")
         self.save_raw_responses = execution.get("saveRawResponses", True)
         self.allow_partial_success = execution.get("allowPartialSuccess", True)
+        # true => COMPLETED_WITH_GAPS termina com código 3 (útil em automação/CI).
+        self.strict_coverage = bool(execution.get("strictCoverage", False))
         self.cli_timeout_seconds = execution.get("cliTimeoutSeconds", 900)
         self.http_timeout_seconds = execution.get("httpTimeoutSeconds", 120)
         paths = data.get("paths") or {}
