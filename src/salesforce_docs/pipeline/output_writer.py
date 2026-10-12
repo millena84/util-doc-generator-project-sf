@@ -1,11 +1,15 @@
 """Gravação dos documentos finais sem colisão nem sobrescrita silenciosa.
 
-- Layout BY_DATE (padrão, estrutura original): saida/docs/doc-org-MMDDAA/.
+- Layout BY_DATE (padrão): saida/docs/doc-<alias>-MMDDAA/ — tudo o que for processado
+  no dia, para a org, fica na mesma pasta.
   Um manifesto (.manifest.json) registra qual execução gerou cada arquivo.
   Se um arquivo de OUTRA execução (ou de origem desconhecida) for ser substituído
   por conteúdo diferente, a versão anterior é movida para
   `_substituidos/<runId anterior>/` e a troca fica registrada no run state.
-- Layout BY_RUN: saida/docs/doc-org-MMDDAA/<runId>/ — cada execução isolada.
+- Layout BY_RUN: saida/docs/doc-<alias>-MMDDAA/<runId>/ — cada execução isolada.
+- Orgs diferentes nunca compartilham pasta: `.org.json` registra o orgId dono da pasta
+  do dia (ver `claim_org_folder`).
+- Retomada/regeneração podem gravar na pasta da execução de origem (`dir_override`).
 - Dentro da mesma execução, dois componentes que gerariam o mesmo nome de arquivo
   (ex.: `Meu_Flow` e `Meu-Flow`) recebem sufixo com hash do fullName; nada é sobrescrito.
 """
@@ -20,13 +24,37 @@ from salesforce_docs.utils import read_json, rel, sha256_text, write_json, write
 
 MANIFEST = ".manifest.json"
 ARCHIVE = "_substituidos"
+ORG_MARKER = ".org.json"
+
+
+def folder_org(folder: Path):
+    """orgId registrado como dono da pasta (None se não houver registro)."""
+    marker = Path(folder) / ORG_MARKER
+    data = read_json(marker) if marker.is_file() else None
+    return (data or {}).get("orgId")
+
+
+def same_org(a, b) -> bool:
+    """Compara orgIds pelos 15 primeiros caracteres (IDs de 15 e 18 posições)."""
+    return bool(a) and bool(b) and str(a)[:15] == str(b)[:15]
+
+
+def claim_org_folder(folder: Path, org_id, alias) -> None:
+    """Registra a org dona da pasta (uma vez; nunca troca o dono)."""
+    folder = Path(folder)
+    if org_id and folder_org(folder) is None:
+        write_json(folder / ORG_MARKER, {"orgId": org_id, "alias": alias})
 
 
 class OutputWriter:
-    def __init__(self, base_dir: Path, run_id: str, layout: str, project_root: Path, run_state, log):
+    def __init__(self, base_dir: Path, run_id: str, layout: str, project_root: Path, run_state, log,
+                 dir_override: Path = None):
         self.run_id = run_id
         self.root = Path(project_root)
-        self.dir = Path(base_dir) / run_id if layout == "BY_RUN" else Path(base_dir)
+        if dir_override is not None:
+            self.dir = Path(dir_override)
+        else:
+            self.dir = Path(base_dir) / run_id if layout == "BY_RUN" else Path(base_dir)
         self.layout = layout
         self.state = run_state
         self.log = log

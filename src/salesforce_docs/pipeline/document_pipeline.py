@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import datetime
 import json
 import os
 import sys
@@ -27,7 +28,7 @@ from salesforce_docs.salesforce.metadata_api_client import MetadataApiClient
 from salesforce_docs.parsing.xml_parser import redact
 from salesforce_docs.salesforce.org_session import OrgSession, looks_like_session_token
 from salesforce_docs.salesforce.tooling_api_client import ToolingApiClient
-from salesforce_docs.pipeline.output_writer import OutputWriter
+from salesforce_docs.pipeline.output_writer import OutputWriter, claim_org_folder, folder_org, same_org
 from salesforce_docs.pipeline.run_summary import write_summary
 from salesforce_docs.utils import (Masker, now_local, read_json, rel, set_private_files, sha256_file,
                                    sha256_text, slugify, write_json, write_text_raw)
@@ -114,6 +115,7 @@ class DocumentPipeline:
         log = RunLogger(self.masker, stream=self.stream, run_state=state)
         p = PipelineContext(self.root, self.app, self.mvp, self.runner, state, log, self.masker)
         p.errors_dir = self.app.runs_dir / state.run_id / "errors"
+        p.source_run = previous  # retomada: a saída pode seguir na pasta da execução de origem
         current_unit = {"entry": None}
         try:
             warnings = validate_project(self.app, self.mvp, p.contracts)
@@ -706,11 +708,79 @@ class DocumentPipeline:
         p.run_state.step("6-list-metadata", st.SUCCESS, f"{len(inventories)} tipo(s)")
         return inventories
 
+    # Pasta de saída ------------------------------------------------------
+    def _open_writer(self, p, alias, org_id, source=None):
+        """Define a pasta dos documentos e cria o OutputWriter.
+
+        - Pasta do dia por org: saida/docs/doc-<alias>-MMDDAA/. Orgs diferentes nunca
+          compartilham pasta: se a pasta do dia já pertence a outro orgId (mesmo alias
+          apontando para outra org), usa doc-<alias>-<orgId>-MMDDAA/.
+        - Retomada/regeneração com resumeOutput = ORIGINAL_FOLDER (padrão): grava na
+          pasta da execução de origem, mesmo que tenha sido em outro dia.
+        """
+        day = now_local().strftime("%m%d%y")
+        out = {"resumeOutput": self.app.resume_output}
+        prev_out = (source.data.get("output") or {}) if source is not None else {}
+        override = None
+        base = None
+        if source is not None and self.app.resume_output == "ORIGINAL_FOLDER" and prev_out.get("dir"):
+            prev_dir = self.root / prev_out["dir"]
+            if prev_out.get("baseDir"):
+                prev_base = self.root / prev_out["baseDir"]
+            else:  # execuções anteriores a este campo
+                prev_base = prev_dir.parent if prev_out.get("layout") == "BY_RUN" else prev_dir
+            owner = folder_org(prev_base)
+            if owner and org_id and not same_org(owner, org_id):
+                p.log.warn(f"Pasta da execução de origem {rel(prev_base, self.root)} pertence a outra org "
+                           f"({owner}); documentos desta execução vão para a pasta do dia")
+            else:
+                base, override = prev_base, prev_dir
+                out["originFolder"] = {"runId": source.run_id, "startedAt": source.data.get("startedAt")}
+        if base is None:
+            base = self.app.output_docs_dir / f"doc-{slugify(alias or 'org')}-{day}"
+            owner = folder_org(base)
+            if owner and org_id and not same_org(owner, org_id):
+                separate = self.app.output_docs_dir / f"doc-{slugify(alias or 'org')}-{org_id}-{day}"
+                p.log.warn(f"{rel(base, self.root)} pertence à org {owner}; o alias '{alias}' aponta "
+                           f"agora para {org_id}: documentos em {rel(separate, self.root)}")
+                out["orgFolderConflict"] = {"folder": rel(base, self.root), "owner": owner}
+                base = separate
+        claim_org_folder(base, org_id, alias)
+        p.docs_dir = base
+        p.writer = OutputWriter(base, p.run_state.run_id, self.app.output_layout, self.root,
+                                p.run_state, p.log, dir_override=override)
+        p.run_state.data["output"].update(out, baseDir=rel(base, self.root), orgId=org_id)
+        if source is not None:
+            self._report_resume_output(p, source, override)
+        p.run_state.save()
+
+    def _report_resume_output(self, p, source, override):
+        """Orientação ao retomar/regenerar: onde os documentos ficam e defasagem entre os dias."""
+        started = str(source.data.get("startedAt") or "")[:10]
+        try:
+            age = (now_local().date() - datetime.date.fromisoformat(started)).days
+        except ValueError:
+            age = None
+        where = rel(p.writer.dir, self.root)
+        if override is not None:
+            msg = (f"Documentos em {where}: pasta da execução de origem {source.run_id}"
+                   + (f" (coleta de {started})" if started else ""))
+        else:
+            prev_dir = (source.data.get("output") or {}).get("dir")
+            msg = (f"Documentos em {where} (pasta do dia)"
+                   + (f"; os herdados de {source.run_id} continuam em {prev_dir}" if prev_dir else ""))
+        p.log.info(msg)
+        p.run_state.data["output"]["resumeNote"] = msg
+        if age is not None and age > self.app.resume_warn_after_days:
+            warn = (f"Execução de origem {source.run_id} tem {age} dia(s): a pasta mistura coletas de "
+                    "datas diferentes e a org pode ter mudado. Se a defasagem for relevante, faça uma "
+                    "execução completa nova (sem --resume).")
+            p.log.warn(warn)
+            p.run_state.data["output"]["resumeAgeWarning"] = warn
+
     # Passos 7–10 --------------------------------------------------------
     def _steps7_to_10(self, p, enabled, inventories, skip_units, effective, current_unit):
-        p.docs_dir = self.app.output_docs_dir / f"doc-org-{now_local().strftime('%m%d%y')}"
-        p.writer = OutputWriter(p.docs_dir, p.run_state.run_id, self.app.output_layout, self.root,
-                                p.run_state, p.log)
+        self._open_writer(p, p.session.alias, p.session.org_id, getattr(p, "source_run", None))
         processor = ComponentProcessor(p)
         # Plano completo antes de processar: permite registrar pendentes em interrupção.
         plan, ignored, not_selected = [], {}, {}
@@ -758,6 +828,7 @@ class DocumentPipeline:
                 entry = dict(entry, status=st.FAILED, error=self.masker(f"{type(exc).__name__}: {exc}"))
                 p.log.error(f"{unit['unitId']}: FAILED {self.masker(str(exc))}")
             entry["errorClass"] = classify_error(entry.get("error"))
+            entry["processedOn"] = now_local().date().isoformat()
             p.run_state.upsert_component(entry)
             progress["completed"] += 1
             progress["pending"].remove(unit["unitId"])
@@ -993,9 +1064,7 @@ class DocumentPipeline:
         log = RunLogger(self.masker, stream=self.stream, run_state=state)
         p = PipelineContext(self.root, self.app, self.mvp, self.runner, state, log, self.masker)
         p.bind_session(session)
-        p.docs_dir = self.app.output_docs_dir / f"doc-org-{now_local().strftime('%m%d%y')}"
-        p.writer = OutputWriter(p.docs_dir, p.run_state.run_id, self.app.output_layout, self.root,
-                                p.run_state, p.log)
+        self._open_writer(p, session.alias, (source.data.get("session") or {}).get("orgId"), source)
         state.set("apiVersion", session.api_version)
         self._regenerate_differences(p, source)
         if (p.catalog_dir / "metadata-types.raw.json").is_file():

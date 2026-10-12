@@ -165,7 +165,15 @@ Após resolver a causa da interrupção — por exemplo, renovar uma sessão exp
 bin/sf-docs.sh run --resume latest
 ```
 
-Ou informe o identificador exato do run. Antes de retomar, confirme que org, versão da API, configuração, contratos e modelos continuam compatíveis. A validação reforçada dessa compatibilidade está listada como evolução; não presuma que uma execução antiga é automaticamente apropriada para o estado atual.
+Ou informe o identificador exato do run.
+
+Onde os documentos ficam:
+
+- Por padrão, a retomada grava na **pasta da coleta original** (`saida/docs/doc-<alias>-MMDDAA/` do dia em que a execução começou), mesmo que seja retomada em outro dia. Assim a coleta fica completa numa pasta só.
+- Para gravar na pasta do dia atual, use `--resume-output TODAY` (ou `execution.resumeOutput = "TODAY"` no `config.json`). Nesse caso, os documentos herdados continuam na pasta original.
+- O log e o `runs/<runId>/resumo.md` informam a pasta usada e quantos componentes foram processados em cada dia. Se a execução de origem tiver mais de `execution.resumeWarnAfterDays` dias (padrão 1), há um aviso: a org pode ter mudado, e uma execução completa nova pode ser mais adequada.
+
+Antes de retomar, confirme que org, versão da API, configuração, contratos e modelos continuam compatíveis. A validação reforçada dessa compatibilidade está listada como evolução; não presuma que uma execução antiga é automaticamente apropriada para o estado atual.
 
 ### Regenerar documentos offline
 
@@ -175,7 +183,7 @@ Quando os XMLs e raws de origem necessários já existem localmente:
 bin/sf-docs.sh regenerate --run latest
 ```
 
-A regeneração foi projetada para reconstruir derivados e Markdown sem nova chamada à org. Ela ainda usa os arquivos locais da execução; isso não torna esses dados seguros para compartilhar.
+A regeneração foi projetada para reconstruir derivados e Markdown sem nova chamada à org. Os documentos são gravados na pasta da execução de origem (mesma regra da retomada; `--resume-output TODAY` grava na pasta do dia). Ela ainda usa os arquivos locais da execução; isso não torna esses dados seguros para compartilhar.
 
 ### Windows sem Bash
 

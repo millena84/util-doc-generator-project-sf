@@ -18,6 +18,9 @@ def _project_root(value):
     return Path(__file__).resolve().parents[2]
 
 
+RESUME_OUTPUT_CHOICES = ("ORIGINAL_FOLDER", "TODAY")
+
+
 def build_parser():
     parser = argparse.ArgumentParser(
         prog="salesforce_docs",
@@ -39,10 +42,15 @@ def build_parser():
                      help="Nunca pergunta: org fora de approvedOrgs é recusada (padrão sem terminal)")
     run.add_argument("--resume", metavar="RUN_ID",
                      help="Retoma execução (ou 'latest') sem reprocessar componentes SUCCESS")
+    run.add_argument("--resume-output", choices=RESUME_OUTPUT_CHOICES, type=str.upper,
+                     help="Na retomada: grava na pasta da execução de origem (ORIGINAL_FOLDER) "
+                          "ou na pasta do dia atual (TODAY). Padrão: config.json execution.resumeOutput")
 
     regen = sub.add_parser("regenerate",
                            help="Regera derivados e Markdown a partir dos raws/XMLs (sem acessar a org)")
     regen.add_argument("--run", default="latest", help="Execução de origem (padrão: latest)")
+    regen.add_argument("--resume-output", choices=RESUME_OUTPUT_CHOICES, type=str.upper,
+                       help="Grava na pasta da execução de origem (ORIGINAL_FOLDER) ou na do dia (TODAY)")
 
     pg = sub.add_parser("purge", help="Retenção: marca execuções antigas como DESCONTINUADAS "
                                       "(padrão: só lista; nada é apagado)")
@@ -66,6 +74,8 @@ def main(argv=None):
     try:
         interactive = False if getattr(args, "non_interactive", False) else None
         pipeline = DocumentPipeline(root, interactive=interactive)
+        if getattr(args, "resume_output", None):
+            pipeline.app.resume_output = args.resume_output  # sobrepõe o config.json nesta execução
         if args.command == "purge":
             from salesforce_docs.runs.retention import purge
             return purge(pipeline.app, args.older_than_days, apply=args.apply,
@@ -114,7 +124,8 @@ def main(argv=None):
                       file=sys.stderr)
             print(f"Proteção de dados: privateFiles={pipeline.app.private_files}, "
                   f"orgDisplayRaw={pipeline.app.org_display_raw_policy}, "
-                  f"outputLayout={pipeline.app.output_layout}")
+                  f"outputLayout={pipeline.app.output_layout}, "
+                  f"resumeOutput={pipeline.app.resume_output}")
             print(f"Seleção: {pipeline.app.selection.mode}")
             for group, comps in describe_effective(effective).items():
                 print(f"  - {group}: {', '.join(comps)}")

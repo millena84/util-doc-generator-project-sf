@@ -48,9 +48,17 @@ class AppConfig:
         self.org_display_raw_policy = str(protection.get("orgDisplayRaw", "KEEP_PRIVATE")).upper()
         if self.org_display_raw_policy not in ("KEEP_PRIVATE", "DELETE_AFTER_RUN"):
             raise ConfigError("config.json: dataProtection.orgDisplayRaw deve ser KEEP_PRIVATE ou DELETE_AFTER_RUN")
-        self.output_layout = str(execution.get("outputLayout", "BY_RUN")).upper()
+        self.output_layout = str(execution.get("outputLayout", "BY_DATE")).upper()
         if self.output_layout not in ("BY_DATE", "BY_RUN"):
             raise ConfigError("config.json: execution.outputLayout deve ser BY_DATE ou BY_RUN")
+        # Retomada/regeneração: grava na pasta da execução de origem (padrão) ou na do dia atual.
+        self.resume_output = str(execution.get("resumeOutput", "ORIGINAL_FOLDER")).upper()
+        if self.resume_output not in ("ORIGINAL_FOLDER", "TODAY"):
+            raise ConfigError("config.json: execution.resumeOutput deve ser ORIGINAL_FOLDER ou TODAY")
+        warn_days = execution.get("resumeWarnAfterDays", 1)
+        if not isinstance(warn_days, int) or isinstance(warn_days, bool) or warn_days < 0:
+            raise ConfigError("config.json: execution.resumeWarnAfterDays deve ser inteiro >= 0")
+        self.resume_warn_after_days = warn_days
 
     # Diretórios por org/versão -------------------------------------------
     def catalog_dir(self, alias: str, api_version: str) -> Path:
