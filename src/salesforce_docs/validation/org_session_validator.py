@@ -4,7 +4,10 @@ from __future__ import annotations
 
 from salesforce_docs.errors import GlobalFailure
 
-REQUIRED_DISPLAY_FIELDS = ("accessToken", "instanceUrl", "apiVersion", "username")
+# Campos de `sf org display --json` usados (result.*). O accessToken NÃO é exigido aqui:
+# CLIs recentes não exibem segredos nesse comando; o token é obtido depois da aprovação
+# da org (`sf org auth show-access-token --json`). Ver documentation/protecao-de-dados.md.
+REQUIRED_DISPLAY_FIELDS = ("instanceUrl", "apiVersion", "username")
 
 
 def login_suggestion(alias: str) -> str:

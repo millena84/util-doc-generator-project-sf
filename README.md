@@ -30,11 +30,20 @@ bin/sf-docs.sh regenerate --run latest
 
 # Validar config, contratos e modelos (sem acessar a org)
 bin/sf-docs.sh validate-config
+
+# CI / sem terminal: nunca pergunta (org fora de approvedOrgs → para)
+bin/sf-docs.sh run --non-interactive
+
+# Retenção: lista execuções antigas; --apply marca como DESCONTINUADAS (nada é apagado)
+bin/sf-docs.sh purge --older-than-days 90 [--apply [--delete-sensitive]]
+
+# Erro inesperado com traceback (mascarado)
+bin/sf-docs.sh --debug run
 ```
 
 Sem Bash (ex.: Windows): `PYTHONPATH=src python -m salesforce_docs run`.
 
-Códigos de saída: `0` sucesso (inclui `PARTIAL_SUCCESS`), `1` falha global, `2` sessão expirada (estado salvo para retomada).
+Códigos de saída: `0` sucesso (inclui `PARTIAL_SUCCESS` e `COMPLETED_WITH_GAPS`), `1` falha global ou erro inesperado (mensagem mascarada), `2` sessão expirada (estado salvo para retomada), `3` `COMPLETED_WITH_GAPS` com `execution.strictCoverage = true`. Toda execução grava `runs/<runId>/resumo.md`.
 
 ## Ordem de execução
 
@@ -43,6 +52,8 @@ Códigos de saída: `0` sucesso (inclui `PARTIAL_SUCCESS`), `1` falha global, `2
 | 1 | `sf --version` ≥ mínima | — | — |
 | 2 | `sf org list --json` contém o alias | não persistido (dado local da CLI, pode conter tokens) | — |
 | 3 | `sf org display --target-org <alias> --json` | `catalog/org-<alias>/api-v<N>/org-display.raw.json` | — |
+| 3b | Aprovação da org (`approvedOrgs` ou confirmação interativa do `orgId`) | — | `orgApproval` no run state |
+| 3c | Token: do `org display` (CLIs antigas) ou `sf org auth show-access-token --json` | não persistido | `tokenSource` no run state |
 | 4 | `sf org list metadata-types` | `catalog/.../metadata-types.raw.json` | `metadata-types.index.json` |
 | 5 | `describeValueType()` via Metadata API (SOAP, `urllib`) | `catalog/.../schemas/<tipo>.describevaluetype.raw.json` | `<tipo>.schema.json` |
 | 6 | `sf org list metadata --metadata-type <tipo>` | `inventory/.../<pasta>/inventory.raw.json` | `inventory.index.json` |
@@ -56,7 +67,7 @@ Estado da execução: `runs/run-<AAAAMMDD-HHMMSS>.json`. Respostas de erro ficam
 ## Decisões de implementação
 
 - **Raw do `describeValueType`**: a Metadata API responde em XML (SOAP). O raw é um envelope JSON (`rawFormat: metadata-api-soap-capture/v1`) com `request` (endpoint, tipo, data — **sem token**) e `response.body` contendo o **XML exatamente como recebido**. O `.schema.json` é derivado desse corpo e pode ser regenerado.
-- **Token**: lido em tempo de execução de `sf org display`, mantido só em memória, mascarado em logs/`repr`/`str`, não serializável (pickle/deepcopy) e descartado (`OrgSession.clear()`) ao fim de cada execução. O `org-display.raw.json` é salvo inalterado (regra do raw), com permissão `0600` e no `.gitignore`.
+- **Token**: obtido só depois da aprovação da org — de `sf org display` quando a CLI ainda o exibe, senão de `sf org auth show-access-token --json` (resposta não gravada) —, mantido só em memória, mascarado em logs/`repr`/`str`, não serializável (pickle/deepcopy) e descartado (`OrgSession.clear()`) ao fim de cada execução. O `org-display.raw.json` é salvo inalterado (regra do raw), com permissão `0600` e no `.gitignore`.
 - **Retrieve**: roda em um projeto SFDX temporário; o XML é copiado byte a byte, preservando as pastas do formato source (ex.: `objects/Obj__c/fields/...`).
 - **Valores ausentes**: `Não aplicável` quando o `describeValueType` comprova que o campo não existe no tipo; `Não informado` quando existe mas não veio no XML/dado interno.
 - **Dados sensíveis**: elementos listados em `sensitiveXmlElements` (ex.: `consumerSecret`) nunca são renderizados e são substituídos por `[REDACTED]` no JSON normalizado (o XML original fica intacto); o run log avisa quando um XML recuperado os contém. `ExtlClntAppGlobalOauthSettings` é tipo excluído (contém consumer secret).
@@ -73,6 +84,7 @@ Registro da auditoria de segurança de 2026-10-11 (10 riscos: 1 crítico, 2 alto
 | 1 | 🔴 `accessToken` mantido em memória durante a execução | **Mitigado**: mascarado em `repr`/`str`, serialização bloqueada, descartado em `finally` ao fim da execução; `MetadataApiClient` obtém o token da sessão a cada chamada (sem cópia própria). | Risco residual: Python não permite zerar uma `str` na memória; um dump do processo durante a execução ainda expõe o token. Aceitável para uso local. |
 | 1a | 🔴 `accessToken` gravado em disco em `catalog/.../org-display.raw.json` (e em `runs/*/errors/`) | **Mitigado e configurável**: `.gitignore` + `0600`; `dataProtection.orgDisplayRaw = DELETE_AFTER_RUN` apaga o raw ao fim da execução (padrão `KEEP_PRIVATE` preserva a regra do raw). | Decisão registrada em `documentation/protecao-de-dados.md`. |
 | P3 | Coleta em org errada; segredos em mensagens; sobrescrita silenciosa; retomada incompatível; cobertura não informada | **Tratados na Prioridade 3**: `approvedOrgs` (nada é coletado sem aprovação), máscara de valores secretos do XML e run state mascarado recursivamente, arquivos `0600`, manifesto/`_substituidos`/`BY_RUN`, fingerprint de retomada, `coverage`. | Ver `documentation/protecao-de-dados.md`. |
+| R3 | Raw × segredo; confirmação de org; CLI sem token no `org display`; erro inesperado sem estado; retomada/regeneração com fonte alterada; retenção | **Tratados na Refatoração 3** (seção abaixo). | CLI real ainda não validada (só simulada). |
 | 2–10 | Demais riscos da auditoria (2 altos, 5 médios, 2 baixos) | **Não detalhados** neste registro. | Incluir descrição, localização e decisão quando o relatório completo estiver disponível. |
 
 ## Desvios (configuráveis em `config/metadata-types-mvp.json`)
@@ -140,6 +152,16 @@ Comportamento:
 - **Cobertura**: `coverage` no run state e linha "Cobertura: COMPLETE/INCOMPLETE" no log.
 - **Retomada**: só reaproveita o que for compatível (org, API, política, escopo, contratos/modelos); motivos em `resume.reprocessed`.
 - Inventário de artefatos, sensibilidade e retenção: [`documentation/protecao-de-dados.md`](documentation/protecao-de-dados.md).
+
+## Refatoração 3 — riscos de segurança, cobertura e execução
+
+- **Raw (R1)**: raws e XMLs ficam intactos; proteção por `0600`, verificação de Git e retenção — nunca por reescrita do raw.
+- **Org**: identidade obrigatória (`ORG_IDENTITY_UNVERIFIABLE`); fora de `approvedOrgs`, só continua em terminal se o usuário digitar o `orgId` exato (vale só para a execução); sem terminal/`--non-interactive`, para.
+- **Token**: pedido só depois da aprovação; `ACCESS_TOKEN_UNAVAILABLE` antes de qualquer inventário.
+- **Resumo**: `runs/<runId>/resumo.md` em toda execução; `progress` (planejadas/concluídas/pendentes), `errorClass` por componente e `metrics` por metadata type.
+- **Retomada/regeneração**: fingerprint inclui `metadata-types-mvp.json` e o sha256 do XML de origem; `latest` ignora regenerações e descontinuadas; `regenerate` registra `regenerate.differences` e recusa XML ausente/alterado.
+- **Retenção**: `purge` marca como DESCONTINUADA (não apaga); `--apply --delete-sensitive` apaga só artefatos sensíveis usados exclusivamente por execuções descontinuadas.
+- **Erros**: exceção inesperada → run state `FAILED`/`UNEXPECTED_ERROR` mascarado; documentos gravados de forma atômica; erro de escrita falha só a unidade.
 
 ## Refatoração 1 — modelos adaptados das referências `ajudAI`
 

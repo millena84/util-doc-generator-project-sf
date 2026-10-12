@@ -8,6 +8,8 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+# Testes nunca abrem prompt interativo (mesmo rodando num terminal).
+os.environ["SFDOCS_NON_INTERACTIVE"] = "1"
 sys.path.insert(0, str(ROOT / "src"))
 
 from salesforce_docs.salesforce.cli_runner import CliResult  # noqa: E402

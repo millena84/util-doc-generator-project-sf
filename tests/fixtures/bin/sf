@@ -9,7 +9,10 @@ FAKE_SF_SCENARIO  lista separada por vírgula: old_cli, no_alias, disconnected,
                   das fixtures base: todos os metadata types do MVP com componentes)
                   sleep_on_retrieve=<fullName> (dorme 30s: testa timeout),
                   scale_flows=<N> (N Flows sintéticos Gerado_0001...),
-                  leak_token_on_retrieve=<fullName> (erro cujo texto contém o accessToken)
+                  leak_token_on_retrieve=<fullName> (erro cujo texto contém o accessToken),
+                  redact_display_token (org display não exibe o token, como CLIs recentes),
+                  no_show_access_token (CLI sem `org auth show-access-token`),
+                  no_org_id (org display sem result.id)
 FAKE_SF_STATE     arquivo para contar chamadas (opcional)
 """
 import json
@@ -79,8 +82,18 @@ if cmd[:2] == ["org", "list"] and len(cmd) == 2:
         data["result"]["nonScratchOrgs"] = []
     out(data)
 
+if cmd[:3] == ["org", "auth", "show-access-token"]:
+    if "no_show_access_token" in SCEN:
+        err("CommandNotFound", "Command org auth show-access-token not found.")
+    token = json.loads((FIX / "org" / "org-display.json").read_text())["result"]["accessToken"]
+    out({"status": 0, "result": {"accessToken": token}})
+
 if cmd[:2] == ["org", "display"]:
     data = json.loads((FIX / "org" / "org-display.json").read_text())
+    if "redact_display_token" in SCEN:
+        data["result"]["accessToken"] = "[REDACTED]"
+    if "no_org_id" in SCEN:
+        data["result"].pop("id", None)
     if "disconnected" in SCEN:
         data["result"]["connectedStatus"] = "RefreshTokenAuthError"
     out(data)

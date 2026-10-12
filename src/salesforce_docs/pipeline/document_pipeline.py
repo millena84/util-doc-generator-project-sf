@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import os
+import sys
 from pathlib import Path
 
 from salesforce_docs import status as st
@@ -22,9 +24,10 @@ from salesforce_docs.runs.run_logger import RunLogger
 from salesforce_docs.runs.run_state import RunState
 from salesforce_docs.salesforce.cli_runner import CliRunner, sanitized_error_path
 from salesforce_docs.salesforce.metadata_api_client import MetadataApiClient
-from salesforce_docs.salesforce.org_session import OrgSession
+from salesforce_docs.salesforce.org_session import OrgSession, looks_like_session_token
 from salesforce_docs.salesforce.tooling_api_client import ToolingApiClient
 from salesforce_docs.pipeline.output_writer import OutputWriter
+from salesforce_docs.pipeline.run_summary import write_summary
 from salesforce_docs.utils import (Masker, now_local, read_json, rel, set_private_files, sha256_file,
                                    sha256_text, slugify, write_json, write_text_raw)
 from salesforce_docs.validation import cli_validator, org_session_validator
@@ -70,11 +73,19 @@ class PipelineContext:
 
 class DocumentPipeline:
     def __init__(self, root, runner=None, metadata_client_factory=None, stream=None,
-                 config_path=None, metadata_types_path=None):
+                 config_path=None, metadata_types_path=None, interactive=None, confirm_org=None):
         self.root = Path(root).resolve()
         self.masker = Masker()
         self.app = load_config(self.root, config_path)
-        self.mvp = load_metadata_types(self.root, metadata_types_path or self.app.metadata_types_path)
+        self.metadata_types_file = Path(metadata_types_path or self.app.metadata_types_path)
+        self.mvp = load_metadata_types(self.root, self.metadata_types_file)
+        # Confirmação interativa de org fora da allowlist: só com terminal (stdin e stderr TTY).
+        # Sem terminal (CI/headless) a org não aprovada é sempre recusada.
+        if interactive is None:
+            interactive = (not os.environ.get("SFDOCS_NON_INTERACTIVE")
+                           and sys.stdin.isatty() and sys.stderr.isatty())
+        self.interactive = bool(interactive)
+        self.confirm_org = confirm_org or _prompt_org_confirmation
         self.runner = runner or CliRunner(timeout=self.app.cli_timeout_seconds,
                                           save_raw=self.app.save_raw_responses, masker=self.masker)
         self.runner.masker = self.masker
@@ -90,9 +101,9 @@ class DocumentPipeline:
         alias = org_alias or self.app.org_alias
         previous = None
         if resume:
-            prev_path = RunState.find(self.app.runs_dir, resume)
+            prev_path = RunState.find(self.app.runs_dir, resume, purpose="resume")
             if prev_path is None:
-                raise ConfigError(f"Execução para retomar não encontrada: {resume}")
+                raise ConfigError(f"Execução para retomar não encontrada (ou descontinuada/regeneração): {resume}")
             previous = RunState.load(prev_path)
         set_private_files(self.app.private_files)
         state = RunState.create(self.app.runs_dir, alias, resumed_from=previous.run_id if previous else None)
@@ -111,6 +122,7 @@ class DocumentPipeline:
             self._step2_org_list(p, alias)
             self._step3_org_display(p, alias, api_version)
             self._check_org_approval(p, alias)  # nenhuma coleta antes de aprovar a org
+            self._acquire_token(p, alias)       # token só depois da aprovação; nunca gravado
             fingerprint = self._fingerprint(p, alias, effective)
             state.set("fingerprint", fingerprint)
             skip_units = self._carry_compatible(p, previous, fingerprint, effective) if previous else set()
@@ -136,18 +148,36 @@ class DocumentPipeline:
                 log.error(f"Sugestão: {exc.suggestion}")
             return EXIT_FAILURE, state
         except ConfigError as exc:
-            state.finish(st.FAILED, {"code": "CONFIG_ERROR", "message": str(exc)})
+            state.finish(st.FAILED, {"code": "CONFIG_ERROR", "message": self.masker(str(exc))})
             log.error(f"Configuração inválida: {exc}")
             return EXIT_FAILURE, state
+        except Exception as exc:  # erro inesperado: estado coerente e mensagem mascarada
+            message = self.masker(f"{type(exc).__name__}: {exc}")
+            try:
+                state.finish(st.FAILED, {"code": "UNEXPECTED_ERROR", "message": message})
+            except OSError:
+                pass  # ex.: disco cheio — o erro segue para o CLI (mascarado)
+            log.error(f"Erro inesperado: {message}")
+            raise
         finally:
             # O token só vive durante a execução, inclusive em caso de exceção não tratada.
             if p.session is not None:
                 p.session.clear()
-            self._apply_org_display_policy(p)
-            state.set("coverage", self._coverage(state, p))
+            try:
+                self._apply_org_display_policy(p)
+                state.data["metrics"] = self._metrics()
+                state.set("coverage", self._coverage(state, p))
+                if state.data["status"] != st.IN_PROGRESS:  # caminhos de falha já finalizados
+                    write_summary(self, state, p)
+            except OSError as exc:
+                log.error(f"Não foi possível gravar estado/resumo: {self.masker(str(exc))}")
         final = self._final_status(state)
         state.data["commands"] = self.runner.history
         state.finish(final)
+        try:
+            write_summary(self, state, p)
+        except OSError as exc:
+            log.error(f"Não foi possível gravar o resumo: {self.masker(str(exc))}")
         cov = state.data["coverage"]
         log.info(f"Execução {state.run_id} finalizada: {final} {state.summary()}")
         line = (f"Cobertura: {cov['status']} — {cov['documented']} documentada(s) de {cov['inScope']} "
@@ -189,18 +219,23 @@ class DocumentPipeline:
         s = p.session
         identity = {"orgId": s.org_id, "alias": alias, "username": s.username, "instanceUrl": s.instance_url}
         shown = ", ".join(f"{k}={v}" for k, v in identity.items())
-        if not self.app.approved_orgs:
+        missing = [k for k in ("orgId", "username", "instanceUrl") if not identity[k]]
+        if missing:
             raise GlobalFailure(
-                "ORG_NOT_APPROVED",
-                f"Nenhuma org aprovada em config.json (approvedOrgs). Org detectada: {shown}.",
-                f'Confirme que é a org pretendida e adicione {{"orgId": "{s.org_id}", "alias": "{alias}"}} '
-                "em approvedOrgs do config.json.")
-        candidates = [e for e in self.app.approved_orgs
-                      if s.org_id and e["orgId"][:15] == s.org_id[:15]]
+                "ORG_IDENTITY_UNVERIFIABLE",
+                f"`sf org display` não informou {', '.join(missing)}; a identidade da org não pode ser "
+                f"verificada ({shown}).",
+                "Confira a autenticação/versão da CLI; nenhuma coleta será feita sem identidade.")
+        candidates = [e for e in self.app.approved_orgs if e["orgId"][:15] == s.org_id[:15]]
         if not candidates:
-            raise GlobalFailure("ORG_NOT_APPROVED",
-                                f"Org {s.org_id} não está em approvedOrgs. Org detectada: {shown}.",
-                                "Use uma org aprovada ou inclua esta após confirmação.")
+            reason = ("Nenhuma org aprovada em config.json (approvedOrgs)" if not self.app.approved_orgs
+                      else f"Org {s.org_id} não está em approvedOrgs")
+            if self._interactive_confirmation(p, identity):
+                return
+            raise GlobalFailure(
+                "ORG_NOT_APPROVED", f"{reason}. Org detectada: {shown}.",
+                f'Confirme que é a org pretendida e adicione {{"orgId": "{s.org_id}", "alias": "{alias}"}} '
+                "em approvedOrgs do config.json (ou confirme interativamente em um terminal).")
         mismatches = []
         for entry in candidates:
             diff = []
@@ -211,7 +246,8 @@ class DocumentPipeline:
             if entry.get("instanceUrl") and entry["instanceUrl"].rstrip("/").lower() != s.instance_url.lower():
                 diff.append(f"instanceUrl ({entry['instanceUrl']} ≠ {s.instance_url})")
             if not diff:
-                p.run_state.set("orgApproval", {"approved": True, "entry": entry, "detected": identity})
+                p.run_state.set("orgApproval", {"approved": True, "method": "ALLOWLIST", "entry": entry,
+                                                "detected": identity})
                 p.run_state.step("3b-org-approval", st.SUCCESS, f"orgId {s.org_id}")
                 p.log.info(f"Passo 3b: org {s.org_id} aprovada (approvedOrgs)")
                 return
@@ -219,6 +255,47 @@ class DocumentPipeline:
         raise GlobalFailure("ORG_NOT_APPROVED",
                             f"Org {s.org_id} aprovada, mas a identidade diverge: {' | '.join(mismatches)}.",
                             "Revise approvedOrgs ou o alias usado.")
+
+    def _interactive_confirmation(self, p, identity):
+        """Org fora da allowlist: em terminal, exige digitar o orgId exato; sem terminal, recusa."""
+        if not self.interactive:
+            p.run_state.set("orgApproval", {"approved": False, "method": "NON_INTERACTIVE_REFUSED",
+                                            "detected": identity})
+            return False
+        typed = self.confirm_org(identity)
+        ok = isinstance(typed, str) and typed.strip() != "" and \
+            typed.strip()[:15] == identity["orgId"][:15] and len(typed.strip()) in (15, 18)
+        p.run_state.set("orgApproval", {"approved": ok, "method": "INTERACTIVE", "detected": identity})
+        if ok:
+            p.run_state.step("3b-org-approval", st.SUCCESS, f"orgId {identity['orgId']} (confirmação interativa)")
+            p.log.warn(f"Passo 3b: org {identity['orgId']} aprovada INTERATIVAMENTE apenas para esta execução; "
+                       "para aprovação permanente, inclua-a em approvedOrgs")
+        return ok
+
+    def _acquire_token(self, p, alias):
+        """Token para a Metadata API. CLIs recentes não exibem segredos em `sf org display`;
+        nesse caso usa `sf org auth show-access-token --json` (resposta nunca gravada)."""
+        token = getattr(p, "display_token", None)
+        source = "sf org display"
+        if not looks_like_session_token(token):
+            res = p.runner.run(["org", "auth", "show-access-token", "--target-org", alias, "--json"],
+                               check_session=False)
+            data = res.result
+            token = data.get("accessToken") if isinstance(data, dict) else (data if isinstance(data, str) else None)
+            source = "sf org auth show-access-token"
+            if res.ok and token:
+                p.masker.add(token)
+            if not res.ok or not looks_like_session_token(token):
+                raise GlobalFailure(
+                    "ACCESS_TOKEN_UNAVAILABLE",
+                    "Token de acesso indisponível: `sf org display` não o exibe e "
+                    f"`sf org auth show-access-token` falhou ({self.masker(res.error_message)[:200]}).",
+                    "Atualize a Salesforce CLI ou reautentique: sf org login web --alias " + alias)
+        p.masker.add(token)
+        p.session.set_access_token(token)
+        p.display_token = None
+        p.run_state.set("tokenSource", source)
+        p.log.info(f"Passo 3c: token de acesso obtido via `{source}` (não persistido)")
 
     def _apply_org_display_policy(self, p):
         if self.app.org_display_raw_policy != "DELETE_AFTER_RUN":
@@ -252,6 +329,8 @@ class DocumentPipeline:
         return {"orgId": p.session.org_id, "orgAlias": alias, "apiVersion": p.session.api_version,
                 "utilVersion": __version__, "selection": describe_effective(effective),
                 "contracts": contracts, "models": models,
+                "metadataTypesConfigSha256": sha256_file(self.metadata_types_file)
+                if self.metadata_types_file.is_file() else None,
                 "policySha256": sha256_text(json.dumps(policy, sort_keys=True))}
 
     def _carry_compatible(self, p, previous, fp, effective):
@@ -264,7 +343,8 @@ class DocumentPipeline:
         else:
             for key, label in (("orgId", "org"), ("apiVersion", "API version"),
                                ("policySha256", "política de dados sensíveis"),
-                               ("utilVersion", "versão do utilitário")):
+                               ("utilVersion", "versão do utilitário"),
+                               ("metadataTypesConfigSha256", "configuração de metadata types")):
                 if prev_fp.get(key) != fp.get(key):
                     global_reasons.append(f"{label} mudou ({prev_fp.get(key)} → {fp.get(key)})")
         candidates = previous.successful_units()
@@ -292,6 +372,9 @@ class DocumentPipeline:
             doc = entry.get("document")
             if doc and not (self.root / doc).is_file():
                 reasons.append(f"documento {doc} não existe mais")
+            xml_reason = self._xml_source_problem(entry)
+            if xml_reason:
+                reasons.append(xml_reason)
             if reasons:
                 report["reprocessed"].append({"unitId": unit_id, "reasons": reasons})
             else:
@@ -303,6 +386,42 @@ class DocumentPipeline:
         for item in report["reprocessed"]:
             p.log.warn(f"{item['unitId']}: reprocessado — {'; '.join(item['reasons'])}")
         return allowed
+
+    def _regenerate_differences(self, p, source):
+        """Regeneração usa contratos/modelos/política ATUAIS sobre raws antigos: registra o que mudou."""
+        prev_fp = source.data.get("fingerprint")
+        diffs = []
+        if not prev_fp:
+            diffs.append("execução de origem sem fingerprint (formato antigo): diferenças não verificáveis")
+        else:
+            current = self._fingerprint(p, source.data.get("orgAlias"), {})
+            for key, label in (("policySha256", "política de dados sensíveis"),
+                               ("utilVersion", "versão do utilitário"),
+                               ("metadataTypesConfigSha256", "configuração de metadata types")):
+                if prev_fp.get(key) != current.get(key):
+                    diffs.append(f"{label} mudou")
+            for kind, label in (("contracts", "contrato"), ("models", "modelo")):
+                before, now = prev_fp.get(kind) or {}, current.get(kind) or {}
+                for name in sorted(set(before) | set(now)):
+                    if before.get(name) != now.get(name):
+                        diffs.append(f"{label} {name} mudou")
+        p.run_state.data["regenerate"] = {"source": source.run_id, "differences": diffs}
+        p.run_state.save()
+        for d in diffs:
+            p.log.warn(f"Regeneração de {source.run_id}: {d} (documentos usam a versão atual)")
+
+    def _xml_source_problem(self, entry):
+        """XML de origem ausente ou com sha256 diferente do registrado na execução."""
+        xml = entry.get("xml")
+        if not xml:
+            return "XML de origem não registrado"
+        path = self.root / xml
+        if not path.is_file():
+            return f"XML de origem ausente ({xml})"
+        recorded = next((f.get("sha256") for f in entry.get("files") or [] if f.get("path") == xml), None)
+        if recorded and sha256_file(path) != recorded:
+            return f"XML de origem alterado ({xml})"
+        return None
 
     # Cobertura (Prioridade 3) ------------------------------------------
     # Lacunas que impedem cobertura completa x avisos que só degradam o conteúdo.
@@ -472,6 +591,8 @@ class DocumentPipeline:
             raise GlobalFailure("ORG_DISPLAY_INCOMPLETE", "`sf org display` sem apiVersion",
                                 org_session_validator.login_suggestion(alias))
         session = OrgSession.from_display_result(alias, display, api_version_override)
+        session.set_access_token(None)  # token só em _acquire_token, após a aprovação
+        p.display_token = display.get("accessToken")
         p.bind_session(session)
         raw_path = p.catalog_dir / "org-display.raw.json"
         if self.app.save_raw_responses:
@@ -529,6 +650,7 @@ class DocumentPipeline:
                                                       save_raw=self.app.save_raw_responses)
                 p.run_state.type_status(t, res["status"], group=None, stage="schema",
                                         detail=self.masker(res.get("error")),
+                                        errorClass=classify_error(res.get("error")),
                                         raw=rel(res["raw"], self.root) if res.get("raw") else None,
                                         schema=rel(res["schema"], self.root) if res.get("schema") else None)
                 if res["status"] != st.SUCCESS:
@@ -548,7 +670,8 @@ class DocumentPipeline:
                 res = inventory_extractor.extract_inventory(p.runner, p.session, t, type_dir, p.errors_dir)
                 inventories[t] = res["components"]
                 p.run_state.type_status(t, res["status"], group=None, stage="inventory",
-                                        detail=res.get("error"), count=len(res["components"]),
+                                        detail=self.masker(res.get("error")), count=len(res["components"]),
+                                        errorClass=classify_error(res.get("error")),
                                         raw=rel(res["raw"], self.root) if res.get("raw") else None)
                 if res["status"] == st.NO_COMPONENTS:
                     p.log.info(f"Passo 6: {t} -> NO_COMPONENTS")
@@ -565,35 +688,87 @@ class DocumentPipeline:
         p.writer = OutputWriter(p.docs_dir, p.run_state.run_id, self.app.output_layout, self.root,
                                 p.run_state, p.log)
         processor = ComponentProcessor(p)
+        # Plano completo antes de processar: permite registrar pendentes em interrupção.
+        plan, ignored, not_selected = [], {}, {}
         for group_name, types in enabled.items():
             group = self.mvp.group(group_name)
             units = deviation_handler.build_units(group, inventories, self.mvp)
             component_filter = effective.get(group_name)
             self._report_not_found(p, group, units, inventories, component_filter)
+            if group.unit_mode == "PER_COMPONENT":
+                built = {u["fullName"] for u in units}
+                skipped = sorted(i["fullName"] for i in inventories.get(group.primary_type) or []
+                                 if i["fullName"] not in built)
+                if skipped:
+                    ignored[group.name] = {"count": len(skipped), "sample": skipped[:20],
+                                           "reason": "componentFilter do grupo"}
             if not units:
                 p.run_state.type_status(group.primary_type, st.NO_COMPONENTS, group=group.name, stage="units")
                 continue
+            outside = [u["fullName"] for u in units
+                       if component_filter is not None and u["fullName"] not in component_filter]
+            if outside:
+                not_selected[group.name] = {"count": len(outside), "sample": sorted(outside)[:20]}
             for unit in units:
                 if component_filter is not None and unit["fullName"] not in component_filter:
-                    continue  # fora do escopo: não é recuperado
+                    continue  # fora da seleção: não é recuperado
                 if unit["unitId"] in skip_units:
                     p.log.info(f"{unit['unitId']}: SUCCESS em execução anterior, ignorado")
                     continue
-                entry = {"unitId": unit["unitId"], "group": group.name, "role": "primary",
-                         "metadataType": unit["documentType"], "component": unit["fullName"],
-                         "status": st.IN_PROGRESS}
-                current_unit["entry"] = entry
-                p.run_state.upsert_component(entry)
-                try:
-                    entry = self._process_unit(p, group, unit, types, inventories, processor)
-                except SessionExpiredError:
-                    raise
-                except Exception as exc:  # falha por componente não derruba a execução
-                    entry = dict(entry, status=st.FAILED, error=self.masker(f"{type(exc).__name__}: {exc}"))
-                    p.log.error(f"{unit['unitId']}: FAILED {exc}")
-                p.run_state.upsert_component(entry)
-                current_unit["entry"] = None
-                self._record_processed(p, processor)
+                plan.append((group, types, unit))
+        progress = {"planned": len(plan), "completed": 0, "pending": [u["unitId"] for _, _, u in plan]}
+        p.run_state.data.update(ignoredByFilter=ignored, notSelected=not_selected, progress=progress)
+        p.run_state.save()
+        for index, (group, types, unit) in enumerate(plan, start=1):
+            entry = {"unitId": unit["unitId"], "group": group.name, "role": "primary",
+                     "metadataType": unit["documentType"], "component": unit["fullName"],
+                     "status": st.IN_PROGRESS}
+            current_unit["entry"] = entry
+            p.run_state.upsert_component(entry)
+            p.log.info(f"[{index}/{len(plan)}] {unit['unitId']}")
+            try:
+                entry = self._process_unit(p, group, unit, types, inventories, processor)
+            except SessionExpiredError:
+                raise
+            except Exception as exc:  # falha por componente não derruba a execução
+                entry = dict(entry, status=st.FAILED, error=self.masker(f"{type(exc).__name__}: {exc}"))
+                p.log.error(f"{unit['unitId']}: FAILED {self.masker(str(exc))}")
+            entry["errorClass"] = classify_error(entry.get("error"))
+            p.run_state.upsert_component(entry)
+            progress["completed"] += 1
+            progress["pending"].remove(unit["unitId"])
+            p.run_state.save()
+            current_unit["entry"] = None
+            self._record_processed(p, processor)
+
+    def _metrics(self):
+        """Chamadas e duração por tipo de comando e por metadata type (CLI)."""
+        by_kind, by_type = {}, {}
+        total = 0.0
+        for h in self.runner.history:
+            cmd = h.get("command", "")
+            parts = cmd.split()
+            kind = " ".join(p for p in parts[1:4] if not p.startswith("-"))
+            mtype = None
+            if "--metadata-type" in parts:
+                mtype = parts[parts.index("--metadata-type") + 1]
+            elif "--metadata" in parts:
+                mtype = parts[parts.index("--metadata") + 1].split(":", 1)[0]
+            elif kind.startswith("data query"):
+                mtype = "SOQL"
+            dur = float(h.get("durationSeconds") or 0)
+            total += dur
+            failed = h.get("returncode") != 0
+            for bucket, key in ((by_kind, kind), (by_type, mtype)):
+                if key is None:
+                    continue
+                m = bucket.setdefault(key, {"calls": 0, "seconds": 0.0, "failures": 0})
+                m["calls"] += 1
+                m["seconds"] = round(m["seconds"] + dur, 3)
+                m["failures"] += 1 if failed else 0
+        return {"commands": len(self.runner.history), "totalSeconds": round(total, 3),
+                "timeoutSeconds": self.app.cli_timeout_seconds, "retries": 0,
+                "byCommand": by_kind, "byMetadataType": by_type}
 
     def _report_not_found(self, p, group, units, inventories, component_filter):
         """Componentes pedidos em selection.metadataTypes que não viraram unidade de documento."""
@@ -781,7 +956,7 @@ class DocumentPipeline:
     # ==================================================================
     def regenerate(self, run_id="latest"):
         """Regera derivados e documentos SOMENTE a partir dos raws/XMLs (sem org)."""
-        path = RunState.find(self.app.runs_dir, run_id)
+        path = RunState.find(self.app.runs_dir, run_id, purpose="regenerate")
         if path is None:
             raise ConfigError(f"Execução não encontrada: {run_id}")
         source = RunState.load(path)
@@ -798,6 +973,7 @@ class DocumentPipeline:
         p.writer = OutputWriter(p.docs_dir, p.run_state.run_id, self.app.output_layout, self.root,
                                 p.run_state, p.log)
         state.set("apiVersion", session.api_version)
+        self._regenerate_differences(p, source)
         if (p.catalog_dir / "metadata-types.raw.json").is_file():
             metadata_types_extractor.regenerate_index(p.catalog_dir)
         if p.schemas_dir.is_dir():
@@ -810,6 +986,15 @@ class DocumentPipeline:
             if not primary_entry or not primary_entry.get("xml"):
                 continue
             group = self.mvp.group(primary_entry["group"])
+            problem = self._xml_source_problem(primary_entry)
+            if group is None or problem:
+                reason = problem or f"grupo {primary_entry.get('group')} não configurado"
+                state.upsert_component(dict(primary_entry, status=st.FAILED, document=None,
+                                            error=f"regeneração recusada: {reason}",
+                                            errorClass="SOURCE_UNAVAILABLE",
+                                            regeneratedFrom=source.run_id))
+                log.error(f"{unit_id}: regeneração recusada — {reason}")
+                continue
             inv_dir = p.inventory_dir / self.mvp.folder(group.primary_type)
             if (inv_dir / "inventory.raw.json").is_file():
                 inventory_extractor.regenerate_inventory_index(group.primary_type, inv_dir)
@@ -844,9 +1029,14 @@ class DocumentPipeline:
             entry["regeneratedFrom"] = source.run_id
             state.upsert_component(entry)
             log.info(f"{unit_id}: regenerado {entry['status']} {entry.get('document') or ''}")
+        state.data["metrics"] = self._metrics()
         state.set("coverage", self._coverage(state, p))
         final = self._final_status(state)
         state.finish(final)
+        try:
+            write_summary(self, state, p)
+        except OSError as exc:
+            log.error(f"Resumo não gravado: {exc}")
         return (EXIT_OK if final in (st.SUCCESS, st.PARTIAL_SUCCESS, st.COMPLETED_WITH_GAPS)
                 else EXIT_FAILURE), state
 
@@ -867,6 +1057,24 @@ def _record_from_entry(entry, metadata_type):
                            namespacePrefix=entry.get("namespacePrefix"))
 
 
+def classify_error(text):
+    """Classe do erro para o relatório (não altera o status oficial)."""
+    if not text:
+        return None
+    t = str(text)
+    if "INSUFFICIENT_ACCESS" in t or "insufficient access" in t.lower():
+        return "PERMISSION_DENIED"
+    if "Timeout" in t:
+        return "TIMEOUT"
+    if "INVALID_SESSION_ID" in t:
+        return "SESSION_EXPIRED"
+    if "cannot be found" in t or "not found" in t.lower():
+        return "NOT_FOUND_IN_ORG"
+    if "conteúdo sensível" in t:
+        return "SENSITIVE_CONTENT_BLOCKED"
+    return "ERROR"
+
+
 def _entry_fields(record):
     return {
         "xml": record.get("xml"),
@@ -879,3 +1087,16 @@ def _entry_fields(record):
                       "xml": c.get("xml"), "normalized": c.get("normalized")}
                      for c in record.get("children", [])],
     }
+
+
+def _prompt_org_confirmation(identity):
+    """Pergunta no terminal (stderr) e lê a confirmação do stdin."""
+    print("\nORG NÃO APROVADA em config.json (approvedOrgs):", file=sys.stderr)
+    for key in ("orgId", "alias", "username", "instanceUrl"):
+        print(f"  {key}: {identity.get(key)}", file=sys.stderr)
+    print("Para coletar metadata desta org NESTA execução, digite o orgId exato "
+          "(Enter cancela): ", end="", file=sys.stderr, flush=True)
+    try:
+        return input()
+    except EOFError:
+        return ""

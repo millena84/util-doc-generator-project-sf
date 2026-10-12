@@ -60,6 +60,12 @@ Atividades:
 
 **Aceite:** nenhum segredo sentinela vaza; nenhuma coleta ocorre antes de validar org e escopo; o resultado informa cobertura; retomada/saída não mistura nem reutiliza estado incompatível silenciosamente.
 
+### Refatoração 3 — mitigação de riscos de segurança, cobertura e execução
+
+> **Implementada** (política de raw R1, confirmação interativa da org, token via `sf org auth show-access-token` após aprovação, `resumo.md`, `progress`/`metrics`/`errorClass`, fingerprint com configuração e XML, `regenerate.differences`, `purge` por descontinuação; `tests/test_refatoracao3.py`). Ver `documentation/protecao-de-dados.md`.
+
+Pendências: validar o fluxo do token com CLI real (versões suportadas) em org autorizada; confirmar em documentação oficial os demais elementos sensíveis candidatos antes de incluí-los.
+
 ## Testes antes de cada piloto
 
 ```bash

@@ -2,61 +2,74 @@
 
 > **SIMULADO.** CLI `sf` simulada (`tests/fixtures/bin/sf`, cenário `mvp_complete`) e Metadata API simulada. Nenhum dado veio de uma org real. Gerado por `python3 -m tests.simulate_mvp`.
 
-- Execução: `run-20261012-141553` — status **SUCCESS** — código de saída `0`
+- Execução: `run-20261012-144157` — status **SUCCESS** — código de saída `0`
 - Org: `dev` — API `67.0`
 - Cobertura: **COMPLETE** — 12 documentada(s) de 12 no escopo; lacunas: 0 (nenhuma)
 
 ## 1. Saída no terminal
 
 ```
-[14:15:53] INFO  Seleção ALL: {'Certificate': ['ALL'], 'ConnectedApp': ['ALL'], 'CustomMetadata': ['ALL'], 'CustomObject': ['ALL'], 'ExternalClientApp': ['ALL'], 'ExternalCredential': ['ALL'], 'Flow': ['ALL'], 'NamedCredential': ['ALL'], 'RemoteSiteSetting': ['ALL']}
-[14:15:53] WARN  Verificação de Git indisponível (fora de repositório Git): proteção de versionamento não verificada
-[14:15:53] INFO  Passo 1: Salesforce CLI 2.60.0 (mínima 2.0.0)
-[14:15:53] INFO  Passo 2: alias 'dev' autenticado
-[14:15:53] INFO  Passo 3: usuario.simulado@example.com conectado; API 67.0 (detectada 67.0, fonte: sf org display)
-[14:15:53] INFO  Passo 3b: org 00D000000000000AAA aprovada (approvedOrgs)
-[14:15:53] INFO  Passo 4: grupos habilitados: Flow, ExternalClientApp, ExternalCredential, ConnectedApp, CustomObject, CustomMetadata, NamedCredential, RemoteSiteSetting, Certificate
-[14:15:53] INFO  Passo 6: Flow -> 3 componente(s)
-[14:15:53] INFO  Passo 6: FlowDefinition -> 1 componente(s)
-[14:15:54] INFO  Passo 6: ExternalClientApplication -> 1 componente(s)
-[14:15:54] INFO  Passo 6: ExtlClntAppOauthSettings -> 2 componente(s)
-[14:15:54] INFO  Passo 6: ExtlClntAppConfigurablePolicies -> 1 componente(s)
-[14:15:54] INFO  Passo 6: ExtlClntAppOauthConfigurablePolicies -> 1 componente(s)
-[14:15:54] INFO  Passo 6: ExternalCredential -> 1 componente(s)
-[14:15:54] INFO  Passo 6: ConnectedApp -> 1 componente(s)
-[14:15:54] INFO  Passo 6: CustomObject -> 3 componente(s)
-[14:15:54] INFO  Passo 6: CustomMetadata -> 2 componente(s)
-[14:15:54] INFO  Passo 6: NamedCredential -> 2 componente(s)
-[14:15:54] INFO  Passo 6: RemoteSiteSetting -> 1 componente(s)
-[14:15:54] INFO  Passo 6: Certificate -> 1 componente(s)
-[14:15:54] INFO  Flow:Flow:Meu_Flow: processando
-[14:15:54] INFO  Flow:Flow:Meu_Flow: SUCCESS -> saida/docs/doc-org-101226/run-20261012-141553/doc-meu-flow-flow.md
-[14:15:54] INFO  Flow:Flow:Processa_Pedido: processando
-[14:15:54] INFO  Flow:Flow:Processa_Pedido: SUCCESS -> saida/docs/doc-org-101226/run-20261012-141553/doc-processa-pedido-flow.md
-[14:15:54] INFO  Flow:Flow:Tela_Cadastro: processando
-[14:15:54] INFO  Flow:Flow:Tela_Cadastro: SUCCESS -> saida/docs/doc-org-101226/run-20261012-141553/doc-tela-cadastro-flow.md
-[14:15:54] INFO  ExternalClientApp:ExternalClientApplication:Minha_ECA: processando
-[14:15:54] INFO  ExternalClientApp:ExternalClientApplication:Minha_ECA: SUCCESS -> saida/docs/doc-org-101226/run-20261012-141553/doc-minha-eca-external-client-app.md
-[14:15:54] INFO  ExternalCredential:ExternalCredential:Minha_EC: processando
-[14:15:55] INFO  ExternalCredential:ExternalCredential:Minha_EC: SUCCESS -> saida/docs/doc-org-101226/run-20261012-141553/doc-minha-ec-external-credential.md
-[14:15:55] INFO  ConnectedApp:ConnectedApp:Meu_App: processando
-[14:15:55] INFO  ConnectedApp:ConnectedApp:Meu_App: SUCCESS -> saida/docs/doc-org-101226/run-20261012-141553/doc-meu-app-connected-app.md
-[14:15:55] INFO  CustomObject:CustomObject:Pedido__c: processando
-[14:15:55] INFO  CustomObject:CustomObject:Pedido__c: SUCCESS -> saida/docs/doc-org-101226/run-20261012-141553/doc-pedido-c-custom-object.md
-[14:15:55] INFO  CustomMetadata:CustomMetadata:Config__mdt: processando
-[14:15:55] INFO  CustomMetadata:CustomMetadata:Config__mdt: SUCCESS -> saida/docs/doc-org-101226/run-20261012-141553/doc-config-mdt-custom-metadata.md
-[14:15:55] INFO  NamedCredential:NamedCredential:Minha_NC: processando
-[14:15:55] INFO  NamedCredential:NamedCredential:Minha_NC: SUCCESS -> saida/docs/doc-org-101226/run-20261012-141553/doc-minha-nc-named-credential.md
-[14:15:55] INFO  NamedCredential:NamedCredential:NC_Legada: processando
-[14:15:55] INFO  NamedCredential:NamedCredential:NC_Legada: SUCCESS -> saida/docs/doc-org-101226/run-20261012-141553/doc-nc-legada-named-credential.md
-[14:15:55] INFO  RemoteSiteSetting:RemoteSiteSetting:Meu_Site: processando
-[14:15:55] INFO  RemoteSiteSetting:RemoteSiteSetting:Meu_Site: SUCCESS -> saida/docs/doc-org-101226/run-20261012-141553/doc-meu-site-remote-site-setting.md
-[14:15:55] INFO  Certificate:Certificate:Meu_Certificado: processando
-[14:15:55] INFO  Certificate:Certificate:Meu_Certificado: SUCCESS -> saida/docs/doc-org-101226/run-20261012-141553/doc-meu-certificado-certificate.md
-[14:15:55] INFO  Execução run-20261012-141553 finalizada: SUCCESS {'SUCCESS': 12}
-[14:15:55] INFO  Cobertura: COMPLETE — 12 documentada(s) de 12 no escopo; lacunas bloqueantes: 0; avisos: 0
-[14:15:55] INFO  Tipos: configurados 17, processados 17, documentados 9, sem modelo 0, fora do escopo 0, não habilitados 0, descobertos e não configurados 3
-[14:15:55] INFO  Log: runs/run-20261012-141553.json
+[14:41:57] INFO  Seleção ALL: {'Certificate': ['ALL'], 'ConnectedApp': ['ALL'], 'CustomMetadata': ['ALL'], 'CustomObject': ['ALL'], 'ExternalClientApp': ['ALL'], 'ExternalCredential': ['ALL'], 'Flow': ['ALL'], 'NamedCredential': ['ALL'], 'RemoteSiteSetting': ['ALL']}
+[14:41:57] WARN  Verificação de Git indisponível (fora de repositório Git): proteção de versionamento não verificada
+[14:41:57] INFO  Passo 1: Salesforce CLI 2.60.0 (mínima 2.0.0)
+[14:41:57] INFO  Passo 2: alias 'dev' autenticado
+[14:41:57] INFO  Passo 3: usuario.simulado@example.com conectado; API 67.0 (detectada 67.0, fonte: sf org display)
+[14:41:57] INFO  Passo 3b: org 00D000000000000AAA aprovada (approvedOrgs)
+[14:41:57] INFO  Passo 3c: token de acesso obtido via `sf org display` (não persistido)
+[14:41:57] INFO  Passo 4: grupos habilitados: Flow, ExternalClientApp, ExternalCredential, ConnectedApp, CustomObject, CustomMetadata, NamedCredential, RemoteSiteSetting, Certificate
+[14:41:58] INFO  Passo 6: Flow -> 3 componente(s)
+[14:41:58] INFO  Passo 6: FlowDefinition -> 1 componente(s)
+[14:41:58] INFO  Passo 6: ExternalClientApplication -> 1 componente(s)
+[14:41:58] INFO  Passo 6: ExtlClntAppOauthSettings -> 2 componente(s)
+[14:41:58] INFO  Passo 6: ExtlClntAppConfigurablePolicies -> 1 componente(s)
+[14:41:58] INFO  Passo 6: ExtlClntAppOauthConfigurablePolicies -> 1 componente(s)
+[14:41:58] INFO  Passo 6: ExternalCredential -> 1 componente(s)
+[14:41:58] INFO  Passo 6: ConnectedApp -> 1 componente(s)
+[14:41:58] INFO  Passo 6: CustomObject -> 3 componente(s)
+[14:41:58] INFO  Passo 6: CustomMetadata -> 2 componente(s)
+[14:41:58] INFO  Passo 6: NamedCredential -> 2 componente(s)
+[14:41:58] INFO  Passo 6: RemoteSiteSetting -> 1 componente(s)
+[14:41:58] INFO  Passo 6: Certificate -> 1 componente(s)
+[14:41:58] INFO  [1/12] Flow:Flow:Meu_Flow
+[14:41:58] INFO  Flow:Flow:Meu_Flow: processando
+[14:41:58] INFO  Flow:Flow:Meu_Flow: SUCCESS -> saida/docs/doc-org-101226/run-20261012-144157/doc-meu-flow-flow.md
+[14:41:58] INFO  [2/12] Flow:Flow:Processa_Pedido
+[14:41:58] INFO  Flow:Flow:Processa_Pedido: processando
+[14:41:58] INFO  Flow:Flow:Processa_Pedido: SUCCESS -> saida/docs/doc-org-101226/run-20261012-144157/doc-processa-pedido-flow.md
+[14:41:58] INFO  [3/12] Flow:Flow:Tela_Cadastro
+[14:41:58] INFO  Flow:Flow:Tela_Cadastro: processando
+[14:41:58] INFO  Flow:Flow:Tela_Cadastro: SUCCESS -> saida/docs/doc-org-101226/run-20261012-144157/doc-tela-cadastro-flow.md
+[14:41:58] INFO  [4/12] ExternalClientApp:ExternalClientApplication:Minha_ECA
+[14:41:58] INFO  ExternalClientApp:ExternalClientApplication:Minha_ECA: processando
+[14:41:59] INFO  ExternalClientApp:ExternalClientApplication:Minha_ECA: SUCCESS -> saida/docs/doc-org-101226/run-20261012-144157/doc-minha-eca-external-client-app.md
+[14:41:59] INFO  [5/12] ExternalCredential:ExternalCredential:Minha_EC
+[14:41:59] INFO  ExternalCredential:ExternalCredential:Minha_EC: processando
+[14:41:59] INFO  ExternalCredential:ExternalCredential:Minha_EC: SUCCESS -> saida/docs/doc-org-101226/run-20261012-144157/doc-minha-ec-external-credential.md
+[14:41:59] INFO  [6/12] ConnectedApp:ConnectedApp:Meu_App
+[14:41:59] INFO  ConnectedApp:ConnectedApp:Meu_App: processando
+[14:41:59] INFO  ConnectedApp:ConnectedApp:Meu_App: SUCCESS -> saida/docs/doc-org-101226/run-20261012-144157/doc-meu-app-connected-app.md
+[14:41:59] INFO  [7/12] CustomObject:CustomObject:Pedido__c
+[14:41:59] INFO  CustomObject:CustomObject:Pedido__c: processando
+[14:41:59] INFO  CustomObject:CustomObject:Pedido__c: SUCCESS -> saida/docs/doc-org-101226/run-20261012-144157/doc-pedido-c-custom-object.md
+[14:41:59] INFO  [8/12] CustomMetadata:CustomMetadata:Config__mdt
+[14:41:59] INFO  CustomMetadata:CustomMetadata:Config__mdt: processando
+[14:41:59] INFO  CustomMetadata:CustomMetadata:Config__mdt: SUCCESS -> saida/docs/doc-org-101226/run-20261012-144157/doc-config-mdt-custom-metadata.md
+[14:41:59] INFO  [9/12] NamedCredential:NamedCredential:Minha_NC
+[14:41:59] INFO  NamedCredential:NamedCredential:Minha_NC: processando
+[14:41:59] INFO  NamedCredential:NamedCredential:Minha_NC: SUCCESS -> saida/docs/doc-org-101226/run-20261012-144157/doc-minha-nc-named-credential.md
+[14:41:59] INFO  [10/12] NamedCredential:NamedCredential:NC_Legada
+[14:41:59] INFO  NamedCredential:NamedCredential:NC_Legada: processando
+[14:41:59] INFO  NamedCredential:NamedCredential:NC_Legada: SUCCESS -> saida/docs/doc-org-101226/run-20261012-144157/doc-nc-legada-named-credential.md
+[14:41:59] INFO  [11/12] RemoteSiteSetting:RemoteSiteSetting:Meu_Site
+[14:41:59] INFO  RemoteSiteSetting:RemoteSiteSetting:Meu_Site: processando
+[14:41:59] INFO  RemoteSiteSetting:RemoteSiteSetting:Meu_Site: SUCCESS -> saida/docs/doc-org-101226/run-20261012-144157/doc-meu-site-remote-site-setting.md
+[14:41:59] INFO  [12/12] Certificate:Certificate:Meu_Certificado
+[14:41:59] INFO  Certificate:Certificate:Meu_Certificado: processando
+[14:41:59] INFO  Certificate:Certificate:Meu_Certificado: SUCCESS -> saida/docs/doc-org-101226/run-20261012-144157/doc-meu-certificado-certificate.md
+[14:41:59] INFO  Execução run-20261012-144157 finalizada: SUCCESS {'SUCCESS': 12}
+[14:41:59] INFO  Cobertura: COMPLETE — 12 documentada(s) de 12 no escopo; lacunas bloqueantes: 0; avisos: 0
+[14:41:59] INFO  Tipos: configurados 17, processados 17, documentados 9, sem modelo 0, fora do escopo 0, não habilitados 0, descobertos e não configurados 3
+[14:41:59] INFO  Log: runs/run-20261012-144157.json
 ```
 
 ## 2. Comandos executados na CLI (por passo)
@@ -260,7 +273,7 @@ O passo 5 (`describeValueType`) é SOAP direto na Metadata API, fora da CLI; o p
         "fullName": "Meu_Flow",
         "type": "Flow",
         "state": "Created",
-        "filePath": "/tmp/sfdocs-retrieve-6dy6yiwa/force-app/main/default/flows/Meu_Flow.flow-meta.xml"
+        "filePath": "/tmp/sfdocs-retrieve-izmroj2a/force-app/main/default/flows/Meu_Flow.flow-meta.xml"
       }
     ]
   }
@@ -531,28 +544,29 @@ inventory/org-dev/api-v67/remote-site-settings/inventory.index.json
 inventory/org-dev/api-v67/remote-site-settings/inventory.raw.json
 inventory/org-dev/api-v67/remote-site-settings/normalized/meu-site.json
 inventory/org-dev/api-v67/remote-site-settings/retrieve/meu-site.raw.json
-runs/run-20261012-141553.json
-saida/docs/doc-org-101226/run-20261012-141553/.manifest.json
-saida/docs/doc-org-101226/run-20261012-141553/doc-config-mdt-custom-metadata.md
-saida/docs/doc-org-101226/run-20261012-141553/doc-meu-app-connected-app.md
-saida/docs/doc-org-101226/run-20261012-141553/doc-meu-certificado-certificate.md
-saida/docs/doc-org-101226/run-20261012-141553/doc-meu-flow-flow-trigger.md
-saida/docs/doc-org-101226/run-20261012-141553/doc-meu-flow-flow.md
-saida/docs/doc-org-101226/run-20261012-141553/doc-meu-site-remote-site-setting.md
-saida/docs/doc-org-101226/run-20261012-141553/doc-minha-ec-external-credential.md
-saida/docs/doc-org-101226/run-20261012-141553/doc-minha-eca-external-client-app.md
-saida/docs/doc-org-101226/run-20261012-141553/doc-minha-nc-named-credential.md
-saida/docs/doc-org-101226/run-20261012-141553/doc-nc-legada-named-credential.md
-saida/docs/doc-org-101226/run-20261012-141553/doc-pedido-c-custom-object.md
-saida/docs/doc-org-101226/run-20261012-141553/doc-processa-pedido-flow-autolaunched.md
-saida/docs/doc-org-101226/run-20261012-141553/doc-processa-pedido-flow.md
-saida/docs/doc-org-101226/run-20261012-141553/doc-tela-cadastro-dados-cliente-flow-screen.md
-saida/docs/doc-org-101226/run-20261012-141553/doc-tela-cadastro-flow.md
+runs/run-20261012-144157/resumo.md
+runs/run-20261012-144157.json
+saida/docs/doc-org-101226/run-20261012-144157/.manifest.json
+saida/docs/doc-org-101226/run-20261012-144157/doc-config-mdt-custom-metadata.md
+saida/docs/doc-org-101226/run-20261012-144157/doc-meu-app-connected-app.md
+saida/docs/doc-org-101226/run-20261012-144157/doc-meu-certificado-certificate.md
+saida/docs/doc-org-101226/run-20261012-144157/doc-meu-flow-flow-trigger.md
+saida/docs/doc-org-101226/run-20261012-144157/doc-meu-flow-flow.md
+saida/docs/doc-org-101226/run-20261012-144157/doc-meu-site-remote-site-setting.md
+saida/docs/doc-org-101226/run-20261012-144157/doc-minha-ec-external-credential.md
+saida/docs/doc-org-101226/run-20261012-144157/doc-minha-eca-external-client-app.md
+saida/docs/doc-org-101226/run-20261012-144157/doc-minha-nc-named-credential.md
+saida/docs/doc-org-101226/run-20261012-144157/doc-nc-legada-named-credential.md
+saida/docs/doc-org-101226/run-20261012-144157/doc-pedido-c-custom-object.md
+saida/docs/doc-org-101226/run-20261012-144157/doc-processa-pedido-flow-autolaunched.md
+saida/docs/doc-org-101226/run-20261012-144157/doc-processa-pedido-flow.md
+saida/docs/doc-org-101226/run-20261012-144157/doc-tela-cadastro-dados-cliente-flow-screen.md
+saida/docs/doc-org-101226/run-20261012-144157/doc-tela-cadastro-flow.md
 ```
 
 ## 7. Conteúdo dos documentos finais
 
-### `saida/docs/doc-org-101226/run-20261012-141553/doc-meu-flow-flow.md`
+### `saida/docs/doc-org-101226/run-20261012-144157/doc-meu-flow-flow.md`
 
 ```markdown
 # Flow: Meu_Flow
@@ -591,7 +605,7 @@ _Fonte: XML_
 | Meu_Flow | FlowDefinition | XML |
 ```
 
-### `saida/docs/doc-org-101226/run-20261012-141553/doc-meu-flow-flow-trigger.md`
+### `saida/docs/doc-org-101226/run-20261012-144157/doc-meu-flow-flow-trigger.md`
 
 ```markdown
 # Flow Trigger: Meu_Flow
@@ -613,7 +627,7 @@ _Fonte: XML_
 _Fonte: XML_
 ```
 
-### `saida/docs/doc-org-101226/run-20261012-141553/doc-processa-pedido-flow.md`
+### `saida/docs/doc-org-101226/run-20261012-144157/doc-processa-pedido-flow.md`
 
 ```markdown
 # Flow: Processa_Pedido
@@ -643,7 +657,7 @@ _Fonte: XML_
 | Não aplicável | Não aplicável | XML |
 ```
 
-### `saida/docs/doc-org-101226/run-20261012-141553/doc-processa-pedido-flow-autolaunched.md`
+### `saida/docs/doc-org-101226/run-20261012-144157/doc-processa-pedido-flow-autolaunched.md`
 
 ```markdown
 # Autolaunched Flow: Processa_Pedido
@@ -673,7 +687,7 @@ _Fonte: XML_
 | sucesso | Boolean | Não informado | false | XML |
 ```
 
-### `saida/docs/doc-org-101226/run-20261012-141553/doc-tela-cadastro-flow.md`
+### `saida/docs/doc-org-101226/run-20261012-144157/doc-tela-cadastro-flow.md`
 
 ```markdown
 # Flow: Tela_Cadastro
@@ -703,7 +717,7 @@ _Fonte: XML_
 | Não aplicável | Não aplicável | XML |
 ```
 
-### `saida/docs/doc-org-101226/run-20261012-141553/doc-tela-cadastro-dados-cliente-flow-screen.md`
+### `saida/docs/doc-org-101226/run-20261012-144157/doc-tela-cadastro-dados-cliente-flow-screen.md`
 
 ```markdown
 # Flow Screen: Dados_Cliente
@@ -729,7 +743,7 @@ _Fonte: XML_
 | Observacao | LargeTextArea | Não informado | XML |
 ```
 
-### `saida/docs/doc-org-101226/run-20261012-141553/doc-minha-eca-external-client-app.md`
+### `saida/docs/doc-org-101226/run-20261012-144157/doc-minha-eca-external-client-app.md`
 
 ```markdown
 # External Client App: Minha_ECA
@@ -810,7 +824,7 @@ _Fonte: XML_
 | extlClntAppPolicies | ExtlClntAppConfigurablePolicies | XML |
 ```
 
-### `saida/docs/doc-org-101226/run-20261012-141553/doc-minha-ec-external-credential.md`
+### `saida/docs/doc-org-101226/run-20261012-144157/doc-minha-ec-external-credential.md`
 
 ```markdown
 # External Credential: Minha_EC
@@ -846,7 +860,7 @@ _Fonte: XML_
 | LastModifiedDate | 2026-10-01T12:00:00.000+0000 | Objeto interno |
 ```
 
-### `saida/docs/doc-org-101226/run-20261012-141553/doc-meu-app-connected-app.md`
+### `saida/docs/doc-org-101226/run-20261012-144157/doc-meu-app-connected-app.md`
 
 ```markdown
 # Connected App: Meu_App
@@ -866,7 +880,7 @@ _Fonte: XML_
 | scopes | Api, RefreshToken | XML |
 ```
 
-### `saida/docs/doc-org-101226/run-20261012-141553/doc-pedido-c-custom-object.md`
+### `saida/docs/doc-org-101226/run-20261012-144157/doc-pedido-c-custom-object.md`
 
 ```markdown
 # Custom Object: Pedido__c
@@ -907,7 +921,7 @@ _Fonte: XML_
 | Pedido__c.Imprimir_Pedido | WebLink | XML |
 ```
 
-### `saida/docs/doc-org-101226/run-20261012-141553/doc-config-mdt-custom-metadata.md`
+### `saida/docs/doc-org-101226/run-20261012-144157/doc-config-mdt-custom-metadata.md`
 
 ```markdown
 # Custom Metadata: Config__mdt
@@ -937,7 +951,7 @@ _Fonte: XML_
 | Config.Secundario | Config Secundario | false | XML |
 ```
 
-### `saida/docs/doc-org-101226/run-20261012-141553/doc-minha-nc-named-credential.md`
+### `saida/docs/doc-org-101226/run-20261012-144157/doc-minha-nc-named-credential.md`
 
 ```markdown
 # Named Credential: Minha_NC
@@ -988,7 +1002,7 @@ _Fonte: XML_
 | Minha_EC | ExternalCredential | XML |
 ```
 
-### `saida/docs/doc-org-101226/run-20261012-141553/doc-nc-legada-named-credential.md`
+### `saida/docs/doc-org-101226/run-20261012-144157/doc-nc-legada-named-credential.md`
 
 ```markdown
 # Named Credential: NC_Legada
@@ -1029,7 +1043,7 @@ _Fonte: XML_
 | Não aplicável | Não aplicável | XML |
 ```
 
-### `saida/docs/doc-org-101226/run-20261012-141553/doc-meu-site-remote-site-setting.md`
+### `saida/docs/doc-org-101226/run-20261012-144157/doc-meu-site-remote-site-setting.md`
 
 ```markdown
 # Remote Site Setting: Meu_Site
@@ -1045,7 +1059,7 @@ _Fonte: XML_
 | Description | Site remoto sintético | XML |
 ```
 
-### `saida/docs/doc-org-101226/run-20261012-141553/doc-meu-certificado-certificate.md`
+### `saida/docs/doc-org-101226/run-20261012-144157/doc-meu-certificado-certificate.md`
 
 ```markdown
 # Certificate: Meu_Certificado

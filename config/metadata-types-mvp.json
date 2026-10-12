@@ -35,7 +35,8 @@
     "secret",
     "accessToken",
     "refreshToken",
-    "oauthToken"
+    "oauthToken",
+    "oauthRefreshToken"
   ],
   "omitFromDocumentation": [
     "consumerKey",
