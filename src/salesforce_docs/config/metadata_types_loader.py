@@ -14,10 +14,12 @@ STRATEGY_UNIT_MODES = {
     "SINGLE_DOCUMENT_PER_FLOW_WITH_RELATED_COMPONENTS": "PER_COMPONENT",
     "SINGLE_DOCUMENT_PER_APP_WITH_RELATED_COMPONENTS": "PER_COMPONENT",
     "SINGLE_DOCUMENT_PER_OBJECT_WITH_RELATED_COMPONENTS": "PER_COMPONENT",
+    "SINGLE_DOCUMENT_PER_NAMED_CREDENTIAL_WITH_RELATED_COMPONENTS": "PER_COMPONENT",
     "ONE_DOCUMENT_PER_TYPE_AND_RECORDS": "PER_TYPE_WITH_RECORDS",
 }
 
-RELATION_MATCHES = {"SAME_FULL_NAME", "CHILD_OF_PRIMARY", "FIELD_EQUALS_PRIMARY", "REFERENCE_SCAN"}
+RELATION_MATCHES = {"SAME_FULL_NAME", "CHILD_OF_PRIMARY", "FIELD_EQUALS_PRIMARY", "REFERENCE_SCAN",
+                    "PRIMARY_FIELD_REFERENCES"}
 
 
 class MetadataTypeGroup:
@@ -47,8 +49,8 @@ class MetadataTypeGroup:
                     f"Grupo {self.name}: relation para {rel.get('metadataType')} "
                     "não consta em relatedMetadataTypes"
                 )
-            if rel["match"] == "FIELD_EQUALS_PRIMARY" and not rel.get("field"):
-                raise ConfigError(f"Grupo {self.name}: FIELD_EQUALS_PRIMARY exige 'field' em {rel}")
+            if rel["match"] in ("FIELD_EQUALS_PRIMARY", "PRIMARY_FIELD_REFERENCES") and not rel.get("field"):
+                raise ConfigError(f"Grupo {self.name}: {rel['match']} exige 'field' em {rel}")
         if self.unit_mode == "PER_TYPE_WITH_RECORDS" and not self.type_definition:
             raise ConfigError(f"Grupo {self.name}: {self.document_strategy} exige 'typeDefinition'")
 

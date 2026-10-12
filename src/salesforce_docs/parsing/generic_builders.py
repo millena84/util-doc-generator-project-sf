@@ -46,7 +46,7 @@ def related_rows(ctx, args):
 
 
 def matches_conditions(item, conditions):
-    """Filtro `where`: lista de {path, equals|in|present} avaliada sobre o item do XML."""
+    """Filtro `where`: lista de {path, equals|in|notIn|present} avaliada sobre o item do XML."""
     for cond in conditions or []:
         cur = item
         for part in cond["path"].split("."):
@@ -54,6 +54,8 @@ def matches_conditions(item, conditions):
         if "equals" in cond and cur != cond["equals"]:
             return False
         if "in" in cond and cur not in cond["in"]:
+            return False
+        if "notIn" in cond and cur in cond["notIn"]:
             return False
         if "present" in cond and (cur not in (None, "", [], {})) != bool(cond["present"]):
             return False

@@ -14,6 +14,9 @@
     "ConnectedApp": { "folder": "connected-apps" },
     "CustomObject": { "folder": "custom-objects" },
     "CustomMetadata": { "folder": "custom-metadata" },
+    "NamedCredential": { "folder": "named-credentials" },
+    "RemoteSiteSetting": { "folder": "remote-site-settings" },
+    "Certificate": { "folder": "certificates" },
     "CustomField": { "retrievedWith": "CustomObject" },
     "RecordType": { "retrievedWith": "CustomObject" },
     "ValidationRule": { "retrievedWith": "CustomObject" },
@@ -45,7 +48,9 @@
     "commaSeparatedPermissionSet",
     "commaSeparatedProfile",
     "clientCredentialsFlowUser",
-    "executeHandlerAs"
+    "executeHandlerAs",
+    "principal",
+    "endpoint"
   ],
   "metadataTypeGroups": [
     {
@@ -131,6 +136,31 @@
         "typeNameSuffix": "__mdt",
         "recordSeparator": "."
       }
+    },
+    {
+      "group": "NamedCredential",
+      "primaryMetadataType": "NamedCredential",
+      "relatedMetadataTypes": ["ExternalCredential"],
+      "documentStrategy": "SINGLE_DOCUMENT_PER_NAMED_CREDENTIAL_WITH_RELATED_COMPONENTS",
+      "relations": [
+        {
+          "metadataType": "ExternalCredential",
+          "match": "PRIMARY_FIELD_REFERENCES",
+          "field": "namedCredentialParameters.externalCredential"
+        }
+      ]
+    },
+    {
+      "group": "RemoteSiteSetting",
+      "primaryMetadataType": "RemoteSiteSetting",
+      "relatedMetadataTypes": [],
+      "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT"
+    },
+    {
+      "group": "Certificate",
+      "primaryMetadataType": "Certificate",
+      "relatedMetadataTypes": [],
+      "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT"
     }
   ]
 }

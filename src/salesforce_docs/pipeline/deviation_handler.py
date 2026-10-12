@@ -12,7 +12,7 @@ from salesforce_docs import status as st
 from salesforce_docs.parsing.custom_metadata_parser import group_records_by_type
 from salesforce_docs.parsing.custom_object_parser import child_files
 from salesforce_docs.parsing.external_client_app_parser import (field_equals_primary, leaf_values,
-                                                                reference_scan)
+                                                                reference_scan, values_at)
 from salesforce_docs.parsing.flow_parser import flow_definition_matches
 from salesforce_docs.parsing.generic_builders import matches_conditions
 from salesforce_docs.parsing.xml_parser import as_list
@@ -103,6 +103,15 @@ def resolve_related(unit, primary, group, processor, inventories, enabled_types,
                 rec = fetch(rtype, item)
                 if rec and field_equals_primary(primary["fullName"], rec.get("data"), rel_cfg["field"]):
                     related.append(_related_from_record(rec))
+        elif match == "PRIMARY_FIELD_REFERENCES":
+            # Relação comprovada pelo XML do principal: o valor exato em `field` é o fullName
+            # de um componente existente no inventário do tipo relacionado.
+            referenced = values_at(primary.get("data") or {}, rel_cfg["field"])
+            for item in candidates:
+                if item["fullName"] in referenced:
+                    rec = fetch(rtype, item)
+                    if rec:
+                        related.append(_related_from_record(rec))
         elif match == "REFERENCE_SCAN":
             primary_values = leaf_values(primary.get("data") or {})
             for item in candidates:

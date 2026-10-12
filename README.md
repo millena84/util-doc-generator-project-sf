@@ -82,7 +82,8 @@ Registro da auditoria de segurança de 2026-10-11 (10 riscos: 1 crítico, 2 alto
 | ExternalClientApp | `SINGLE_DOCUMENT_PER_APP_WITH_RELATED_COMPONENTS` | `ExtlClntAppOauthSettings`, `ExtlClntAppConfigurablePolicies` e `ExtlClntAppOauthConfigurablePolicies` cujo `externalClientApplication` = app (`FIELD_EQUALS_PRIMARY`). ExternalCredential e ConnectedApp têm documento próprio e não fazem parte da ECA. |
 | CustomObject | `SINGLE_DOCUMENT_PER_OBJECT_WITH_RELATED_COMPONENTS` | filhos retornados no retrieve do objeto (`CHILD_OF_PRIMARY`) |
 | CustomMetadata | `ONE_DOCUMENT_PER_TYPE_AND_RECORDS` | records `Tipo.Record` agrupados no tipo `Tipo__mdt` (`typeDefinition`); campos do `__mdt` como filhos (`CHILD_OF_PRIMARY`) |
-| ExternalCredential, ConnectedApp | `ONE_DOCUMENT_PER_COMPONENT` | — |
+| NamedCredential | `SINGLE_DOCUMENT_PER_NAMED_CREDENTIAL_WITH_RELATED_COMPONENTS` | `ExternalCredential` cujo fullName aparece exatamente em `namedCredentialParameters.externalCredential` do XML da NC (`PRIMARY_FIELD_REFERENCES`); as propriedades da EC vêm do XML da própria EC, com arquivo e sha256 |
+| ExternalCredential, ConnectedApp, RemoteSiteSetting, Certificate | `ONE_DOCUMENT_PER_COMPONENT` | — (Certificate: só o `.crt-meta.xml` é lido; o `.crt` fica só como raw) |
 
 Cada componente (principal ou relacionado) é extraído e normalizado de forma independente; a agregação acontece apenas no documento.
 
@@ -120,11 +121,11 @@ Os testes usam uma Salesforce CLI **simulada** (`tests/fixtures/bin/sf`) e respo
 ### Simulação de todas as documentações do MVP
 
 ```bash
-python3 -m unittest tests.test_mvp_simulation        # verifica os 9 modelos e os 14 metadata types
+python3 -m unittest tests.test_mvp_simulation        # verifica os 12 modelos e os 17 metadata types
 python3 -m tests.simulate_mvp --out /tmp/sim-mvp     # executa e gera o relatório passo a passo
 ```
 
-O cenário `mvp_complete` da CLI simulada sobrepõe `tests/fixtures/mvp-complete/` às fixtures base, de modo que todo metadata type do MVP tenha ao menos um componente. O relatório versionado em `documentation/simulacao/relatorio-simulacao-mvp.md` mostra, para essa simulação, a saída no terminal, os comandos por passo, a situação de cada tipo, a árvore de arquivos e o conteúdo dos 11 documentos gerados.
+O cenário `mvp_complete` da CLI simulada sobrepõe `tests/fixtures/mvp-complete/` às fixtures base, de modo que todo metadata type do MVP tenha ao menos um componente. O relatório versionado em `documentation/simulacao/relatorio-simulacao-mvp.md` mostra, para essa simulação, a saída no terminal, os comandos por passo, a situação de cada tipo, a árvore de arquivos e o conteúdo dos 15 documentos gerados.
 
 | Grupo | Documento(s) / modelo | Tipos que aparecem dentro do documento |
 |---|---|---|
@@ -132,6 +133,9 @@ O cenário `mvp_complete` da CLI simulada sobrepõe `tests/fixtures/mvp-complete
 | ExternalClientApp | `modelo-doc-cea` | ExtlClntAppOauthSettings, ExtlClntAppConfigurablePolicies, ExtlClntAppOauthConfigurablePolicies |
 | ExternalCredential | `modelo-doc-external-credential` | — |
 | ConnectedApp | `modelo-doc-connectedapp` | — |
+| NamedCredential | `modelo-doc-named-credential` | ExternalCredential (quando referenciada no XML da NC) |
+| RemoteSiteSetting | `modelo-doc-remote-site-setting` | — |
+| Certificate | `modelo-doc-certificate` | — |
 | CustomObject | `modelo-doc-custom-object` | CustomField, RecordType, ValidationRule, WebLink |
 | CustomMetadata | `modelo-doc-custom-metadata` | campos e records do tipo `__mdt` |
 

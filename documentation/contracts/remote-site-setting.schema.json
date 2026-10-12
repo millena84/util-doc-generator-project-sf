@@ -1,0 +1,67 @@
+{
+  "metadataType": "RemoteSiteSetting",
+  "apiVersion": "67.0",
+  "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+  "xmlFilePattern": "**/*.remoteSite-meta.xml",
+  "template": "modelo-doc-remote-site-setting-vapi-{apiMajor}.md",
+  "titlePath": "@fullName",
+  "referenceDoc": "_sf_utilities/ajudAI/contexto-remote-site-settings.md",
+  "properties": [
+    {
+      "name": "DeveloperName",
+      "placeholder": "developer_name",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação",
+      "notes": "fullName do componente (nome do arquivo XML recuperado)."
+    },
+    {
+      "name": "Url",
+      "placeholder": "url",
+      "path": "url",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "IsActive",
+      "placeholder": "is_active",
+      "path": "isActive",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "DisableProtocolSecurity",
+      "placeholder": "disable_protocol_security",
+      "path": "disableProtocolSecurity",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Description",
+      "placeholder": "description",
+      "path": "description",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    }
+  ],
+  "evidence": [
+    "Metadata API RemoteSiteSetting (remoteSiteSettings/, .remoteSite, API 19+): url, isActive, disableProtocolSecurity (obrigatórios), description"
+  ],
+  "notSupported": [
+    "MasterLabel = fullName: não confirmado",
+    "Análise de protocolo/porta e matriz RSS × NC: recomendações, não propriedades (análise Derivado não aprovada)",
+    "Componentes Apex/Flow dependentes: sem mecanismo de prova no utilitário"
+  ],
+  "relatedMetadataTypes": [],
+  "internalData": {
+    "enabled": false,
+    "source": null,
+    "object": null,
+    "query": null
+  }
+}

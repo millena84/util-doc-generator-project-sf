@@ -2,44 +2,55 @@
 
 > **SIMULADO.** CLI `sf` simulada (`tests/fixtures/bin/sf`, cenário `mvp_complete`) e Metadata API simulada. Nenhum dado veio de uma org real. Gerado por `python3 -m tests.simulate_mvp`.
 
-- Execução: `run-20261012-024548` — status **SUCCESS** — código de saída `0`
+- Execução: `run-20261012-025651` — status **SUCCESS** — código de saída `0`
 - Org: `dev` — API `67.0`
 
 ## 1. Saída no terminal
 
 ```
-[02:45:48] INFO  Passo 1: Salesforce CLI 2.60.0 (mínima 2.0.0)
-[02:45:48] INFO  Passo 2: alias 'dev' autenticado
-[02:45:48] INFO  Passo 3: usuario.simulado@example.com conectado; API 67.0 (detectada 67.0, fonte: sf org display)
-[02:45:48] INFO  Passo 4: grupos habilitados: Flow, ExternalClientApp, ExternalCredential, ConnectedApp, CustomObject, CustomMetadata
-[02:45:48] INFO  Passo 6: Flow -> 3 componente(s)
-[02:45:48] INFO  Passo 6: FlowDefinition -> 1 componente(s)
-[02:45:48] INFO  Passo 6: ExternalClientApplication -> 1 componente(s)
-[02:45:48] INFO  Passo 6: ExtlClntAppOauthSettings -> 2 componente(s)
-[02:45:48] INFO  Passo 6: ExtlClntAppConfigurablePolicies -> 1 componente(s)
-[02:45:48] INFO  Passo 6: ExtlClntAppOauthConfigurablePolicies -> 1 componente(s)
-[02:45:48] INFO  Passo 6: ExternalCredential -> 1 componente(s)
-[02:45:48] INFO  Passo 6: ConnectedApp -> 1 componente(s)
-[02:45:48] INFO  Passo 6: CustomObject -> 3 componente(s)
-[02:45:48] INFO  Passo 6: CustomMetadata -> 2 componente(s)
-[02:45:48] INFO  Flow:Flow:Meu_Flow: processando
-[02:45:49] INFO  Flow:Flow:Meu_Flow: SUCCESS -> saida/docs/doc-org-101226/doc-meu-flow-flow.md
-[02:45:49] INFO  Flow:Flow:Processa_Pedido: processando
-[02:45:49] INFO  Flow:Flow:Processa_Pedido: SUCCESS -> saida/docs/doc-org-101226/doc-processa-pedido-flow.md
-[02:45:49] INFO  Flow:Flow:Tela_Cadastro: processando
-[02:45:49] INFO  Flow:Flow:Tela_Cadastro: SUCCESS -> saida/docs/doc-org-101226/doc-tela-cadastro-flow.md
-[02:45:49] INFO  ExternalClientApp:ExternalClientApplication:Minha_ECA: processando
-[02:45:49] INFO  ExternalClientApp:ExternalClientApplication:Minha_ECA: SUCCESS -> saida/docs/doc-org-101226/doc-minha-eca-external-client-app.md
-[02:45:49] INFO  ExternalCredential:ExternalCredential:Minha_EC: processando
-[02:45:49] INFO  ExternalCredential:ExternalCredential:Minha_EC: SUCCESS -> saida/docs/doc-org-101226/doc-minha-ec-external-credential.md
-[02:45:49] INFO  ConnectedApp:ConnectedApp:Meu_App: processando
-[02:45:49] INFO  ConnectedApp:ConnectedApp:Meu_App: SUCCESS -> saida/docs/doc-org-101226/doc-meu-app-connected-app.md
-[02:45:49] INFO  CustomObject:CustomObject:Pedido__c: processando
-[02:45:49] INFO  CustomObject:CustomObject:Pedido__c: SUCCESS -> saida/docs/doc-org-101226/doc-pedido-c-custom-object.md
-[02:45:49] INFO  CustomMetadata:CustomMetadata:Config__mdt: processando
-[02:45:49] INFO  CustomMetadata:CustomMetadata:Config__mdt: SUCCESS -> saida/docs/doc-org-101226/doc-config-mdt-custom-metadata.md
-[02:45:49] INFO  Execução run-20261012-024548 finalizada: SUCCESS {'SUCCESS': 8}
-[02:45:49] INFO  Log: runs/run-20261012-024548.json
+[02:56:51] INFO  Passo 1: Salesforce CLI 2.60.0 (mínima 2.0.0)
+[02:56:51] INFO  Passo 2: alias 'dev' autenticado
+[02:56:51] INFO  Passo 3: usuario.simulado@example.com conectado; API 67.0 (detectada 67.0, fonte: sf org display)
+[02:56:51] INFO  Passo 4: grupos habilitados: Flow, ExternalClientApp, ExternalCredential, ConnectedApp, CustomObject, CustomMetadata, NamedCredential, RemoteSiteSetting, Certificate
+[02:56:51] INFO  Passo 6: Flow -> 3 componente(s)
+[02:56:51] INFO  Passo 6: FlowDefinition -> 1 componente(s)
+[02:56:51] INFO  Passo 6: ExternalClientApplication -> 1 componente(s)
+[02:56:51] INFO  Passo 6: ExtlClntAppOauthSettings -> 2 componente(s)
+[02:56:51] INFO  Passo 6: ExtlClntAppConfigurablePolicies -> 1 componente(s)
+[02:56:52] INFO  Passo 6: ExtlClntAppOauthConfigurablePolicies -> 1 componente(s)
+[02:56:52] INFO  Passo 6: ExternalCredential -> 1 componente(s)
+[02:56:52] INFO  Passo 6: ConnectedApp -> 1 componente(s)
+[02:56:52] INFO  Passo 6: CustomObject -> 3 componente(s)
+[02:56:52] INFO  Passo 6: CustomMetadata -> 2 componente(s)
+[02:56:52] INFO  Passo 6: NamedCredential -> 2 componente(s)
+[02:56:52] INFO  Passo 6: RemoteSiteSetting -> 1 componente(s)
+[02:56:52] INFO  Passo 6: Certificate -> 1 componente(s)
+[02:56:52] INFO  Flow:Flow:Meu_Flow: processando
+[02:56:52] INFO  Flow:Flow:Meu_Flow: SUCCESS -> saida/docs/doc-org-101226/doc-meu-flow-flow.md
+[02:56:52] INFO  Flow:Flow:Processa_Pedido: processando
+[02:56:52] INFO  Flow:Flow:Processa_Pedido: SUCCESS -> saida/docs/doc-org-101226/doc-processa-pedido-flow.md
+[02:56:52] INFO  Flow:Flow:Tela_Cadastro: processando
+[02:56:52] INFO  Flow:Flow:Tela_Cadastro: SUCCESS -> saida/docs/doc-org-101226/doc-tela-cadastro-flow.md
+[02:56:52] INFO  ExternalClientApp:ExternalClientApplication:Minha_ECA: processando
+[02:56:52] INFO  ExternalClientApp:ExternalClientApplication:Minha_ECA: SUCCESS -> saida/docs/doc-org-101226/doc-minha-eca-external-client-app.md
+[02:56:52] INFO  ExternalCredential:ExternalCredential:Minha_EC: processando
+[02:56:53] INFO  ExternalCredential:ExternalCredential:Minha_EC: SUCCESS -> saida/docs/doc-org-101226/doc-minha-ec-external-credential.md
+[02:56:53] INFO  ConnectedApp:ConnectedApp:Meu_App: processando
+[02:56:53] INFO  ConnectedApp:ConnectedApp:Meu_App: SUCCESS -> saida/docs/doc-org-101226/doc-meu-app-connected-app.md
+[02:56:53] INFO  CustomObject:CustomObject:Pedido__c: processando
+[02:56:53] INFO  CustomObject:CustomObject:Pedido__c: SUCCESS -> saida/docs/doc-org-101226/doc-pedido-c-custom-object.md
+[02:56:53] INFO  CustomMetadata:CustomMetadata:Config__mdt: processando
+[02:56:53] INFO  CustomMetadata:CustomMetadata:Config__mdt: SUCCESS -> saida/docs/doc-org-101226/doc-config-mdt-custom-metadata.md
+[02:56:53] INFO  NamedCredential:NamedCredential:Minha_NC: processando
+[02:56:53] INFO  NamedCredential:NamedCredential:Minha_NC: SUCCESS -> saida/docs/doc-org-101226/doc-minha-nc-named-credential.md
+[02:56:53] INFO  NamedCredential:NamedCredential:NC_Legada: processando
+[02:56:53] INFO  NamedCredential:NamedCredential:NC_Legada: SUCCESS -> saida/docs/doc-org-101226/doc-nc-legada-named-credential.md
+[02:56:53] INFO  RemoteSiteSetting:RemoteSiteSetting:Meu_Site: processando
+[02:56:53] INFO  RemoteSiteSetting:RemoteSiteSetting:Meu_Site: SUCCESS -> saida/docs/doc-org-101226/doc-meu-site-remote-site-setting.md
+[02:56:53] INFO  Certificate:Certificate:Meu_Certificado: processando
+[02:56:53] INFO  Certificate:Certificate:Meu_Certificado: SUCCESS -> saida/docs/doc-org-101226/doc-meu-certificado-certificate.md
+[02:56:53] INFO  Execução run-20261012-025651 finalizada: SUCCESS {'SUCCESS': 12}
+[02:56:53] INFO  Log: runs/run-20261012-025651.json
 ```
 
 ## 2. Comandos executados na CLI (por passo)
@@ -60,25 +71,32 @@
 | 12 | 6 | `sf org list metadata --metadata-type ConnectedApp --target-org dev --api-version 67.0 --json` |
 | 13 | 6 | `sf org list metadata --metadata-type CustomObject --target-org dev --api-version 67.0 --json` |
 | 14 | 6 | `sf org list metadata --metadata-type CustomMetadata --target-org dev --api-version 67.0 --json` |
-| 15 | 7 | `sf project retrieve start --metadata Flow:Meu_Flow --target-org dev --api-version 67.0 --json` |
-| 16 | 7 | `sf project retrieve start --metadata FlowDefinition:Meu_Flow --target-org dev --api-version 67.0 --json` |
-| 17 | 9 | `sf data query --query SELECT Id, VersionNumber, Status FROM Flow WHERE Definition.DeveloperName = 'Meu_Flow' ORDER BY VersionNumber --use-tooling-api --target-org dev --api-version 67.0 --json` |
-| 18 | 7 | `sf project retrieve start --metadata Flow:Processa_Pedido --target-org dev --api-version 67.0 --json` |
-| 19 | 9 | `sf data query --query SELECT Id, VersionNumber, Status FROM Flow WHERE Definition.DeveloperName = 'Processa_Pedido' ORDER BY VersionNumber --use-tooling-api --target-org dev --api-version 67.0 --json` |
-| 20 | 7 | `sf project retrieve start --metadata Flow:Tela_Cadastro --target-org dev --api-version 67.0 --json` |
-| 21 | 9 | `sf data query --query SELECT Id, VersionNumber, Status FROM Flow WHERE Definition.DeveloperName = 'Tela_Cadastro' ORDER BY VersionNumber --use-tooling-api --target-org dev --api-version 67.0 --json` |
-| 22 | 7 | `sf project retrieve start --metadata ExternalClientApplication:Minha_ECA --target-org dev --api-version 67.0 --json` |
-| 23 | 7 | `sf project retrieve start --metadata ExtlClntAppOauthSettings:Minha_ECA_oauth --target-org dev --api-version 67.0 --json` |
-| 24 | 7 | `sf project retrieve start --metadata ExtlClntAppOauthSettings:Outra_ECA_oauth --target-org dev --api-version 67.0 --json` |
-| 25 | 7 | `sf project retrieve start --metadata ExtlClntAppConfigurablePolicies:Minha_ECA_plcy --target-org dev --api-version 67.0 --json` |
-| 26 | 7 | `sf project retrieve start --metadata ExtlClntAppOauthConfigurablePolicies:Minha_ECA_oauthPlcy --target-org dev --api-version 67.0 --json` |
-| 27 | 7 | `sf project retrieve start --metadata ExternalCredential:Minha_EC --target-org dev --api-version 67.0 --json` |
-| 28 | 9 | `sf data query --query SELECT Id, DeveloperName, MasterLabel, CreatedDate, LastModifiedDate FROM ExternalCredential WHERE DeveloperName = 'Minha_EC' --target-org dev --api-version 67.0 --json` |
-| 29 | 7 | `sf project retrieve start --metadata ConnectedApp:Meu_App --target-org dev --api-version 67.0 --json` |
-| 30 | 7 | `sf project retrieve start --metadata CustomObject:Pedido__c --target-org dev --api-version 67.0 --json` |
-| 31 | 7 | `sf project retrieve start --metadata CustomObject:Config__mdt --target-org dev --api-version 67.0 --json` |
-| 32 | 7 | `sf project retrieve start --metadata CustomMetadata:Config.Padrao --target-org dev --api-version 67.0 --json` |
-| 33 | 7 | `sf project retrieve start --metadata CustomMetadata:Config.Secundario --target-org dev --api-version 67.0 --json` |
+| 15 | 6 | `sf org list metadata --metadata-type NamedCredential --target-org dev --api-version 67.0 --json` |
+| 16 | 6 | `sf org list metadata --metadata-type RemoteSiteSetting --target-org dev --api-version 67.0 --json` |
+| 17 | 6 | `sf org list metadata --metadata-type Certificate --target-org dev --api-version 67.0 --json` |
+| 18 | 7 | `sf project retrieve start --metadata Flow:Meu_Flow --target-org dev --api-version 67.0 --json` |
+| 19 | 7 | `sf project retrieve start --metadata FlowDefinition:Meu_Flow --target-org dev --api-version 67.0 --json` |
+| 20 | 9 | `sf data query --query SELECT Id, VersionNumber, Status FROM Flow WHERE Definition.DeveloperName = 'Meu_Flow' ORDER BY VersionNumber --use-tooling-api --target-org dev --api-version 67.0 --json` |
+| 21 | 7 | `sf project retrieve start --metadata Flow:Processa_Pedido --target-org dev --api-version 67.0 --json` |
+| 22 | 9 | `sf data query --query SELECT Id, VersionNumber, Status FROM Flow WHERE Definition.DeveloperName = 'Processa_Pedido' ORDER BY VersionNumber --use-tooling-api --target-org dev --api-version 67.0 --json` |
+| 23 | 7 | `sf project retrieve start --metadata Flow:Tela_Cadastro --target-org dev --api-version 67.0 --json` |
+| 24 | 9 | `sf data query --query SELECT Id, VersionNumber, Status FROM Flow WHERE Definition.DeveloperName = 'Tela_Cadastro' ORDER BY VersionNumber --use-tooling-api --target-org dev --api-version 67.0 --json` |
+| 25 | 7 | `sf project retrieve start --metadata ExternalClientApplication:Minha_ECA --target-org dev --api-version 67.0 --json` |
+| 26 | 7 | `sf project retrieve start --metadata ExtlClntAppOauthSettings:Minha_ECA_oauth --target-org dev --api-version 67.0 --json` |
+| 27 | 7 | `sf project retrieve start --metadata ExtlClntAppOauthSettings:Outra_ECA_oauth --target-org dev --api-version 67.0 --json` |
+| 28 | 7 | `sf project retrieve start --metadata ExtlClntAppConfigurablePolicies:Minha_ECA_plcy --target-org dev --api-version 67.0 --json` |
+| 29 | 7 | `sf project retrieve start --metadata ExtlClntAppOauthConfigurablePolicies:Minha_ECA_oauthPlcy --target-org dev --api-version 67.0 --json` |
+| 30 | 7 | `sf project retrieve start --metadata ExternalCredential:Minha_EC --target-org dev --api-version 67.0 --json` |
+| 31 | 9 | `sf data query --query SELECT Id, DeveloperName, MasterLabel, CreatedDate, LastModifiedDate FROM ExternalCredential WHERE DeveloperName = 'Minha_EC' --target-org dev --api-version 67.0 --json` |
+| 32 | 7 | `sf project retrieve start --metadata ConnectedApp:Meu_App --target-org dev --api-version 67.0 --json` |
+| 33 | 7 | `sf project retrieve start --metadata CustomObject:Pedido__c --target-org dev --api-version 67.0 --json` |
+| 34 | 7 | `sf project retrieve start --metadata CustomObject:Config__mdt --target-org dev --api-version 67.0 --json` |
+| 35 | 7 | `sf project retrieve start --metadata CustomMetadata:Config.Padrao --target-org dev --api-version 67.0 --json` |
+| 36 | 7 | `sf project retrieve start --metadata CustomMetadata:Config.Secundario --target-org dev --api-version 67.0 --json` |
+| 37 | 7 | `sf project retrieve start --metadata NamedCredential:Minha_NC --target-org dev --api-version 67.0 --json` |
+| 38 | 7 | `sf project retrieve start --metadata NamedCredential:NC_Legada --target-org dev --api-version 67.0 --json` |
+| 39 | 7 | `sf project retrieve start --metadata RemoteSiteSetting:Meu_Site --target-org dev --api-version 67.0 --json` |
+| 40 | 7 | `sf project retrieve start --metadata Certificate:Meu_Certificado --target-org dev --api-version 67.0 --json` |
 
 O passo 5 (`describeValueType`) é SOAP direto na Metadata API, fora da CLI; o passo 8 (XML → JSON) e o passo 10 (Markdown) são locais.
 
@@ -86,6 +104,7 @@ O passo 5 (`describeValueType`) é SOAP direto na Metadata API, fora da CLI; o p
 
 | Metadata type | Habilitado (4) | Schema (5) | Inventário (6) | Componentes |
 |---|---|---|---|---|
+| Certificate | ENABLED | SUCCESS | SUCCESS | 1 |
 | ConnectedApp | ENABLED | SUCCESS | SUCCESS | 1 |
 | CustomField | ENABLED | SUCCESS | via retrieve do CustomObject | — |
 | CustomMetadata | ENABLED | SUCCESS | SUCCESS | 2 |
@@ -97,7 +116,9 @@ O passo 5 (`describeValueType`) é SOAP direto na Metadata API, fora da CLI; o p
 | ExtlClntAppOauthSettings | ENABLED | SUCCESS | SUCCESS | 2 |
 | Flow | ENABLED | SUCCESS | SUCCESS | 3 |
 | FlowDefinition | ENABLED | SUCCESS | SUCCESS | 1 |
+| NamedCredential | ENABLED | SUCCESS | SUCCESS | 2 |
 | RecordType | ENABLED | SUCCESS | via retrieve do CustomObject | — |
+| RemoteSiteSetting | ENABLED | SUCCESS | SUCCESS | 1 |
 | ValidationRule | ENABLED | SUCCESS | via retrieve do CustomObject | — |
 | WebLink | ENABLED | SUCCESS | via retrieve do CustomObject | — |
 
@@ -116,6 +137,10 @@ O passo 5 (`describeValueType`) é SOAP direto na Metadata API, fora da CLI; o p
 | `doc-meu-app-connected-app.md` | `modelo-doc-connectedapp-vapi-67.md` | ConnectedApp:Meu_App | — | SUCCESS |
 | `doc-pedido-c-custom-object.md` | `modelo-doc-custom-object-vapi-67.md` | CustomObject:Pedido__c | Pedido__c.Status__c (CustomField), Pedido__c.Valor__c (CustomField), Pedido__c.Padrao (RecordType), Pedido__c.Valor_Positivo (ValidationRule), Pedido__c.Imprimir_Pedido (WebLink) | SUCCESS |
 | `doc-config-mdt-custom-metadata.md` | `modelo-doc-custom-metadata-vapi-67.md` | CustomMetadata:Config__mdt | Config.Padrao (CustomMetadata), Config.Secundario (CustomMetadata), Config__mdt.Ativo__c (CustomField), Config__mdt.Chave_API__c (CustomField) | SUCCESS |
+| `doc-minha-nc-named-credential.md` | `modelo-doc-named-credential-vapi-67.md` | NamedCredential:Minha_NC | Minha_EC (ExternalCredential) | SUCCESS |
+| `doc-nc-legada-named-credential.md` | `modelo-doc-named-credential-vapi-67.md` | NamedCredential:NC_Legada | — | SUCCESS |
+| `doc-meu-site-remote-site-setting.md` | `modelo-doc-remote-site-setting-vapi-67.md` | RemoteSiteSetting:Meu_Site | — | SUCCESS |
+| `doc-meu-certificado-certificate.md` | `modelo-doc-certificate-vapi-67.md` | Certificate:Meu_Certificado | — | SUCCESS |
 
 ## 5. Rastreamento de um componente: `Flow:Meu_Flow`
 
@@ -142,6 +167,13 @@ O passo 5 (`describeValueType`) é SOAP direto na Metadata API, fora da CLI; o p
 ```json
 {
   "metadataTypes": {
+    "Certificate": {
+      "directoryName": "certs",
+      "suffix": "crt",
+      "inFolder": false,
+      "metaFile": true,
+      "childXmlNames": []
+    },
     "ConnectedApp": {
       "directoryName": "connectedApps",
       "suffix": "connectedApp",
@@ -153,14 +185,7 @@ O passo 5 (`describeValueType`) é SOAP direto na Metadata API, fora da CLI; o p
       "directoryName": "cspTrustedSites",
       "suffix": "cspTrustedSite",
       "inFolder": false,
-      "metaFile": false,
-      "childXmlNames": []
-    },
-    "CustomMetadata": {
-      "directoryName": "customMetadata",
-      "suffix": "md",
-      "inFolder": false,
-... (106 linhas omitidas)
+... (113 linhas omitidas)
 ```
 
 **Passo 5** — `catalog/org-dev/api-v67/schemas/flow.schema.json`
@@ -229,7 +254,7 @@ O passo 5 (`describeValueType`) é SOAP direto na Metadata API, fora da CLI; o p
         "fullName": "Meu_Flow",
         "type": "Flow",
         "state": "Created",
-        "filePath": "/tmp/sfdocs-retrieve-c2mo9meo/force-app/main/default/flows/Meu_Flow.flow-meta.xml"
+        "filePath": "/tmp/sfdocs-retrieve-vj4wh2un/force-app/main/default/flows/Meu_Flow.flow-meta.xml"
       }
     ]
   }
@@ -364,6 +389,8 @@ O passo 5 (`describeValueType`) é SOAP direto na Metadata API, fora da CLI; o p
 catalog/org-dev/api-v67/metadata-types.index.json
 catalog/org-dev/api-v67/metadata-types.raw.json
 catalog/org-dev/api-v67/org-display.raw.json
+catalog/org-dev/api-v67/schemas/certificate.describevaluetype.raw.json
+catalog/org-dev/api-v67/schemas/certificate.schema.json
 catalog/org-dev/api-v67/schemas/connected-app.describevaluetype.raw.json
 catalog/org-dev/api-v67/schemas/connected-app.schema.json
 catalog/org-dev/api-v67/schemas/custom-field.describevaluetype.raw.json
@@ -386,12 +413,22 @@ catalog/org-dev/api-v67/schemas/flow-definition.describevaluetype.raw.json
 catalog/org-dev/api-v67/schemas/flow-definition.schema.json
 catalog/org-dev/api-v67/schemas/flow.describevaluetype.raw.json
 catalog/org-dev/api-v67/schemas/flow.schema.json
+catalog/org-dev/api-v67/schemas/named-credential.describevaluetype.raw.json
+catalog/org-dev/api-v67/schemas/named-credential.schema.json
 catalog/org-dev/api-v67/schemas/record-type.describevaluetype.raw.json
 catalog/org-dev/api-v67/schemas/record-type.schema.json
+catalog/org-dev/api-v67/schemas/remote-site-setting.describevaluetype.raw.json
+catalog/org-dev/api-v67/schemas/remote-site-setting.schema.json
 catalog/org-dev/api-v67/schemas/validation-rule.describevaluetype.raw.json
 catalog/org-dev/api-v67/schemas/validation-rule.schema.json
 catalog/org-dev/api-v67/schemas/web-link.describevaluetype.raw.json
 catalog/org-dev/api-v67/schemas/web-link.schema.json
+inventory/org-dev/api-v67/certificates/components/certs/Meu_Certificado.crt
+inventory/org-dev/api-v67/certificates/components/certs/Meu_Certificado.crt-meta.xml
+inventory/org-dev/api-v67/certificates/inventory.index.json
+inventory/org-dev/api-v67/certificates/inventory.raw.json
+inventory/org-dev/api-v67/certificates/normalized/meu-certificado.json
+inventory/org-dev/api-v67/certificates/retrieve/meu-certificado.raw.json
 inventory/org-dev/api-v67/connected-apps/components/connectedApps/Meu_App.connectedApp-meta.xml
 inventory/org-dev/api-v67/connected-apps/inventory.index.json
 inventory/org-dev/api-v67/connected-apps/inventory.raw.json
@@ -475,13 +512,30 @@ inventory/org-dev/api-v67/flows/normalized/tela-cadastro.json
 inventory/org-dev/api-v67/flows/retrieve/meu-flow.raw.json
 inventory/org-dev/api-v67/flows/retrieve/processa-pedido.raw.json
 inventory/org-dev/api-v67/flows/retrieve/tela-cadastro.raw.json
-runs/run-20261012-024548.json
+inventory/org-dev/api-v67/named-credentials/components/namedCredentials/Minha_NC.namedCredential-meta.xml
+inventory/org-dev/api-v67/named-credentials/components/namedCredentials/NC_Legada.namedCredential-meta.xml
+inventory/org-dev/api-v67/named-credentials/inventory.index.json
+inventory/org-dev/api-v67/named-credentials/inventory.raw.json
+inventory/org-dev/api-v67/named-credentials/normalized/minha-nc.json
+inventory/org-dev/api-v67/named-credentials/normalized/nc-legada.json
+inventory/org-dev/api-v67/named-credentials/retrieve/minha-nc.raw.json
+inventory/org-dev/api-v67/named-credentials/retrieve/nc-legada.raw.json
+inventory/org-dev/api-v67/remote-site-settings/components/remoteSiteSettings/Meu_Site.remoteSite-meta.xml
+inventory/org-dev/api-v67/remote-site-settings/inventory.index.json
+inventory/org-dev/api-v67/remote-site-settings/inventory.raw.json
+inventory/org-dev/api-v67/remote-site-settings/normalized/meu-site.json
+inventory/org-dev/api-v67/remote-site-settings/retrieve/meu-site.raw.json
+runs/run-20261012-025651.json
 saida/docs/doc-org-101226/doc-config-mdt-custom-metadata.md
 saida/docs/doc-org-101226/doc-meu-app-connected-app.md
+saida/docs/doc-org-101226/doc-meu-certificado-certificate.md
 saida/docs/doc-org-101226/doc-meu-flow-flow-trigger.md
 saida/docs/doc-org-101226/doc-meu-flow-flow.md
+saida/docs/doc-org-101226/doc-meu-site-remote-site-setting.md
 saida/docs/doc-org-101226/doc-minha-ec-external-credential.md
 saida/docs/doc-org-101226/doc-minha-eca-external-client-app.md
+saida/docs/doc-org-101226/doc-minha-nc-named-credential.md
+saida/docs/doc-org-101226/doc-nc-legada-named-credential.md
 saida/docs/doc-org-101226/doc-pedido-c-custom-object.md
 saida/docs/doc-org-101226/doc-processa-pedido-flow-autolaunched.md
 saida/docs/doc-org-101226/doc-processa-pedido-flow.md
@@ -762,6 +816,18 @@ _Fonte: XML_
 | Label | Minha EC | XML |
 | AuthenticationProtocol | Custom | XML |
 
+## Parâmetros
+
+| Parâmetro | Tipo | Grupo | Fonte |
+|---|---|---|---|
+| x-api-key | AuthHeader | DefaultGroup | XML |
+
+## Principais
+
+| Principal | Tipo | Sequência | Fonte |
+|---|---|---|---|
+| Principal_Integracao | NamedPrincipal | 1 | XML |
+
 ## Dados internos
 
 | Propriedade | Valor | Fonte |
@@ -862,5 +928,131 @@ _Fonte: XML_
 |---|---|---|---|
 | Config.Padrao | Config Padrao | false | XML |
 | Config.Secundario | Config Secundario | false | XML |
+```
+
+### `saida/docs/doc-org-101226/doc-minha-nc-named-credential.md`
+
+```markdown
+# Named Credential: Minha_NC
+
+## Identificação
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| DeveloperName | Minha_NC | XML |
+| Label | Minha NC | XML |
+| NamedCredentialType | SecuredEndpoint | XML |
+| Description | NC sintética \| testes<br>segunda linha – ç | XML |
+
+## Opções de callout
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| GenerateAuthorizationHeader | true | XML |
+| AllowMergeFieldsInHeader | true | XML |
+| AllowMergeFieldsInBody | false | XML |
+
+## Parâmetros
+
+| Parâmetro | Tipo | Fonte |
+|---|---|---|
+| Url | Url | XML |
+| ExternalCredential | Authentication | XML |
+| x-api-key | HttpHeader | XML |
+
+## Credencial externa
+
+**ExternalCredential: Minha_EC**
+
+_Arquivo: `inventory/org-dev/api-v67/external-credentials/components/externalCredentials/Minha_EC.externalCredential-meta.xml` · sha256 `84d013436503b07b…`_
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| DeveloperName | Minha_EC | XML |
+| Label | Minha EC | XML |
+| AuthenticationProtocol | Custom | XML |
+
+_Fonte: XML_
+
+## Componentes relacionados
+
+| Componente | Tipo | Fonte |
+|---|---|---|
+| Minha_EC | ExternalCredential | XML |
+```
+
+### `saida/docs/doc-org-101226/doc-nc-legada-named-credential.md`
+
+```markdown
+# Named Credential: NC_Legada
+
+## Identificação
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| DeveloperName | NC_Legada | XML |
+| Label | NC Legada | XML |
+| NamedCredentialType | Legacy | XML |
+| Description | Não informado | XML |
+
+## Opções de callout
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| GenerateAuthorizationHeader | true | XML |
+| AllowMergeFieldsInHeader | false | XML |
+| AllowMergeFieldsInBody | false | XML |
+
+## Parâmetros
+
+| Parâmetro | Tipo | Fonte |
+|---|---|---|
+| Não aplicável | Não aplicável | XML |
+
+## Credencial externa
+
+Não aplicável
+
+_Fonte: XML_
+
+## Componentes relacionados
+
+| Componente | Tipo | Fonte |
+|---|---|---|
+| Não aplicável | Não aplicável | XML |
+```
+
+### `saida/docs/doc-org-101226/doc-meu-site-remote-site-setting.md`
+
+```markdown
+# Remote Site Setting: Meu_Site
+
+## Identificação
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| DeveloperName | Meu_Site | XML |
+| Url | https://api.example.com | XML |
+| IsActive | true | XML |
+| DisableProtocolSecurity | false | XML |
+| Description | Site remoto sintético | XML |
+```
+
+### `saida/docs/doc-org-101226/doc-meu-certificado-certificate.md`
+
+```markdown
+# Certificate: Meu_Certificado
+
+## Identificação
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| DeveloperName | Meu_Certificado | XML |
+| MasterLabel | Meu Certificado | XML |
+| CaSigned | false | XML |
+| KeySize | 2048 | XML |
+| ExpirationDate | 2027-10-12T00:00:00.000Z | XML |
+| PrivateKeyExportable | true | XML |
+| EncryptedWithPlatformEncryption | false | XML |
 ```
 

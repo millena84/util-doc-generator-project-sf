@@ -119,6 +119,14 @@
         "metaFile": false,
         "suffix": "md",
         "xmlName": "CustomMetadata"
+      },
+      {
+        "childXmlNames": [],
+        "directoryName": "certs",
+        "inFolder": false,
+        "metaFile": true,
+        "suffix": "crt",
+        "xmlName": "Certificate"
       }
     ],
     "organizationNamespace": "",

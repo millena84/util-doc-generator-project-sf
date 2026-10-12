@@ -77,14 +77,28 @@ Categorias:
 
 Classificação de Flow (configurada em `subDocuments`, testada): **trigger** se `start.triggerType` presente (RecordBeforeSave/AfterSave/BeforeDelete, Scheduled, PlatformEvent); **autolaunched** se `processType = AutoLaunchedFlow` e sem `start.triggerType`; **tela** por elemento `screens`. Nenhuma categoria é inferida por um único campo.
 
-## 6. Lacunas restantes / próximos lotes
+## 6. Lote B — implementado
 
-- **Lote B** (aguarda aprovação): NamedCredential, RemoteSiteSetting, Certificate (só `-meta.xml`), parâmetros da ExternalCredential sem `parameterValue`.
-- Verificar nas páginas oficiais da API 67.0 os itens "pendentes" e, então, ampliar Flow (scheduledPaths, schedule, runInMode), ECA OauthPolicies e filhos de CustomObject.
-- Valores de records CMDT e `consumerKey` continuam no normalizado local (fora do Git); política de retenção/mascaramento é da Prioridade 3.
-- Seleção de escopo por `config.json` é da Prioridade 2; aqui só foi registrado `OUT_OF_SCOPE` para `--group`.
+| Item | Arquivos |
+|---|---|
+| NamedCredential (novo grupo e modelo): identificação, opções de callout, parâmetros (nome e tipo, **sem** `parameterValue`), credencial externa com proveniência, relacionados | `contracts/named-credential.schema.json`, `models/api-v67/modelo-doc-named-credential-vapi-67.md`, config |
+| ExternalCredential: tabelas de Parâmetros e Principais (parâmetros `NamedPrincipal`/`PerUserPrincipal`), sem `parameterValue` nem `principal` | `external-credential.schema.json`, `modelo-doc-external-credential-vapi-67.md` |
+| RemoteSiteSetting (novo grupo e modelo): `url`, `isActive`, `disableProtocolSecurity`, `description` | `remote-site-setting.schema.json`, `modelo-doc-remote-site-setting-vapi-67.md`, config |
+| Certificate (novo grupo e modelo): `masterLabel`, `caSigned`, `keySize`, `expirationDate`, `privateKeyExportable`, `encryptedWithPlatformEncryption` — só o `.crt-meta.xml`; o `.crt` é copiado como raw e nunca lido | `certificate.schema.json`, `modelo-doc-certificate-vapi-67.md`, config |
+| Motor: relação `PRIMARY_FIELD_REFERENCES` (valor exato no XML do principal = fullName existente no inventário; só recupera os componentes referenciados); filtro `notIn` | `pipeline/deviation_handler.py`, `parsing/external_client_app_parser.py`, `parsing/generic_builders.py`, `config/metadata_types_loader.py` |
+| Segurança: `principal` e `endpoint` em `omitFromDocumentation`; `password` legado redigido no normalizado | `config/metadata-types-mvp.json` |
+| Testes | `tests/test_refatoracao1_lote_b.py` (relação NC → EC só por referência exata a EC existente; NC Legacy sem relação; principais separados dos parâmetros; `.crt` fora de derivados; sentinelas; tipo não habilitado) |
 
-## 7. Referências oficiais
+Recomendações `ajudAI` rejeitadas no Lote B: `<endpoint>`/`<externalCredential>`/`<customHeaders>` como elementos de topo da NC SecuredEndpoint; seção 3 da NC (EC duplicada); `<principals>` e `authenticationFlowType` da EC; `encryptedWithPassword`, issuer/subject/fingerprint e "onde é usado" do Certificate; análise de porta/protocolo, matriz RSS × NC e dependentes Apex/Flow do RSS; exemplos de código Apex/Flow.
+
+## 7. Lacunas restantes
+
+- Confirmar na página oficial da API 67.0: campos de `NamedCredentialParameter` (o caminho `namedCredentialParameters.externalCredential` está marcado como pendente — se estiver errado, a relação simplesmente não aparece), `label` da NC, campos de Flow pendentes, ECA OauthPolicies e filhos adicionais de CustomObject.
+- `PublicKeyCertificate`/`PublicKeyCertificateSet`: tipos separados, não configurados.
+- Valores de records CMDT, `consumerKey` e `parameterValue` continuam no raw/normalizado local (fora do Git); política de retenção/mascaramento é da Prioridade 3.
+- Seleção de escopo por `config.json` é da Prioridade 2.
+
+## 8. Referências oficiais
 
 Consultadas (índice de busca de páginas oficiais):
 
@@ -94,6 +108,7 @@ Consultadas (índice de busca de páginas oficiais):
 - [RemoteSiteSetting](https://developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_remotesitesetting.htm)
 - [CustomMetadata](https://developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_custommetadata.htm)
 - [ExternalClientApplication](https://developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_externalclientapplication.htm), [ExtlClntAppOauthSettings](https://developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_extlclntappoauthsettings.htm), [ExtlClntAppGlobalOauthSettings](https://developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_extlclntappglobaloauthsettings.htm), [ExtlClntAppConfigurablePolicies (262.0)](https://developer.salesforce.com/docs/atlas.en-us.262.0.api_meta.meta/api_meta/meta_extlclntappconfigurablepolicies.htm)
+- [NamedCredential (campos de callout e description)](https://developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_namedcredential.htm), [Tooling NamedCredential](https://developer.salesforce.com/docs/atlas.en-us.api_tooling.meta/api_tooling/tooling_api_objects_namedcredential.htm), [Tooling ExternalCredential](https://developer.salesforce.com/docs/atlas.en-us.api_tooling.meta/api_tooling/tooling_api_objects_externalcredential.htm), [Create or Edit a Named Credential (Help)](https://help.salesforce.com/s/articleView?language=en_US&id=xcloud.nc_create_edit_named_credential.htm&type=5)
 - [ConnectedApp (218.0)](https://developer.salesforce.com/docs/atlas.en-us.218.0.api_meta.meta/api_meta/meta_connectedapp.htm)
 - [Decomposed Metadata Types](https://developer.salesforce.com/docs/platform/sfdx-dev/guide/sfdx-dev-ws-decomposed-md-types.html)
 - [Field Service Flow](https://developer.salesforce.com/docs/atlas.en-us.field_service_dev.meta/field_service_dev/fsl_dev_fieldserviceflow.htm) (indício para flags de tela)
