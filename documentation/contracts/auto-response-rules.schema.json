@@ -1,0 +1,101 @@
+{
+  "metadataType": "AutoResponseRules",
+  "apiVersion": "67.0",
+  "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+  "xmlFilePattern": "**/autoResponseRules/*.autoResponseRules-meta.xml",
+  "template": "modelo-doc-auto-response-rules-vapi-{apiMajor}.md",
+  "titlePath": "@fullName",
+  "referenceDoc": "_sf_utilities/tools/templates/exemplos-prompts/prompt-auto-response-rules.md",
+  "classification": "Regras de resposta automática por objeto (Case, Lead).",
+  "properties": [
+    {
+      "name": "Objeto",
+      "placeholder": "rules_object",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação",
+      "notes": "Um arquivo por objeto."
+    },
+    {
+      "name": "Situação",
+      "placeholder": "active_check",
+      "path": "rules.activeCheck",
+      "source": "Derivado",
+      "required": false,
+      "markdownSection": "Identificação",
+      "notes": "Contagem de regras ativas no XML."
+    }
+  ],
+  "tables": [
+    {
+      "markdownSection": "Regras",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "rules.rules",
+        "columns": {
+          "rule_name": "rule",
+          "rule_active": "active",
+          "rule_details": "details"
+        }
+      },
+      "emptyValue": "Não aplicável"
+    },
+    {
+      "markdownSection": "Entradas (ordem de avaliação)",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "rules.entries",
+        "columns": {
+          "entry_rule": "rule",
+          "entry_order": "order",
+          "entry_criteria": "criteria",
+          "entry_logic": "logic",
+          "entry_destination": "destination",
+          "entry_details": "details"
+        }
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Usuários de destino, usuários notificados e e-mails nunca são documentados (texto fixo no lugar)."
+    },
+    {
+      "markdownSection": "Registros na org",
+      "builder": "internal_rows",
+      "source": "Objeto interno",
+      "args": {
+        "columns": {
+          "internal_rule_id": "Id",
+          "internal_rule_name": "Name",
+          "internal_rule_active": "Active"
+        }
+      },
+      "emptyValue": "Não informado",
+      "notes": "Objeto AutoResponseRule (validationPending)."
+    },
+    {
+      "markdownSection": "Acesso e configuração",
+      "builder": "access_rows",
+      "source": "XML",
+      "args": {
+        "notApplicable": "Regras de automação do objeto; não são concedidas por perfil ou permission set"
+      },
+      "emptyValue": "Não informado"
+    }
+  ],
+  "internalData": {
+    "enabled": true,
+    "source": "Objeto interno",
+    "object": "AutoResponseRule",
+    "useToolingApi": true,
+    "query": "SELECT Id, Name, Active FROM AutoResponseRule WHERE SobjectType = '{fullName}'",
+    "expectSingleRecord": false,
+    "blocking": false,
+    "validationPending": "Objeto AutoResponseRule (Tooling API): confirmar nome do objeto e o filtro SobjectType no piloto."
+  },
+  "evidence": [
+    "Metadata API AutoResponseRules (e-mail automático para lead ou caso conforme atributos) — developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_autoresponserules.htm",
+    "Limits for Assignment, Auto-Response, and Escalation Rules (3.000 entradas por regra) — help.salesforce.com/apex/HTViewHelpDoc?id=sf.rules_limits.htm"
+  ]
+}

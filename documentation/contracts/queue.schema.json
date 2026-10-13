@@ -1,0 +1,114 @@
+{
+  "metadataType": "Queue",
+  "apiVersion": "67.0",
+  "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+  "xmlFilePattern": "**/queues/*.queue-meta.xml",
+  "template": "modelo-doc-queue-vapi-{apiMajor}.md",
+  "titlePath": "@fullName",
+  "referenceDoc": "_sf_utilities/tools/templates/exemplos-prompts/prompt-queue.md",
+  "classification": "Documento de toda fila. XML reaproveitado do retrieve de acesso (passo 6b).",
+  "properties": [
+    {
+      "name": "Name",
+      "placeholder": "queue_api_name",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Label",
+      "placeholder": "queue_label",
+      "path": "name",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "DoesSendEmailToMembers",
+      "placeholder": "send_email",
+      "path": "doesSendEmailToMembers",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "QueueRoutingConfig",
+      "placeholder": "routing_config",
+      "path": "queue.routingConfig",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação",
+      "notes": "Configuração de roteamento (Omni-Channel), quando há."
+    },
+    {
+      "name": "Usuários membros",
+      "placeholder": "user_members",
+      "path": "queue.userMembersText",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação",
+      "notes": "Só a contagem; usuários não são documentados."
+    }
+  ],
+  "tables": [
+    {
+      "markdownSection": "Objetos aceitos",
+      "builder": "list_values",
+      "source": "XML",
+      "args": {
+        "path": "queue.objects",
+        "valuePlaceholder": "queue_object"
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "queueSobject."
+    },
+    {
+      "markdownSection": "Regras que direcionam para a fila",
+      "builder": "rule_target_rows",
+      "source": "Derivado",
+      "args": {},
+      "emptyValue": "Não informado",
+      "notes": "AssignmentRules e EscalationRules processadas na execução."
+    },
+    {
+      "markdownSection": "Dados internos",
+      "builder": "internal_record_properties",
+      "source": "Objeto interno",
+      "args": {
+        "keyPlaceholder": "internal_property",
+        "valuePlaceholder": "internal_value"
+      },
+      "emptyValue": "Não informado"
+    },
+    {
+      "markdownSection": "Acesso e configuração",
+      "builder": "access_rows",
+      "source": "XML",
+      "args": {
+        "memberRows": {
+          "path": "queue.members",
+          "userCountPath": "queue.userMembers",
+          "access": "Membro da fila"
+        },
+        "noneText": "Fila sem membros no XML"
+      },
+      "emptyValue": "Não informado",
+      "notes": "Membros da fila (papéis, grupos...) do XML; usuários só como contagem."
+    }
+  ],
+  "internalData": {
+    "enabled": true,
+    "source": "Objeto interno",
+    "object": "Group",
+    "useToolingApi": false,
+    "query": "SELECT Id, Name, DeveloperName, Type, DoesSendEmailToMembers FROM Group WHERE DeveloperName = '{developerName}'",
+    "expectSingleRecord": true,
+    "blocking": false,
+    "validationPending": "Fila é um Group com Type Queue: confirmar no piloto. E-mail e membros não são consultados."
+  },
+  "evidence": [
+    "Metadata API Queue (área de espera de itens) — developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_queue.htm",
+    "QueueSobject (objetos da fila) — developer.salesforce.com/docs/atlas.en-us.sfFieldRef.meta/sfFieldRef/salesforce_field_reference_QueueSobject.htm"
+  ]
+}

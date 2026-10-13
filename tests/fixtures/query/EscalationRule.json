@@ -1,0 +1,15 @@
+{
+  "done": true,
+  "totalSize": 1,
+  "records": [
+    {
+      "attributes": {
+        "type": "EscalationRule"
+      },
+      "Id": "01S000000000000AAA",
+      "Name": "Escalonamento_Case",
+      "Active": true,
+      "SobjectType": "Case"
+    }
+  ]
+}

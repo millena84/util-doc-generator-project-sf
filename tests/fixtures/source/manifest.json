@@ -502,5 +502,26 @@
       "fullName": "PedidoEventoTriggerConfig",
       "path": "platformEventSubscriberConfigs/PedidoEventoTriggerConfig.platformEventSubscriberConfig-meta.xml"
     }
+  ],
+  "AssignmentRules:Case": [
+    {
+      "type": "AssignmentRules",
+      "fullName": "Case",
+      "path": "assignmentRules/Case.assignmentRules-meta.xml"
+    }
+  ],
+  "AutoResponseRules:Case": [
+    {
+      "type": "AutoResponseRules",
+      "fullName": "Case",
+      "path": "autoResponseRules/Case.autoResponseRules-meta.xml"
+    }
+  ],
+  "EscalationRules:Case": [
+    {
+      "type": "EscalationRules",
+      "fullName": "Case",
+      "path": "escalationRules/Case.escalationRules-meta.xml"
+    }
   ]
 }

@@ -1,0 +1,15 @@
+{
+  "done": true,
+  "totalSize": 1,
+  "records": [
+    {
+      "attributes": {
+        "type": "AutoResponseRule"
+      },
+      "Id": "03o000000000000AAA",
+      "Name": "Resposta_Case",
+      "Active": true,
+      "SobjectType": "Case"
+    }
+  ]
+}

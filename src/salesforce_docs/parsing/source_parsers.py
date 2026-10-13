@@ -12,6 +12,7 @@ from salesforce_docs.parsing.apex_trigger_parser import parse_apex_trigger
 from salesforce_docs.parsing.event_channel_parser import parse_event_channel_member
 from salesforce_docs.parsing.flexipage_parser import parse_flexipage
 from salesforce_docs.parsing.lwc_parser import parse_lwc_bundle
+from salesforce_docs.parsing.service_rules_parser import parse_queue, parse_service_rules
 
 SOURCE_PARSERS = {
     "apex": parse_apex_source,
@@ -22,6 +23,9 @@ SOURCE_PARSERS = {
     "flexipage": parse_flexipage,
     # lê o próprio XML do membro de canal (CDC) e deriva o objeto de origem
     "event-channel-member": parse_event_channel_member,
+    # regras de atendimento e filas: leem o próprio XML, mascarando dado pessoal
+    "service-rules": parse_service_rules,
+    "queue": parse_queue,
 }
 
 

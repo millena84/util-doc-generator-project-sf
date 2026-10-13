@@ -11,7 +11,7 @@ from salesforce_docs import status as st
 
 API = "inventory/org-dev/api-v67"
 
-# Documento -> modelo esperado (os 31 modelos de documentation/models/api-v67).
+# Documento -> modelo esperado (os 35 modelos de documentation/models/api-v67).
 EXPECTED_DOCS = {
     "doc-meu-flow-flow.md": "modelo-doc-flow-vapi-67.md",
     "doc-tela-cadastro-flow.md": "modelo-doc-flow-vapi-67.md",
@@ -53,6 +53,11 @@ EXPECTED_DOCS = {
     "doc-pedidoacaorapida-lwc-quick-action.md": "modelo-doc-lwc-quick-action-vapi-67.md",
     "doc-pedidotelaflow-lwc.md": "modelo-doc-lwc-vapi-67.md",
     "doc-pedidotelaflow-lwc-flow-screen.md": "modelo-doc-lwc-flow-screen-vapi-67.md",
+    # Service Cloud (Onda 07)
+    "doc-case-assignment-rules.md": "modelo-doc-assignment-rules-vapi-67.md",
+    "doc-case-auto-response-rules.md": "modelo-doc-auto-response-rules-vapi-67.md",
+    "doc-case-escalation-rules.md": "modelo-doc-escalation-rules-vapi-67.md",
+    "doc-fila-pedidos-queue.md": "modelo-doc-queue-vapi-67.md",
     # Objetos de evento (Onda 06)
     "doc-pedido-evento-e-platform-event.md": "modelo-doc-platform-event-vapi-67.md",
     "doc-changeevents-pedido-changeevent-change-data-capture.md": "modelo-doc-change-data-capture-vapi-67.md",
@@ -113,9 +118,11 @@ LISTED_TYPES = {
     "Profile": "profiles", "PermissionSetGroup": "permission-set-groups", "SharingRules": "sharing-rules",
     "Role": "roles", "Group": "public-groups", "FlexiPage": "flexipages",
     "PlatformEventChannelMember": "platform-event-channel-members",
+    "AssignmentRules": "assignment-rules", "AutoResponseRules": "auto-response-rules",
+    "EscalationRules": "escalation-rules", "Queue": "queues",
 }
 # Tipos documentados cujo XML vem do retrieve das fontes de acesso (passo 6b).
-PREFETCHED_TYPES = {"PermissionSet", "Profile", "PermissionSetGroup", "SharingRules"}
+PREFETCHED_TYPES = {"PermissionSet", "Profile", "PermissionSetGroup", "SharingRules", "Queue"}
 # Tipos com componente fixo (fixedComponents): habilitação verificada, sem listagem (passo 6).
 FIXED_TYPES = {"SecuritySettings"}
 # Tipos que só chegam pelo retrieve do CustomObject (passo 7).

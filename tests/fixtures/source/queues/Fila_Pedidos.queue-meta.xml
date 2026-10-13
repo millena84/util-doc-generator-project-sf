@@ -3,6 +3,8 @@
     <doesSendEmailToMembers>false</doesSendEmailToMembers>
     <name>Fila de Pedidos</name>
     <queueMembers>
+        <publicGroups><publicGroup>Grupo_Suporte</publicGroup></publicGroups>
+        <roles><role>Vendas</role></roles>
         <users><user>usuario.membro.sentinela@example.invalid</user></users>
     </queueMembers>
     <queueSobject><sobjectType>Pedido__c</sobjectType></queueSobject>

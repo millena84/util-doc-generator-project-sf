@@ -89,8 +89,9 @@ def build_run_index(records, cfg, class_inventory=None, class_type="ApexClass", 
     cfg = cfg or {}
     page_cfg = (record_fields or {}).get("pages") or {}
     event_cfg = (record_fields or {}).get("events") or {}
+    rules_cfg = (record_fields or {}).get("rules") or {}
     record_fields = (record_fields or {}).get("fields") or {}
-    index = {"automations": {}, "classes": {}, "records": {}, "pageUsage": {}, "pageOrgDefaults": {}, "eventRefs": {},
+    index = {"automations": {}, "classes": {}, "records": {}, "pageUsage": {}, "pageOrgDefaults": {}, "eventRefs": {}, "ruleTargets": {},
              "classInventory": sorted(class_inventory, key=str.lower) if class_inventory is not None else None,
              "phases": cfg.get("phases") or [], "reference": cfg.get("officialReference")}
     seen = set()
@@ -102,6 +103,12 @@ def build_run_index(records, cfg, class_inventory=None, class_type="ApexClass", 
         data = rec["data"]
         _page_entries(index, page_cfg, key[0], key[1], data)
         _event_entries(index, event_cfg, key[0], key[1], data)
+        rules = data.get(rules_cfg.get("parsedKey", "rules")) if rules_cfg else None
+        if isinstance(rules, dict) and key[0] in (rules_cfg.get("types") or []):
+            for t in rules.get("targets") or []:
+                if t.get("name"):
+                    index["ruleTargets"].setdefault(t["name"].lower(), []).append(
+                        dict(t, ruleType=key[0], object=key[1]))
         if key[0] in record_fields:
             index["records"].setdefault(key[0], {})[key[1]] = {
                 f: _text(_get(data, f, key[1])) for f in record_fields[key[0]]}

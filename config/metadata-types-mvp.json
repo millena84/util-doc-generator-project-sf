@@ -58,6 +58,22 @@
       "documentSlug": "change-data-capture",
       "sourceParser": { "name": "event-channel-member", "suffix": ".platformEventChannelMember-meta.xml", "key": "cdc" }
     },
+    "AssignmentRules": {
+      "folder": "assignment-rules", "contract": "assignment-rules.schema.json", "documentSlug": "assignment-rules",
+      "sourceParser": { "name": "service-rules", "suffix": ".assignmentRules-meta.xml", "key": "rules" }
+    },
+    "AutoResponseRules": {
+      "folder": "auto-response-rules", "contract": "auto-response-rules.schema.json", "documentSlug": "auto-response-rules",
+      "sourceParser": { "name": "service-rules", "suffix": ".autoResponseRules-meta.xml", "key": "rules" }
+    },
+    "EscalationRules": {
+      "folder": "escalation-rules", "contract": "escalation-rules.schema.json", "documentSlug": "escalation-rules",
+      "sourceParser": { "name": "service-rules", "suffix": ".escalationRules-meta.xml", "key": "rules" }
+    },
+    "Queue": {
+      "folder": "queues", "contract": "queue.schema.json", "documentSlug": "queue",
+      "sourceParser": { "name": "queue", "suffix": ".queue-meta.xml", "key": "queue" }
+    },
     "CustomField": { "retrievedWith": "CustomObject" },
     "RecordType": { "retrievedWith": "CustomObject" },
     "ValidationRule": { "retrievedWith": "CustomObject" },
@@ -90,7 +106,13 @@
     "clientCredentialsFlowUser",
     "executeHandlerAs",
     "principal",
-    "endpoint"
+    "endpoint",
+    "notifyTo",
+    "notifyEmail",
+    "senderEmail",
+    "senderName",
+    "replyToEmail",
+    "email"
   ],
   "accessSources": {
     "notes": "Onde cada componente está configurado (perfil, permission set, permission set group, fila, regra de compartilhamento). Fonte: XML. Os tipos abaixo são recuperados num retrieve único junto com os componentes documentados, para que o XML do Profile/PermissionSet traga as permissões desses componentes.",
@@ -173,6 +195,11 @@
       "pageType": "FlexiPage",
       "parsedKey": "flexipage",
       "orgDefault": { "metadataType": "CustomObject", "element": "actionOverrides", "typeField": "type", "typeValue": "Flexipage", "contentField": "content", "fields": ["actionName", "formFactor"] }
+    },
+    "rules": {
+      "notes": "Destinos (fila, grupo...) das regras de atribuição e escalonamento processadas, para o documento da fila. Usuários de destino nunca entram.",
+      "parsedKey": "rules",
+      "types": ["AssignmentRules", "EscalationRules"]
     },
     "events": {
       "notes": "Quem publica e quem assina cada evento (platform event __e, change event): Apex (EventBus.publish + new X__e), triggers no evento, Flows (start.triggerType PlatformEvent; recordCreates de __e) e LWC (canais /event e /data com lightning/empApi).",
@@ -398,6 +425,35 @@
       "referenceDoc": "_sf_utilities/ajudAI/contexto-platform-objects.md",
       "usesRunIndex": true,
       "notes": "Objetos selecionados para Change Data Capture (canal padrão ChangeEvents ou customizado), enriquecimento e filtro. Um documento por membro de canal."
+    },
+    {
+      "group": "AssignmentRules",
+      "primaryMetadataType": "AssignmentRules",
+      "relatedMetadataTypes": [],
+      "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+      "notes": "Um documento por objeto (Case, Lead). XML lido pelo parser service-rules; usuário de destino nunca documentado."
+    },
+    {
+      "group": "AutoResponseRules",
+      "primaryMetadataType": "AutoResponseRules",
+      "relatedMetadataTypes": [],
+      "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+      "notes": "Um documento por objeto. Remetente, resposta e e-mails nunca documentados."
+    },
+    {
+      "group": "EscalationRules",
+      "primaryMetadataType": "EscalationRules",
+      "relatedMetadataTypes": [],
+      "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+      "notes": "Um documento por objeto (Case). Usuários e e-mails notificados nunca documentados."
+    },
+    {
+      "group": "Queue",
+      "primaryMetadataType": "Queue",
+      "relatedMetadataTypes": [],
+      "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+      "usesRunIndex": true,
+      "notes": "XML reaproveitado do retrieve de acesso (passo 6b). Membros usuários só como contagem; e-mail da fila não é documentado. Regras que direcionam para a fila vêm das AssignmentRules/EscalationRules processadas."
     },
     {
       "group": "PermissionSet",
