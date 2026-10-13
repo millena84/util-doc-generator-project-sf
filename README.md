@@ -143,6 +143,8 @@ Registro da auditoria de segurança de 2026-10-11 (10 riscos: 1 crítico, 2 alto
 | FlexiPage | `ONE_DOCUMENT_PER_COMPONENT` | — (XML achatado pelo parser `flexipage`; ativação pelo `actionOverrides` do CustomObject processado e pelo CustomApplication do passo 6b; `usesRunIndex`) |
 | PlatformEvent (`CustomObject` `__e`) | `SINGLE_DOCUMENT_PER_OBJECT_WITH_RELATED_COMPONENTS` | CustomField do evento (`CHILD_OF_PRIMARY`); grupo com `contract`/`documentSlug` próprios, `componentFilter` `__e$` (o grupo CustomObject segue com `__c$`) |
 | ChangeDataCapture (`PlatformEventChannelMember`) | `ONE_DOCUMENT_PER_COMPONENT` | — (XML lido pelo parser `event-channel-member`; objeto de origem pela convenção de nomes) |
+| AssignmentRules, AutoResponseRules, EscalationRules | `ONE_DOCUMENT_PER_COMPONENT` | — (um documento por objeto; XML lido pelo parser `service-rules`, que mascara usuários e e-mails) |
+| Queue | `ONE_DOCUMENT_PER_COMPONENT` | — (XML do retrieve de acesso, passo 6b; parser `queue`; regras que direcionam para a fila via `recordIndex.rules`) |
 
 Cada componente (principal ou relacionado) é extraído e normalizado de forma independente; a agregação acontece apenas no documento.
 
@@ -255,6 +257,15 @@ Adaptação de `_sf_utilities/ajudAI/contexto-flexipage.md` (ver a matriz em `do
 - **Onde é usado**: o documento do LWC ganhou a seção "Onde é usado (páginas Lightning)" (`recordIndex.pages`).
 - **Conteúdo genérico** (templates, hierarquia de ativação, regras de visibilidade): [`documentation/referencia-flexipage.md`](documentation/referencia-flexipage.md).
 
+## Service Cloud — Onda 07
+
+Sem `contexto-*.md` no `ajudAI` para esta onda: referência nos prompts de `_sf_utilities/tools/templates/exemplos-prompts/` (detalhados para AssignmentRules e EscalationRules).
+
+- **Regras de atribuição, resposta automática e escalonamento** (`modelo-doc-assignment-rules`, `-auto-response-rules`, `-escalation-rules`, um por objeto): situação (quantas regras ativas), regras, entradas na ordem de avaliação (critério, lógica, destino, demais configurações) e, no escalonamento, ações; registros na org (`AssignmentRule`/`AutoResponseRule`/`EscalationRule`, `validationPending`).
+- **Fila** (`modelo-doc-queue`): objetos aceitos, roteamento (`queueRoutingConfig`), regras que direcionam para a fila e membros (papéis, grupos) na seção de acesso.
+- **Parsers** (`src/salesforce_docs/parsing/service_rules_parser.py`): leitura genérica do XML (nomes internos não confirmados); **usuário de destino, usuários notificados, membros usuários e e-mails nunca são documentados** — aparecem como texto fixo ou contagem; os elementos também entraram em `omitFromDocumentation`.
+- **Conteúdo genérico e o que ficou fora** (Omni-Channel, Entitlements, CaseSettings): [`documentation/referencia-service-cloud.md`](documentation/referencia-service-cloud.md).
+
 ## Objetos de evento — Onda 06
 
 Adaptação de `_sf_utilities/ajudAI/contexto-platform-objects.md` (ver a matriz em `documentation/refatoracao-1-matriz-ajudai.md`).
@@ -324,11 +335,11 @@ Os testes usam uma Salesforce CLI **simulada** (`tests/fixtures/bin/sf`) e respo
 ### Simulação de todas as documentações do MVP
 
 ```bash
-python3 -m unittest tests.test_mvp_simulation        # verifica os 31 modelos e os 29 metadata types
+python3 -m unittest tests.test_mvp_simulation        # verifica os 35 modelos e os 33 metadata types
 python3 -m tests.simulate_mvp --out /tmp/sim-mvp     # executa e gera o relatório passo a passo
 ```
 
-O cenário `mvp_complete` da CLI simulada sobrepõe `tests/fixtures/mvp-complete/` às fixtures base, de modo que todo metadata type do MVP tenha ao menos um componente. O relatório versionado em `documentation/simulacao/relatorio-simulacao-mvp.md` mostra, para essa simulação, a saída no terminal, os comandos por passo, a situação de cada tipo, a árvore de arquivos e o conteúdo dos 57 documentos gerados.
+O cenário `mvp_complete` da CLI simulada sobrepõe `tests/fixtures/mvp-complete/` às fixtures base, de modo que todo metadata type do MVP tenha ao menos um componente. O relatório versionado em `documentation/simulacao/relatorio-simulacao-mvp.md` mostra, para essa simulação, a saída no terminal, os comandos por passo, a situação de cada tipo, a árvore de arquivos e o conteúdo dos 61 documentos gerados.
 
 | Grupo | Documento(s) / modelo | Tipos que aparecem dentro do documento |
 |---|---|---|
@@ -354,6 +365,8 @@ O cenário `mvp_complete` da CLI simulada sobrepõe `tests/fixtures/mvp-complete
 | FlexiPage | `modelo-doc-flexipage` | ativação (CustomObject processado, CustomApplication do passo 6b); o LWC mostra as páginas que o usam |
 | PlatformEvent | `modelo-doc-platform-event` | CustomField do evento; publicadores e assinantes processados |
 | ChangeDataCapture | `modelo-doc-change-data-capture` | assinantes processados |
+| AssignmentRules / AutoResponseRules / EscalationRules | `modelo-doc-assignment-rules`, `-auto-response-rules`, `-escalation-rules` | — |
+| Queue | `modelo-doc-queue` | regras que direcionam para a fila |
 
 ## Estrutura
 

@@ -1,6 +1,6 @@
 {
   "done": true,
-  "totalSize": 1,
+  "totalSize": 2,
   "records": [
     {
       "attributes": {
@@ -11,6 +11,16 @@
       "DeveloperName": "Grupo_Suporte",
       "Type": "Regular",
       "DoesIncludeBosses": true
+    },
+    {
+      "attributes": {
+        "type": "Group"
+      },
+      "Id": "00G000000000001AAA",
+      "Name": "Fila de Pedidos",
+      "DeveloperName": "Fila_Pedidos",
+      "Type": "Queue",
+      "DoesSendEmailToMembers": false
     }
   ]
 }

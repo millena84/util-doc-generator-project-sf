@@ -53,6 +53,7 @@ def access_rows(ctx, args):
       pageActivation — FlexiPage: padrão da org (objeto) e ativação por app / app + perfil;
       sharedTo — tipos de destinatário (ex.: role, roleAndSubordinates): regras de
         compartilhamento que compartilham com o próprio componente (papel, grupo);
+      memberRows — {path, userCountPath?, access}: membros do XML do componente (ex.: fila);
       notApplicable — motivo quando o tipo não tem atribuição por perfil/permission set.
     """
     if args.get("notApplicable"):
@@ -103,6 +104,16 @@ def access_rows(ctx, args):
             via = "; ".join(f"{lbl} {a[k]}" for k, lbl in (("pageOrSobjectType", "Objeto"), ("profile", "Perfil"),
                                                             ("recordType", "Record type")) if a.get(k))
             rows.append(_row(a["level"], a["app"], f"Ativada ({detail})" if detail else "Ativada", via or None))
+    mr = args.get("memberRows") or {}
+    if mr:
+        # Membros declarados no XML do próprio componente (ex.: fila: papéis e grupos). Usuários: só contagem.
+        value, _ = resolve(root, mr["path"])
+        for m in as_list(value):
+            if isinstance(m, dict) and m.get("name"):
+                rows.append(_row(m.get("type") or DASH, m["name"], mr.get("access", "Membro"), None))
+        count, _ = resolve(root, mr["userCountPath"]) if mr.get("userCountPath") else (None, None)
+        if count:
+            rows.append(_row("Usuários", f"{count} (não documentados)", mr.get("access", "Membro"), None))
     for bp in args.get("byPath") or []:
         # Acesso a componentes que o próprio componente referencia (ex.: trigger -> objeto e
         # classes chamadas). bp: {path, itemField?, accessKey, via ("Objeto {name}")}.

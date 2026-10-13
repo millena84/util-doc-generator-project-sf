@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AssignmentRules xmlns="http://soap.sforce.com/2006/04/metadata">
+    <assignmentRule>
+        <fullName>Atribuicao_Case</fullName>
+        <active>true</active>
+        <ruleEntry>
+            <assignedTo>Fila_Pedidos</assignedTo>
+            <assignedToType>Queue</assignedToType>
+            <criteriaItems>
+                <field>Case.Origin</field>
+                <operation>equals</operation>
+                <value>Email</value>
+            </criteriaItems>
+            <criteriaItems>
+                <field>Case.Priority</field>
+                <operation>equals</operation>
+                <value>High</value>
+            </criteriaItems>
+            <template>unfiled$public/Caso_Atribuido</template>
+        </ruleEntry>
+        <ruleEntry>
+            <assignedTo>dono.sentinela@example.invalid</assignedTo>
+            <assignedToType>User</assignedToType>
+        </ruleEntry>
+    </assignmentRule>
+    <assignmentRule>
+        <fullName>Atribuicao_Antiga</fullName>
+        <active>false</active>
+    </assignmentRule>
+</AssignmentRules>

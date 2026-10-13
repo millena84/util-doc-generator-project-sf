@@ -17,6 +17,7 @@ BUILDER_PLACEHOLDERS = {
     "role_hierarchy_rows": ("hierarchy_relation", "hierarchy_role", "hierarchy_level"),
     "page_usage_rows": ("usage_page", "usage_page_type", "usage_region", "usage_identifier", "usage_visibility"),
     "event_reference_rows": ("event_role", "event_kind", "event_component", "event_detail", "event_subscriber_config"),
+    "rule_target_rows": ("target_rule_type", "target_object", "target_rule", "target_order", "target_active"),
 }
 
 
@@ -116,6 +117,19 @@ def event_reference_rows(ctx, args):
     return rows
 
 
+def rule_target_rows(ctx, args):
+    """Regras de atribuição/escalonamento processadas na execução que direcionam para o componente."""
+    index = _index(ctx)
+    if index is None:
+        return []
+    rows = [{"target_rule_type": t["ruleType"], "target_object": t["object"], "target_rule": t.get("rule") or DASH,
+             "target_order": str(t.get("order")), "target_active": t.get("active") or DASH}
+            for t in (index.get("ruleTargets") or {}).get(ctx.root().full_name.lower(), [])]
+    return rows or [{"target_rule_type": "Nenhuma regra processada nesta execução direciona para o componente",
+                     "target_object": DASH, "target_rule": DASH, "target_order": DASH, "target_active": DASH}]
+
+
 TABLE_BUILDERS = {"index_record_rows": index_record_rows, "role_hierarchy_rows": role_hierarchy_rows,
-                  "page_usage_rows": page_usage_rows, "event_reference_rows": event_reference_rows}
+                  "page_usage_rows": page_usage_rows, "event_reference_rows": event_reference_rows,
+                  "rule_target_rows": rule_target_rows}
 BLOCK_BUILDERS = {}

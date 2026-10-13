@@ -1,0 +1,119 @@
+{
+  "metadataType": "EscalationRules",
+  "apiVersion": "67.0",
+  "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+  "xmlFilePattern": "**/escalationRules/*.escalationRules-meta.xml",
+  "template": "modelo-doc-escalation-rules-vapi-{apiMajor}.md",
+  "titlePath": "@fullName",
+  "referenceDoc": "_sf_utilities/tools/templates/exemplos-prompts/prompt-escalation-rules.md",
+  "classification": "Regras de escalonamento por objeto (Case).",
+  "properties": [
+    {
+      "name": "Objeto",
+      "placeholder": "rules_object",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação",
+      "notes": "Um arquivo por objeto."
+    },
+    {
+      "name": "Situação",
+      "placeholder": "active_check",
+      "path": "rules.activeCheck",
+      "source": "Derivado",
+      "required": false,
+      "markdownSection": "Identificação",
+      "notes": "Contagem de regras ativas no XML."
+    }
+  ],
+  "tables": [
+    {
+      "markdownSection": "Regras",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "rules.rules",
+        "columns": {
+          "rule_name": "rule",
+          "rule_active": "active",
+          "rule_details": "details"
+        }
+      },
+      "emptyValue": "Não aplicável"
+    },
+    {
+      "markdownSection": "Entradas (ordem de avaliação)",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "rules.entries",
+        "columns": {
+          "entry_rule": "rule",
+          "entry_order": "order",
+          "entry_criteria": "criteria",
+          "entry_logic": "logic",
+          "entry_destination": "destination",
+          "entry_details": "details"
+        }
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Usuários de destino, usuários notificados e e-mails nunca são documentados (texto fixo no lugar)."
+    },
+    {
+      "markdownSection": "Ações de escalonamento",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "rules.actions",
+        "columns": {
+          "action_rule": "rule",
+          "action_order": "order",
+          "action_name": "action",
+          "action_destination": "destination",
+          "action_details": "details"
+        }
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Grupos aninhados na entrada (ex.: escalationAction)."
+    },
+    {
+      "markdownSection": "Registros na org",
+      "builder": "internal_rows",
+      "source": "Objeto interno",
+      "args": {
+        "columns": {
+          "internal_rule_id": "Id",
+          "internal_rule_name": "Name",
+          "internal_rule_active": "Active"
+        }
+      },
+      "emptyValue": "Não informado",
+      "notes": "Objeto EscalationRule (validationPending)."
+    },
+    {
+      "markdownSection": "Acesso e configuração",
+      "builder": "access_rows",
+      "source": "XML",
+      "args": {
+        "notApplicable": "Regras de automação do objeto; não são concedidas por perfil ou permission set"
+      },
+      "emptyValue": "Não informado"
+    }
+  ],
+  "internalData": {
+    "enabled": true,
+    "source": "Objeto interno",
+    "object": "EscalationRule",
+    "useToolingApi": true,
+    "query": "SELECT Id, Name, Active FROM EscalationRule WHERE SobjectType = '{fullName}'",
+    "expectSingleRecord": false,
+    "blocking": false,
+    "validationPending": "Objeto EscalationRule (Tooling API): confirmar nome do objeto e o filtro SobjectType no piloto."
+  },
+  "evidence": [
+    "Metadata API EscalationRules (escalonar casos não resolvidos no prazo) — developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_escalationrules.htm",
+    "Guidelines/Set Up Assignment Rules e Escalation Rule Entries: uma regra ativa por vez; entradas em ordem, para na primeira que casa; última entrada sem critério recomendada — help.salesforce.com/s/articleView?id=customize_leadrules.htm, ?id=service.rules_escalation_rule_entry.htm",
+    "Limits for Assignment, Auto-Response, and Escalation Rules (3.000 entradas por regra) — help.salesforce.com/apex/HTViewHelpDoc?id=sf.rules_limits.htm"
+  ]
+}

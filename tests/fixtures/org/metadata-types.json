@@ -246,6 +246,30 @@
         "metaFile": false,
         "suffix": "platformEventSubscriberConfig",
         "xmlName": "PlatformEventSubscriberConfig"
+      },
+      {
+        "childXmlNames": [],
+        "directoryName": "assignmentRules",
+        "inFolder": false,
+        "metaFile": false,
+        "suffix": "assignmentRules",
+        "xmlName": "AssignmentRules"
+      },
+      {
+        "childXmlNames": [],
+        "directoryName": "autoResponseRules",
+        "inFolder": false,
+        "metaFile": false,
+        "suffix": "autoResponseRules",
+        "xmlName": "AutoResponseRules"
+      },
+      {
+        "childXmlNames": [],
+        "directoryName": "escalationRules",
+        "inFolder": false,
+        "metaFile": false,
+        "suffix": "escalationRules",
+        "xmlName": "EscalationRules"
       }
     ],
     "organizationNamespace": "",

@@ -146,6 +146,18 @@ sf data query --use-tooling-api --target-org dev --json --query "SELECT Id, Deve
 - **PlatformEventSubscriberConfig:** confira `platformEventConsumer`, `batchSize` e `user` no XML (o valor de `user` nunca vai para o documento; não o cole no relato).
 - **Permissões:** confirme o nome de API das permissões View All Data / View All Users no XML de perfil (`ViewAllData`, `ViewAllUsers`).
 
+## 5g. Service Cloud (Onda 07)
+
+```bash
+bin/sf-docs.sh run --group AssignmentRules --group AutoResponseRules --group EscalationRules --group Queue --non-interactive
+sf data query --use-tooling-api --target-org dev --json --query "SELECT Id, Name, Active FROM AssignmentRule WHERE SobjectType = 'Case'"
+```
+
+- **Confira** contra o Setup a ordem das entradas, critérios e destinos; relate se algum elemento aparecer só em "Outras configurações" (nome real diferente do esperado).
+- **Proteção de dados:** procure nos documentos gerados qualquer e-mail ou nome de usuário (`grep -i "@" saida/docs/...`). Deve vir vazio.
+- **Tooling:** relate se `AutoResponseRule`/`EscalationRule` existem como objetos e se o filtro `SobjectType` funciona.
+- **Fila:** confira os contêineres de `queueMembers` (papéis, grupos) e se `queueRoutingConfig` vem no XML.
+
 ## 6. Acesso e configuração
 
 O ponto mais importante: confirmar se o XML de Profile/PermissionSet traz as permissões **só** dos componentes recuperados no mesmo pedido. O utilitário já recupera tudo junto (passo 6b), mas o resultado precisa ser conferido:

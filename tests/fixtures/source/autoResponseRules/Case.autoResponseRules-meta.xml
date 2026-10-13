@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AutoResponseRules xmlns="http://soap.sforce.com/2006/04/metadata">
+    <autoResponseRule>
+        <fullName>Resposta_Case</fullName>
+        <active>true</active>
+        <ruleEntry>
+            <criteriaItems>
+                <field>Case.Origin</field>
+                <operation>equals</operation>
+                <value>Web</value>
+            </criteriaItems>
+            <replyToEmail>resposta.sentinela@example.invalid</replyToEmail>
+            <senderEmail>remetente.sentinela@example.invalid</senderEmail>
+            <senderName>Remetente Sentinela</senderName>
+            <template>unfiled$public/Caso_Recebido</template>
+        </ruleEntry>
+    </autoResponseRule>
+</AutoResponseRules>

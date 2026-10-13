@@ -1,0 +1,24 @@
+{
+  "done": true,
+  "totalSize": 2,
+  "records": [
+    {
+      "attributes": {
+        "type": "AssignmentRule"
+      },
+      "Id": "01Q000000000000AAA",
+      "Name": "Atribuicao_Case",
+      "Active": true,
+      "SobjectType": "Case"
+    },
+    {
+      "attributes": {
+        "type": "AssignmentRule"
+      },
+      "Id": "01Q000000000001AAA",
+      "Name": "Atribuicao_Antiga",
+      "Active": false,
+      "SobjectType": "Case"
+    }
+  ]
+}
