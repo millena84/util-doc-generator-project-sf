@@ -53,6 +53,24 @@
       "emptyValue": "Não aplicável"
     },
     {
+      "markdownSection": "Regras para convidado (sites)",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "sharingGuestRules",
+        "columns": {
+          "rule_name": "fullName",
+          "rule_label": "label",
+          "rule_access": "accessLevel",
+          "rule_shared_to": "sharedTo",
+          "rule_criteria": "criteriaItems",
+          "rule_logic": "booleanFilter"
+        }
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "sharingGuestRules: compartilham registros com o usuário convidado de um site (sharedTo/guestUser). Elemento a confirmar no piloto."
+    },
+    {
       "markdownSection": "Padrão de compartilhamento do objeto (OWD)",
       "builder": "index_record_rows",
       "source": "XML",

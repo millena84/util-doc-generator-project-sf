@@ -132,6 +132,14 @@
       "notes": "FlexiPages processadas na execução com componentName c:<componente> (XML da FlexiPage)."
     },
     {
+      "markdownSection": "Onde é usado (Experience Cloud)",
+      "builder": "page_usage_rows",
+      "source": "JSON do ExperienceBundle",
+      "args": { "keyPrefix": "c:", "indexKey": "experienceUsage", "noneText": "Nenhuma página de Experience Cloud processada nesta execução usa o componente" },
+      "emptyValue": "Não informado",
+      "notes": "Views (views/*.json) dos ExperienceBundles processados na execução com componentName c:<componente>."
+    },
+    {
       "markdownSection": "Dados internos",
       "builder": "internal_record_properties",
       "source": "Objeto interno",

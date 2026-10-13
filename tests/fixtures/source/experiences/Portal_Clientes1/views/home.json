@@ -1,0 +1,37 @@
+{
+  "appPageId" : "b1a2c3d4-0000-0000-0000-000000000001",
+  "componentName" : "siteforce:sldsTwoFrameEightFourLayout",
+  "id" : "home",
+  "label" : "Home",
+  "regions" : [ {
+    "components" : [ {
+      "componentAttributes" : { "title" : "Bem-vindo ao Portal" },
+      "componentName" : "c:portalBanner",
+      "id" : "banner_cmp",
+      "renderPriority" : "NEUTRAL",
+      "type" : "component"
+    }, {
+      "componentAttributes" : { "recordId" : "{!recordId}" },
+      "componentName" : "c:pedidoPainel",
+      "id" : "painel_cmp",
+      "renderPriority" : "NEUTRAL",
+      "targetAudience" : "Audiencia_Clientes_VIP",
+      "type" : "component"
+    } ],
+    "id" : "region-header",
+    "name" : "header",
+    "type" : "region"
+  }, {
+    "components" : [ {
+      "componentAttributes" : { },
+      "componentName" : "forceCommunity:richText",
+      "id" : "texto_cmp",
+      "type" : "component"
+    } ],
+    "id" : "region-content",
+    "name" : "content",
+    "type" : "region"
+  } ],
+  "type" : "view",
+  "viewType" : "home"
+}

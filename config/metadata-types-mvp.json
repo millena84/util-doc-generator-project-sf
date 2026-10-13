@@ -86,6 +86,18 @@
     "Territory2": { "folder": "territory2-models" },
     "Territory2Rule": { "folder": "territory2-models" },
     "OpportunitySplitType": { "folder": "opportunity-split-types", "contract": "opportunity-split-type.schema.json", "documentSlug": "opportunity-split-type" },
+    "Network": {
+      "folder": "networks", "contract": "network.schema.json", "documentSlug": "network",
+      "sourceParser": { "name": "network", "suffix": ".network-meta.xml", "key": "network" }
+    },
+    "CustomSite": {
+      "folder": "sites", "contract": "custom-site.schema.json", "documentSlug": "site",
+      "sourceParser": { "name": "custom-site", "suffix": ".site-meta.xml", "key": "site" }
+    },
+    "ExperienceBundle": {
+      "folder": "experiences", "contract": "experience-bundle.schema.json", "documentSlug": "experience",
+      "sourceParser": { "name": "experience-bundle", "suffix": [".json", ".site-meta.xml"], "key": "experience", "bundle": true }
+    },
     "CustomField": { "retrievedWith": "CustomObject" },
     "RecordType": { "retrievedWith": "CustomObject" },
     "ValidationRule": { "retrievedWith": "CustomObject" },
@@ -124,7 +136,12 @@
     "senderEmail",
     "senderName",
     "replyToEmail",
-    "email"
+    "email",
+    "emailSenderAddress",
+    "emailSenderName",
+    "emailSenderEmail",
+    "siteAdmin",
+    "siteGuestRecordDefaultOwner"
   ],
   "accessSources": {
     "notes": "Onde cada componente está configurado (perfil, permission set, permission set group, fila, regra de compartilhamento). Fonte: XML. Os tipos abaixo são recuperados num retrieve único junto com os componentes documentados, para que o XML do Profile/PermissionSet traga as permissões desses componentes.",
@@ -149,7 +166,7 @@
     "queues": { "metadataType": "Queue", "element": "queueSobject", "field": "sobjectType", "label": "Fila" },
     "sharingRules": {
       "metadataType": "SharingRules",
-      "elements": { "sharingCriteriaRules": "Regra de compartilhamento por critério", "sharingOwnerRules": "Regra de compartilhamento por proprietário" },
+      "elements": { "sharingCriteriaRules": "Regra de compartilhamento por critério", "sharingOwnerRules": "Regra de compartilhamento por proprietário", "sharingGuestRules": "Regra de compartilhamento para convidado" },
       "sharedTo": "sharedTo",
       "accessLevel": "accessLevel"
     },
@@ -169,7 +186,7 @@
       "batchSizeField": "batchSize",
       "userField": "user"
     },
-    "validationPending": "objectPermissions, PermissionSetGroup.permissionSets, SharingRules.sharedTo, customPermissions (name/enabled), CustomApplication.profileActionOverrides, PlatformEventSubscriberConfig (platformEventConsumer/batchSize/user) e o formato de externalCredentialPrincipal não confirmados nesta adaptação; confirmar no piloto (documentation/piloto-org-real.md)."
+    "validationPending": "objectPermissions, PermissionSetGroup.permissionSets, SharingRules.sharedTo, customPermissions (name/enabled), CustomApplication.profileActionOverrides, PlatformEventSubscriberConfig (platformEventConsumer/batchSize/user), SharingRules.sharingGuestRules (sharedTo/guestUser) e o formato de externalCredentialPrincipal não confirmados nesta adaptação; confirmar no piloto (documentation/piloto-org-real.md)."
   },
   "automationIndex": {
     "notes": "Automações que convivem no mesmo objeto (documento de Apex Trigger). Fonte: XML/código dos componentes processados na execução. Fases na ordem oficial de execução; 'order' null = posição relativa não confirmada nesta adaptação.",
@@ -206,7 +223,14 @@
       "notes": "Onde cada componente é usado (FlexiPage processada) e páginas ativadas como padrão da org (actionOverrides do CustomObject processado).",
       "pageType": "FlexiPage",
       "parsedKey": "flexipage",
-      "orgDefault": { "metadataType": "CustomObject", "element": "actionOverrides", "typeField": "type", "typeValue": "Flexipage", "contentField": "content", "fields": ["actionName", "formFactor"] }
+      "orgDefault": { "metadataType": "CustomObject", "element": "actionOverrides", "typeField": "type", "typeValue": "Flexipage", "contentField": "content", "fields": ["actionName", "formFactor"] },
+      "experience": {
+        "notes": "Componentes nas páginas (views) do ExperienceBundle processado, para o documento do LWC; classes Apex importadas por cada LWC processado, para o acesso do ExperienceBundle.",
+        "metadataType": "ExperienceBundle",
+        "parsedKey": "experience",
+        "pageType": "Experience Cloud",
+        "lwc": { "metadataType": "LightningComponentBundle", "parsedKey": "lwc", "classesKey": "apexClasses" }
+      }
     },
     "rules": {
       "notes": "Destinos (fila, grupo...) das regras de atribuição e escalonamento processadas, para o documento da fila. Usuários de destino nunca entram.",
@@ -504,6 +528,33 @@
       "relatedMetadataTypes": [],
       "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
       "referenceDoc": "_sf_utilities/ajudAI/contexto-doc-sales-cloud.md"
+    },
+    {
+      "group": "Network",
+      "primaryMetadataType": "Network",
+      "relatedMetadataTypes": ["CustomSite"],
+      "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+      "referenceDoc": "_sf_utilities/ajudAI/contexto-doc-experience-cloud.md",
+      "relations": [ { "metadataType": "CustomSite", "match": "PRIMARY_FIELD_REFERENCES", "field": "site" } ],
+      "notes": "Site do Experience Cloud (comunidade): membros (perfis e permission sets), autorregistro, templates de e-mail e o CustomSite referenciado em <site> (nome do elemento a confirmar). Remetente de e-mail nunca é documentado."
+    },
+    {
+      "group": "CustomSite",
+      "primaryMetadataType": "CustomSite",
+      "relatedMetadataTypes": ["Network"],
+      "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+      "referenceDoc": "_sf_utilities/ajudAI/contexto-doc-experience-cloud.md",
+      "relations": [ { "metadataType": "Network", "match": "FIELD_EQUALS_PRIMARY", "field": "site" } ],
+      "notes": "Infraestrutura web do site: URL, perfil de convidado e regras de compartilhamento para convidado. Usuários (administrador e dono padrão dos registros de convidado) nunca são documentados."
+    },
+    {
+      "group": "ExperienceBundle",
+      "primaryMetadataType": "ExperienceBundle",
+      "relatedMetadataTypes": [],
+      "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+      "referenceDoc": "_sf_utilities/ajudAI/contexto-doc-experience-cloud.md",
+      "usesRunIndex": true,
+      "notes": "Páginas (views), rotas e componentes do Experience Builder (sites Aura/LWR no formato ExperienceBundle). DigitalExperienceBundle (sites LWR aprimorados) não é coberto. O índice da execução liga os LWC das páginas aos documentos de LWC e às classes Apex que eles importam."
     },
     {
       "group": "PermissionSet",

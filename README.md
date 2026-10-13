@@ -149,6 +149,9 @@ Registro da auditoria de segurança de 2026-10-11 (10 riscos: 1 crítico, 2 alto
 | LeadConvertSettings | `ONE_DOCUMENT_PER_ORG` | — (componente fixo `LeadConvertSettings:LeadConvertSettings`; parser `lead-convert`) |
 | Territory2Model | `ONE_DOCUMENT_PER_COMPONENT` | Territory2 e Territory2Rule com nome `<modelo>.*` (`NAME_PREFIX`) |
 | OpportunitySplitType | `ONE_DOCUMENT_PER_COMPONENT` | — (folhas do XML como estão, `leaf_properties`) |
+| Network | `ONE_DOCUMENT_PER_COMPONENT` | CustomSite cujo nome é o `<site>` da Network (`PRIMARY_FIELD_REFERENCES`); parser `network` (remetente de e-mail nunca guardado) |
+| CustomSite | `ONE_DOCUMENT_PER_COMPONENT` | Network cujo `<site>` é o site (`FIELD_EQUALS_PRIMARY`); parser `custom-site` (usuários nunca guardados) |
+| ExperienceBundle | `ONE_DOCUMENT_PER_COMPONENT` | — (bundle: `.site-meta.xml` + `views/`, `routes/`... em JSON, parser `experience-bundle`; índice da execução liga as views aos LWC) |
 
 Cada componente (principal ou relacionado) é extraído e normalizado de forma independente; a agregação acontece apenas no documento.
 
@@ -249,7 +252,7 @@ Adaptação de `_sf_utilities/ajudAI/contexto-lwc.md` (ver a matriz em `document
 - **Parser do bundle** (`src/salesforce_docs/parsing/lwc_parser.py`, `sourceParser.bundle: true`): recebe todos os arquivos do componente; testes Jest (`__tests__/`) são ignorados; comentários e strings do JS e comentários do HTML não contam como evidência; o código nunca é renderizado. Lê os **atributos** do `.js-meta.xml` (`targetConfig targets=`, `property name/type/role`), que o normalizador XML genérico não guarda.
 - **Verificação nas classes Apex**: para cada método importado, confere no código da classe processada na execução se ele é `static`, `public`/`global`, tem `@AuraEnabled` e, com `@wire`, `cacheable=true`. Classe fora do escopo: "Classe não processada nesta execução".
 - **Acesso**: LWC não tem acesso próprio por perfil/permission set. A seção lista quem acessa as classes Apex chamadas (`classAccesses`, exigido para métodos `@AuraEnabled`) e quem tem as Custom Permissions importadas no JS (`customPermissions`, nova concessão em `accessSources.grants`).
-- **Conteúdo genérico** (ciclo de vida, comunicação, LDS, APIs de plataforma): [`documentation/referencia-lwc.md`](documentation/referencia-lwc.md). Onde o componente é colocado: seção "Onde é usado (páginas Lightning)", a partir das FlexiPages processadas (Onda 04).
+- **Conteúdo genérico** (ciclo de vida, comunicação, LDS, APIs de plataforma): [`documentation/referencia-lwc.md`](documentation/referencia-lwc.md). Onde o componente é colocado: seções "Onde é usado (páginas Lightning)", a partir das FlexiPages processadas (Onda 04), e "Onde é usado (Experience Cloud)", a partir dos ExperienceBundles processados (Onda 09).
 
 ## Páginas Lightning (FlexiPage) — Onda 04
 
@@ -260,6 +263,18 @@ Adaptação de `_sf_utilities/ajudAI/contexto-flexipage.md` (ver a matriz em `do
 - **Ativação** (última seção): padrão da org (`actionOverrides` do CustomObject processado), padrão do app e app + perfil/record type (`actionOverrides`/`profileActionOverrides` do CustomApplication, novo tipo do retrieve de acesso — `accessSources.pageAssignments`), e quem tem as Custom Permissions usadas na visibilidade. Página sem ativação nos componentes processados aparece como tal.
 - **Onde é usado**: o documento do LWC ganhou a seção "Onde é usado (páginas Lightning)" (`recordIndex.pages`).
 - **Conteúdo genérico** (templates, hierarquia de ativação, regras de visibilidade): [`documentation/referencia-flexipage.md`](documentation/referencia-flexipage.md).
+
+## Experience Cloud — Onda 09
+
+Adaptação de `_sf_utilities/ajudAI/contexto-doc-experience-cloud.md` (ver a matriz em `documentation/refatoracao-1-matriz-ajudai.md`).
+
+- **Site do Experience Cloud** (`modelo-doc-network`): status, URL, autorregistro e perfil de autorregistro, templates de e-mail, o CustomSite do site e, na seção de acesso, os **membros** (perfis e permission sets de `networkMemberGroups`). O remetente de e-mail nunca é documentado: só se está configurado.
+- **Site** (`modelo-doc-custom-site`): URL, tipo, configurações de segurança como estão no XML, a Network que usa o site e a **segurança do convidado**: perfil de convidado, permissões de objeto desse perfil (acesso além de Ler/Criar marcado para revisão) e regras de compartilhamento para convidado (`sharingGuestRules`). Administrador e dono padrão dos registros de convidado são usuários: só aparece se estão configurados.
+- **Experience Builder** (`modelo-doc-experience-bundle`): pastas do bundle, páginas (views, layout, componentes por região), rotas com o acesso de cada página (ex.: `Public`, `RequiresLogin`) e referências de público/visibilidade como estão no JSON (fonte nova `JSON do ExperienceBundle`). Na seção de acesso, quem executa as classes Apex chamadas pelos LWC das páginas.
+- **Onde é usado:** o documento do LWC ganhou a seção "Onde é usado (Experience Cloud)" (`recordIndex.pages.experience`). O documento de regras de compartilhamento ganhou "Regras para convidado (sites)".
+- **Novidades genéricas:** builder `origin_grants_rows` (o que um perfil referenciado concede); `byPath.through` no `access_rows` (nomes levados por uma chave do índice da execução, ex.: LWC → classes Apex); `page_usage_rows.indexKey`.
+- **Fora do escopo:** `DigitalExperienceBundle` (sites LWR aprimorados), Audiences como metadata e os critérios das audiências.
+- **Conteúdo genérico e o que não foi confirmado:** [`documentation/referencia-experience-cloud.md`](documentation/referencia-experience-cloud.md).
 
 ## Sales Cloud — Onda 08
 
@@ -353,11 +368,11 @@ Os testes usam uma Salesforce CLI **simulada** (`tests/fixtures/bin/sf`) e respo
 ### Simulação de todas as documentações do MVP
 
 ```bash
-python3 -m unittest tests.test_mvp_simulation        # verifica os 39 modelos e os 39 metadata types
+python3 -m unittest tests.test_mvp_simulation        # verifica os 42 modelos e os 42 metadata types
 python3 -m tests.simulate_mvp --out /tmp/sim-mvp     # executa e gera o relatório passo a passo
 ```
 
-O cenário `mvp_complete` da CLI simulada sobrepõe `tests/fixtures/mvp-complete/` às fixtures base, de modo que todo metadata type do MVP tenha ao menos um componente. O relatório versionado em `documentation/simulacao/relatorio-simulacao-mvp.md` mostra, para essa simulação, a saída no terminal, os comandos por passo, a situação de cada tipo, a árvore de arquivos e o conteúdo dos 65 documentos gerados.
+O cenário `mvp_complete` da CLI simulada sobrepõe `tests/fixtures/mvp-complete/` às fixtures base, de modo que todo metadata type do MVP tenha ao menos um componente. O relatório versionado em `documentation/simulacao/relatorio-simulacao-mvp.md` mostra, para essa simulação, a saída no terminal, os comandos por passo, a situação de cada tipo, a árvore de arquivos e o conteúdo dos 69 documentos gerados.
 
 | Grupo | Documento(s) / modelo | Tipos que aparecem dentro do documento |
 |---|---|---|
@@ -389,6 +404,9 @@ O cenário `mvp_complete` da CLI simulada sobrepõe `tests/fixtures/mvp-complete
 | LeadConvertSettings | `modelo-doc-lead-convert-settings` | — |
 | Territory2Model | `modelo-doc-territory2-model` | Territory2, Territory2Rule |
 | OpportunitySplitType | `modelo-doc-opportunity-split-type` | — |
+| Network | `modelo-doc-network` | CustomSite do site |
+| CustomSite | `modelo-doc-custom-site` | Network que usa o site |
+| ExperienceBundle | `modelo-doc-experience-bundle` | — |
 
 ## Estrutura
 

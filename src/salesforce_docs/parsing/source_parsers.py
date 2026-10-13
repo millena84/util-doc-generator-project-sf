@@ -10,6 +10,7 @@ from __future__ import annotations
 from salesforce_docs.parsing.apex_parser import parse_apex_source
 from salesforce_docs.parsing.apex_trigger_parser import parse_apex_trigger
 from salesforce_docs.parsing.event_channel_parser import parse_event_channel_member
+from salesforce_docs.parsing.experience_parser import parse_custom_site, parse_experience_bundle, parse_network
 from salesforce_docs.parsing.flexipage_parser import parse_flexipage
 from salesforce_docs.parsing.lwc_parser import parse_lwc_bundle
 from salesforce_docs.parsing.sales_parser import parse_business_process, parse_lead_convert
@@ -30,6 +31,11 @@ SOURCE_PARSERS = {
     # Sales Cloud (Onda 08): leem o próprio XML
     "business-process": parse_business_process,
     "lead-convert": parse_lead_convert,
+    # Experience Cloud (Onda 09): XML da Network e do CustomSite (usuários e remetente nunca
+    # guardados) e bundle do ExperienceBundle (views/routes em JSON)
+    "network": parse_network,
+    "custom-site": parse_custom_site,
+    "experience-bundle": parse_experience_bundle,
 }
 
 

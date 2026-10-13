@@ -1,0 +1,181 @@
+{
+  "metadataType": "CustomSite",
+  "apiVersion": "67.0",
+  "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+  "xmlFilePattern": "**/sites/*.site-meta.xml",
+  "template": "modelo-doc-custom-site-vapi-{apiMajor}.md",
+  "titlePath": "@fullName",
+  "referenceDoc": "_sf_utilities/ajudAI/contexto-doc-experience-cloud.md",
+  "classification": "Documento de todo site (CustomSite), inclusive os do Experience Cloud.",
+  "properties": [
+    {
+      "name": "Name",
+      "placeholder": "site_name",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "MasterLabel",
+      "placeholder": "master_label",
+      "path": "masterLabel",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Active",
+      "placeholder": "site_active",
+      "path": "active",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Tipo do site",
+      "placeholder": "site_type",
+      "path": "siteType",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação",
+      "notes": "Valores a confirmar (ex.: ChatterNetwork)."
+    },
+    {
+      "name": "URL path prefix",
+      "placeholder": "url_path_prefix",
+      "path": "urlPathPrefix",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Subdomínio",
+      "placeholder": "subdomain",
+      "path": "subdomain",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Perfil de convidado",
+      "placeholder": "guest_profile",
+      "path": "site.guestProfile",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação",
+      "notes": "Elemento <guestProfile> (a confirmar)."
+    }
+  ],
+  "tables": [
+    {
+      "markdownSection": "Usuários do site",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "site.siteUsers",
+        "columns": {
+          "site_user_role": "role",
+          "site_user_state": "state"
+        }
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "siteAdmin e siteGuestRecordDefaultOwner: só se estão preenchidos."
+    },
+    {
+      "markdownSection": "Configurações",
+      "builder": "leaf_properties",
+      "source": "XML",
+      "args": {
+        "keyPlaceholder": "leaf_key",
+        "valuePlaceholder": "leaf_value",
+        "exclude": [
+          "masterLabel",
+          "active",
+          "siteType",
+          "urlPathPrefix",
+          "subdomain",
+          "guestProfile",
+          "siteAdmin",
+          "siteGuestRecordDefaultOwner"
+        ]
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Folhas do XML como estão (nomes de elemento não confirmados nesta adaptação)."
+    },
+    {
+      "markdownSection": "Sites do Experience Cloud (Network)",
+      "builder": "related_rows",
+      "source": "XML",
+      "args": {
+        "metadataType": "Network",
+        "columns": {
+          "network": "@fullName",
+          "network_status": "status",
+          "network_self_reg": "selfRegistration"
+        }
+      },
+      "emptyValue": "Não informado",
+      "notes": "Networks cujo <site> é este site (FIELD_EQUALS_PRIMARY)."
+    },
+    {
+      "markdownSection": "Permissões de objeto do perfil de convidado",
+      "builder": "origin_grants_rows",
+      "source": "XML",
+      "args": {
+        "originPath": "site.guestProfile",
+        "originType": "Perfil",
+        "accessKey": "CustomObject",
+        "review": [
+          "Editar",
+          "Excluir",
+          "Ver todos",
+          "Modificar todos"
+        ],
+        "noneText": "Nenhuma permissão de objeto no perfil de convidado"
+      },
+      "emptyValue": "Não informado",
+      "notes": "objectPermissions do perfil em <guestProfile> (XML do Profile, passo 6b)."
+    },
+    {
+      "markdownSection": "Dados internos",
+      "builder": "internal_record_properties",
+      "source": "Objeto interno",
+      "args": {
+        "keyPlaceholder": "internal_property",
+        "valuePlaceholder": "internal_value"
+      },
+      "emptyValue": "Não informado"
+    },
+    {
+      "markdownSection": "Acesso e configuração",
+      "builder": "access_rows",
+      "source": "XML",
+      "args": {
+        "ownFields": {
+          "guestProfile": "Perfil de convidado"
+        },
+        "sharedTo": [
+          "guestUser"
+        ],
+        "noneText": "Nenhum perfil de convidado ou regra de compartilhamento para convidado encontrados"
+      },
+      "emptyValue": "Não informado",
+      "notes": "guestProfile do XML do site e regras sharingGuestRules com sharedTo/guestUser igual ao site (a confirmar)."
+    }
+  ],
+  "internalData": {
+    "enabled": true,
+    "source": "Objeto interno",
+    "object": "Site",
+    "useToolingApi": false,
+    "query": "SELECT Id, Name, MasterLabel, Status, SiteType, UrlPathPrefix FROM Site WHERE Name = '{fullName}'",
+    "expectSingleRecord": true,
+    "blocking": false,
+    "validationPending": "Objeto Site: confirmar campos no piloto."
+  },
+  "evidence": [
+    "Metadata API CustomSite — developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_customsite.htm",
+    "Metadata API SharingRules (sharingGuestRules) — developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_sharingrules.htm"
+  ]
+}

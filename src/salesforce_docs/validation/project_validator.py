@@ -245,6 +245,9 @@ def table_placeholders(table):
     if builder == "object_sharing_rows":
         from salesforce_docs.parsing.access_builders import SHARING_PLACEHOLDERS
         return set(SHARING_PLACEHOLDERS)
+    if builder == "origin_grants_rows":
+        from salesforce_docs.parsing.access_builders import ORIGIN_GRANT_PLACEHOLDERS
+        return set(ORIGIN_GRANT_PLACEHOLDERS)
     if builder == "list_values":
         return {args.get("valuePlaceholder", "value")} | (
             {args["labelPlaceholder"]} if args.get("labelPlaceholder") else set())

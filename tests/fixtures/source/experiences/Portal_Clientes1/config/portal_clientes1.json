@@ -1,0 +1,6 @@
+{
+  "authenticationType" : "AUTHENTICATED_WITH_PUBLIC_ACCESS_ENABLED",
+  "id" : "portal_clientes1",
+  "label" : "Portal_Clientes1",
+  "type" : "site"
+}

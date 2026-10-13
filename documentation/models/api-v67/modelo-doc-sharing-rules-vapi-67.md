@@ -18,6 +18,14 @@
 |---|---|---|---|---|---|
 | {{ rule_name }} | {{ rule_label }} | {{ rule_access }} | {{ rule_shared_to }} | {{ rule_shared_from }} | XML |
 
+## Regras para convidado (sites)
+
+Regras que expõem registros a visitantes não autenticados de um site (usuário convidado).
+
+| Regra | Rótulo | Acesso | Compartilhado com | Critérios | Lógica | Fonte |
+|---|---|---|---|---|---|---|
+| {{ rule_name }} | {{ rule_label }} | {{ rule_access }} | {{ rule_shared_to }} | {{ rule_criteria }} | {{ rule_logic }} | XML |
+
 ## Padrão de compartilhamento do objeto (OWD)
 
 As regras só ampliam acesso a partir do padrão do objeto.

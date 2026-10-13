@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SIMULADO para testes. -->
+<ExperienceBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <label>Portal_Clientes1</label>
+    <type>ChatterNetworkPicasso</type>
+</ExperienceBundle>
