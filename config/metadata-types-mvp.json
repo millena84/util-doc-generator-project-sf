@@ -17,6 +17,12 @@
     "NamedCredential": { "folder": "named-credentials" },
     "RemoteSiteSetting": { "folder": "remote-site-settings" },
     "Certificate": { "folder": "certificates" },
+    "ApexClass": {
+      "folder": "apex-classes",
+      "contract": "apex-class.schema.json",
+      "documentSlug": "apex-class",
+      "sourceParser": { "name": "apex", "suffix": ".cls", "key": "apex" }
+    },
     "CustomField": { "retrievedWith": "CustomObject" },
     "RecordType": { "retrievedWith": "CustomObject" },
     "ValidationRule": { "retrievedWith": "CustomObject" },
@@ -162,6 +168,40 @@
       "primaryMetadataType": "Certificate",
       "relatedMetadataTypes": [],
       "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT"
+    },
+    {
+      "group": "ApexClass",
+      "primaryMetadataType": "ApexClass",
+      "relatedMetadataTypes": [],
+      "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+      "referenceDoc": "_sf_utilities/ajudAI/contexto-apex.md",
+      "componentFilter": {
+        "excludeRegex": "^[A-Za-z0-9]+__",
+        "notes": "Classes de pacote gerenciado (ns__Classe) não têm código-fonte recuperável."
+      },
+      "subDocuments": [
+        {
+          "contract": "apex-batch.schema.json",
+          "when": { "path": "apex.implements", "contains": "Database.Batchable" },
+          "documentSuffix": "apex-batch"
+        },
+        {
+          "contract": "apex-queueable.schema.json",
+          "when": { "path": "apex.implements", "contains": "System.Queueable" },
+          "documentSuffix": "apex-queueable"
+        },
+        {
+          "contract": "apex-scheduler.schema.json",
+          "when": { "path": "apex.implements", "contains": "System.Schedulable" },
+          "documentSuffix": "apex-scheduler"
+        },
+        {
+          "contract": "apex-future.schema.json",
+          "forEach": "apex.futureMethods",
+          "itemName": "name",
+          "documentSuffix": "apex-future"
+        }
+      ]
     }
   ]
 }

@@ -19,6 +19,9 @@ class _Mvp:
     def folder(self, _metadata_type):
         return "custom-objects"
 
+    def source_parser(self, _metadata_type):
+        return None
+
 
 class _Ctx:
     def __init__(self, root):

@@ -100,6 +100,15 @@ class MetadataTypesConfig:
             for t in g.all_types:
                 if t in self.excluded:
                     raise ConfigError(f"Grupo {g.name} usa tipo excluído {t}: {self.excluded[t]}")
+        from salesforce_docs.parsing.source_parsers import SOURCE_PARSERS
+        for mtype, settings in self.type_settings.items():
+            sp = (settings or {}).get("sourceParser")
+            if sp is None:
+                continue
+            if not isinstance(sp, dict) or sp.get("name") not in SOURCE_PARSERS \
+                    or not sp.get("suffix") or not sp.get("key"):
+                raise ConfigError(f"metadataTypeSettings.{mtype}.sourceParser inválido: {sp} "
+                                  f"(name em {sorted(SOURCE_PARSERS)}, suffix e key obrigatórios)")
 
     @property
     def render_blocked_elements(self):
@@ -116,6 +125,9 @@ class MetadataTypesConfig:
 
     def document_slug(self, metadata_type: str) -> str:
         return self.setting(metadata_type, "documentSlug") or kebab(metadata_type)
+
+    def source_parser(self, metadata_type: str):
+        return self.setting(metadata_type, "sourceParser")
 
     def retrieved_with(self, metadata_type: str):
         return self.setting(metadata_type, "retrievedWith")

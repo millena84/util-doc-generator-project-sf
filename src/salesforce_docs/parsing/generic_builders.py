@@ -6,6 +6,7 @@ Um builder de bloco retorna texto Markdown.
 
 from __future__ import annotations
 
+import re
 from pathlib import PurePosixPath
 
 from salesforce_docs import status as st
@@ -49,7 +50,10 @@ def related_rows(ctx, args):
 
 
 def matches_conditions(item, conditions):
-    """Filtro `where`: lista de {path, equals|in|notIn|present} avaliada sobre o item do XML."""
+    """Filtro `where`: lista de {path, equals|in|notIn|present|contains} avaliada sobre o item.
+
+    `contains`: o valor no caminho é uma lista que contém o texto (sem diferenciar maiúsculas).
+    """
     for cond in conditions or []:
         cur = item
         for part in cond["path"].split("."):
@@ -62,6 +66,10 @@ def matches_conditions(item, conditions):
             return False
         if "present" in cond and (cur not in (None, "", [], {})) != bool(cond["present"]):
             return False
+        if "contains" in cond:
+            wanted = str(cond["contains"]).lower()
+            if not isinstance(cur, list) or wanted not in [str(v).lower() for v in cur]:
+                return False
     return True
 
 
@@ -181,7 +189,31 @@ def _provenance(related):
     return text + "_"
 
 
+def list_values(ctx, args):
+    """Uma linha por valor de uma lista simples em `path` (ex.: interfaces implementadas)."""
+    value, _ = resolve(ctx, args["path"])
+    ph = args.get("valuePlaceholder", "value")
+    return [{ph: format_value(v, None, ctx.sensitive)} for v in as_list(value) if v not in (None, "")]
+
+
+def naming_convention(ctx, args, _render_props=None):
+    """Bloco: o nome do componente segue a convenção do projeto (`args.pattern`, regex)?
+
+    A convenção é configuração do time (contrato), não regra da Salesforce: o papel do
+    componente nunca é deduzido do nome — só se compara o nome com o esperado.
+    """
+    name = ctx.parent.full_name if ctx.parent is not None and args.get("useParentName") else ctx.full_name
+    pattern = args.get("pattern")
+    if not pattern:
+        return st.NOT_APPLICABLE
+    ok = re.search(pattern, name or "") is not None
+    expected = args.get("description") or f"padrão `{pattern}`"
+    return (f"- Nome: `{name}`\n- Convenção do projeto: {expected}\n"
+            f"- Segue a convenção: {'Sim' if ok else 'Não'}")
+
+
 TABLE_BUILDERS = {
+    "list_values": list_values,
     "related_components": related_components,
     "related_rows": related_rows,
     "path_rows": path_rows,
@@ -192,5 +224,6 @@ TABLE_BUILDERS = {
 }
 
 BLOCK_BUILDERS = {
+    "naming_convention": naming_convention,
     "related_properties_table": related_properties_table,
 }

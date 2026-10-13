@@ -152,17 +152,20 @@ def sub_document_targets(group, primary_data, primary_full_name):
     targets = []
     for sub in group.sub_documents:
         if sub.get("forEach"):
-            for item in as_list((primary_data or {}).get(sub["forEach"])):
+            cur = primary_data or {}
+            for part in sub["forEach"].split("."):  # caminho pontuado (ex.: apex.futureMethods)
+                cur = cur.get(part) if isinstance(cur, dict) else None
+            for item in as_list(cur):
                 if isinstance(item, dict):
                     name = item.get(sub.get("itemName", "name"))
                     if name:
                         targets.append((sub, item, name))
         elif sub.get("when"):
             # `when`: condição ou lista de condições (todas devem valer) sobre o XML do Flow:
-            # {path, present} | {path, equals} | {path, in}
+            # {path, present} | {path, equals} | {path, in} | {path, contains}
             conds = sub["when"] if isinstance(sub["when"], list) else [sub["when"]]
             conds = [dict(c, present=c.get("present", True))
-                     if not ({"equals", "in", "present"} & set(c)) else c for c in conds]
+                     if not ({"equals", "in", "present", "contains"} & set(c)) else c for c in conds]
             if matches_conditions(primary_data or {}, conds):
                 targets.append((sub, None, None))
         else:

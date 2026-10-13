@@ -173,6 +173,8 @@ def table_placeholders(table):
         return {"related_component", "related_type"}
     if builder == "related_folders":
         return {"folder", "purpose"}
+    if builder == "list_values":
+        return {args.get("valuePlaceholder", "value")}
     if builder in ("child_properties", "internal_record_properties"):
         return {args.get("keyPlaceholder", "property"), args.get("valuePlaceholder", "value")}
     return None

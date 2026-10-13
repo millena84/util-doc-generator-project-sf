@@ -152,5 +152,77 @@
       "fullName": "Meu_Certificado",
       "path": "certs/Meu_Certificado.crt-meta.xml"
     }
+  ],
+  "ApexClass:AccountSyncQueueable": [
+    {
+      "type": "ApexClass",
+      "fullName": "AccountSyncQueueable",
+      "path": "classes/AccountSyncQueueable.cls"
+    },
+    {
+      "type": "ApexClass",
+      "fullName": "AccountSyncQueueable",
+      "path": "classes/AccountSyncQueueable.cls-meta.xml"
+    }
+  ],
+  "ApexClass:DailyOrderCleanupScheduler": [
+    {
+      "type": "ApexClass",
+      "fullName": "DailyOrderCleanupScheduler",
+      "path": "classes/DailyOrderCleanupScheduler.cls"
+    },
+    {
+      "type": "ApexClass",
+      "fullName": "DailyOrderCleanupScheduler",
+      "path": "classes/DailyOrderCleanupScheduler.cls-meta.xml"
+    }
+  ],
+  "ApexClass:IntegrationAsyncHelper": [
+    {
+      "type": "ApexClass",
+      "fullName": "IntegrationAsyncHelper",
+      "path": "classes/IntegrationAsyncHelper.cls"
+    },
+    {
+      "type": "ApexClass",
+      "fullName": "IntegrationAsyncHelper",
+      "path": "classes/IntegrationAsyncHelper.cls-meta.xml"
+    }
+  ],
+  "ApexClass:MultiRoleJob": [
+    {
+      "type": "ApexClass",
+      "fullName": "MultiRoleJob",
+      "path": "classes/MultiRoleJob.cls"
+    },
+    {
+      "type": "ApexClass",
+      "fullName": "MultiRoleJob",
+      "path": "classes/MultiRoleJob.cls-meta.xml"
+    }
+  ],
+  "ApexClass:OrderCleanupBatch": [
+    {
+      "type": "ApexClass",
+      "fullName": "OrderCleanupBatch",
+      "path": "classes/OrderCleanupBatch.cls"
+    },
+    {
+      "type": "ApexClass",
+      "fullName": "OrderCleanupBatch",
+      "path": "classes/OrderCleanupBatch.cls-meta.xml"
+    }
+  ],
+  "ApexClass:PedidoService": [
+    {
+      "type": "ApexClass",
+      "fullName": "PedidoService",
+      "path": "classes/PedidoService.cls"
+    },
+    {
+      "type": "ApexClass",
+      "fullName": "PedidoService",
+      "path": "classes/PedidoService.cls-meta.xml"
+    }
   ]
 }
