@@ -79,13 +79,16 @@ def _automation_entries(cfg, metadata_type, full_name, data):
     return out
 
 
-def build_run_index(records, cfg, class_inventory=None, class_type="ApexClass", code_key="apex"):
+def build_run_index(records, cfg, class_inventory=None, class_type="ApexClass", code_key="apex",
+                    record_fields=None):
     """records: iteráveis de {metadataType, fullName, data} (primários e filhos).
 
     class_inventory: nomes do inventário de ApexClass (None = inventário não listado).
+    record_fields: {metadataType: [campos]} copiados do XML para index["records"][tipo][nome].
     """
     cfg = cfg or {}
-    index = {"automations": {}, "classes": {},
+    record_fields = (record_fields or {}).get("fields") or {}
+    index = {"automations": {}, "classes": {}, "records": {},
              "classInventory": sorted(class_inventory, key=str.lower) if class_inventory is not None else None,
              "phases": cfg.get("phases") or [], "reference": cfg.get("officialReference")}
     seen = set()
@@ -95,6 +98,9 @@ def build_run_index(records, cfg, class_inventory=None, class_type="ApexClass", 
             continue
         seen.add(key)
         data = rec["data"]
+        if key[0] in record_fields:
+            index["records"].setdefault(key[0], {})[key[1]] = {
+                f: _text(_get(data, f, key[1])) for f in record_fields[key[0]]}
         for obj, entry in _automation_entries(cfg, key[0], key[1], data):
             index["automations"].setdefault(obj, []).append(entry)
         if key[0] == class_type and isinstance(data.get(code_key), dict) and data[code_key].get("parsed"):

@@ -1,0 +1,88 @@
+{
+  "metadataType": "SharingRules",
+  "apiVersion": "67.0",
+  "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+  "xmlFilePattern": "**/*.sharingRules-meta.xml",
+  "template": "modelo-doc-sharing-rules-vapi-{apiMajor}.md",
+  "titlePath": "@fullName",
+  "referenceDoc": "_sf_utilities/ajudAI/contexto-seg-controle-acesso-gov.md",
+  "classification": "Documento de regras de compartilhamento por objeto. XML reaproveitado do retrieve de acesso (passo 6b).",
+  "properties": [
+    {
+      "name": "Objeto",
+      "placeholder": "sharing_object",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação",
+      "notes": "SharingRules tem um arquivo por objeto."
+    }
+  ],
+  "tables": [
+    {
+      "markdownSection": "Regras por critério",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "sharingCriteriaRules",
+        "columns": {
+          "rule_name": "fullName",
+          "rule_label": "label",
+          "rule_access": "accessLevel",
+          "rule_shared_to": "sharedTo",
+          "rule_criteria": "criteriaItems",
+          "rule_logic": "booleanFilter"
+        }
+      },
+      "emptyValue": "Não aplicável"
+    },
+    {
+      "markdownSection": "Regras por proprietário",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "sharingOwnerRules",
+        "columns": {
+          "rule_name": "fullName",
+          "rule_label": "label",
+          "rule_access": "accessLevel",
+          "rule_shared_to": "sharedTo",
+          "rule_shared_from": "sharedFrom"
+        }
+      },
+      "emptyValue": "Não aplicável"
+    },
+    {
+      "markdownSection": "Padrão de compartilhamento do objeto (OWD)",
+      "builder": "index_record_rows",
+      "source": "XML",
+      "args": {
+        "metadataType": "CustomObject",
+        "namePlaceholder": "owd_object",
+        "columns": {
+          "owd_internal": "sharingModel",
+          "owd_external": "externalSharingModel"
+        },
+        "only": "self"
+      },
+      "emptyValue": "Não informado",
+      "notes": "Do XML do CustomObject, quando o objeto foi processado na execução."
+    },
+    {
+      "markdownSection": "Acesso e configuração",
+      "builder": "access_rows",
+      "source": "XML",
+      "args": {
+        "notApplicable": "Regras de compartilhamento não são concedidas por perfil ou permission set"
+      },
+      "emptyValue": "Não informado",
+      "notes": "Sem concessão por perfil/permission set."
+    }
+  ],
+  "internalData": {
+    "enabled": false
+  },
+  "evidence": [
+    "Metadata API SharingRules — developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_sharingrules.htm"
+  ]
+}

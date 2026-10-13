@@ -1,0 +1,16 @@
+{
+  "done": true,
+  "totalSize": 1,
+  "records": [
+    {
+      "attributes": {
+        "type": "PermissionSetGroup"
+      },
+      "Id": "0PG000000000000AAA",
+      "DeveloperName": "PSG_Integracao",
+      "MasterLabel": "PSG Integração",
+      "Status": "Updated",
+      "HasActivationRequired": false
+    }
+  ]
+}

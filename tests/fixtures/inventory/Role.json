@@ -1,0 +1,29 @@
+[
+  {
+    "fullName": "Diretoria",
+    "type": "Role",
+    "fileName": "roles/Diretoria.role",
+    "id": "0PS000000000000AAA",
+    "namespacePrefix": "",
+    "manageableState": "unmanaged",
+    "lastModifiedDate": "2026-10-01T00:00:00.000Z"
+  },
+  {
+    "fullName": "Gerente_Vendas",
+    "type": "Role",
+    "fileName": "roles/Gerente_Vendas.role",
+    "id": "0PS000000000000AAA",
+    "namespacePrefix": "",
+    "manageableState": "unmanaged",
+    "lastModifiedDate": "2026-10-01T00:00:00.000Z"
+  },
+  {
+    "fullName": "Vendas",
+    "type": "Role",
+    "fileName": "roles/Vendas.role",
+    "id": "0PS000000000000AAA",
+    "namespacePrefix": "",
+    "manageableState": "unmanaged",
+    "lastModifiedDate": "2026-10-01T00:00:00.000Z"
+  }
+]

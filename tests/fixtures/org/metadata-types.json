@@ -190,6 +190,30 @@
         "metaFile": false,
         "suffix": "sharingRules",
         "xmlName": "SharingRules"
+      },
+      {
+        "childXmlNames": [],
+        "directoryName": "roles",
+        "inFolder": false,
+        "metaFile": false,
+        "suffix": "role",
+        "xmlName": "Role"
+      },
+      {
+        "childXmlNames": [],
+        "directoryName": "groups",
+        "inFolder": false,
+        "metaFile": false,
+        "suffix": "group",
+        "xmlName": "Group"
+      },
+      {
+        "childXmlNames": [],
+        "directoryName": "settings",
+        "inFolder": false,
+        "metaFile": false,
+        "suffix": "settings",
+        "xmlName": "SecuritySettings"
       }
     ],
     "organizationNamespace": "",

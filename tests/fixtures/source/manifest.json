@@ -377,5 +377,40 @@
       "fullName": "pedidoTelaFlow",
       "path": "lwc/pedidoTelaFlow/pedidoTelaFlow.js-meta.xml"
     }
+  ],
+  "Role:Diretoria": [
+    {
+      "type": "Role",
+      "fullName": "Diretoria",
+      "path": "roles/Diretoria.role-meta.xml"
+    }
+  ],
+  "Role:Vendas": [
+    {
+      "type": "Role",
+      "fullName": "Vendas",
+      "path": "roles/Vendas.role-meta.xml"
+    }
+  ],
+  "Role:Gerente_Vendas": [
+    {
+      "type": "Role",
+      "fullName": "Gerente_Vendas",
+      "path": "roles/Gerente_Vendas.role-meta.xml"
+    }
+  ],
+  "Group:Grupo_Suporte": [
+    {
+      "type": "Group",
+      "fullName": "Grupo_Suporte",
+      "path": "groups/Grupo_Suporte.group-meta.xml"
+    }
+  ],
+  "Settings:Security": [
+    {
+      "type": "Settings",
+      "fullName": "Security",
+      "path": "settings/Security.settings-meta.xml"
+    }
   ]
 }

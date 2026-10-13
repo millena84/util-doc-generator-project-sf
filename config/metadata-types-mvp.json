@@ -40,6 +40,12 @@
       "documentSlug": "lwc",
       "sourceParser": { "name": "lwc", "suffix": [".js", ".html", ".css", ".svg", ".js-meta.xml"], "key": "lwc", "bundle": true }
     },
+    "Profile": { "folder": "profiles", "contract": "profile.schema.json", "documentSlug": "profile" },
+    "PermissionSetGroup": { "folder": "permission-set-groups", "contract": "permission-set-group.schema.json", "documentSlug": "permission-set-group" },
+    "SharingRules": { "folder": "sharing-rules", "contract": "sharing-rules.schema.json", "documentSlug": "sharing-rules" },
+    "Role": { "folder": "roles", "contract": "role.schema.json", "documentSlug": "role" },
+    "Group": { "folder": "public-groups", "contract": "public-group.schema.json", "documentSlug": "public-group" },
+    "SecuritySettings": { "folder": "org-security", "contract": "org-security.schema.json", "documentSlug": "org-security" },
     "CustomField": { "retrievedWith": "CustomObject" },
     "RecordType": { "retrievedWith": "CustomObject" },
     "ValidationRule": { "retrievedWith": "CustomObject" },
@@ -126,6 +132,13 @@
       { "metadataType": "ValidationRule", "label": "Regra de validação", "objectPath": "@parent", "phase": "validation", "statusPath": "active" }
     ],
     "validationPending": "Flow.triggerOrder e a posição relativa das fases de exclusão (delete/undelete) não confirmados nesta adaptação; confirmar no piloto (documentation/piloto-org-real.md)."
+  },
+  "recordIndex": {
+    "notes": "Campos do XML de outros componentes guardados no índice da execução: OWD por objeto (documento de segurança da org e de regras de compartilhamento) e parentRole (hierarquia de papéis).",
+    "fields": {
+      "CustomObject": ["label", "sharingModel", "externalSharingModel"],
+      "Role": ["name", "parentRole"]
+    }
   },
   "metadataTypeGroups": [
     {
@@ -316,6 +329,58 @@
       "relatedMetadataTypes": [],
       "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
       "notes": "XML reaproveitado do retrieve de acesso (passo 6b): vem completo, com as permissões dos componentes documentados."
+    },
+    {
+      "group": "Profile",
+      "primaryMetadataType": "Profile",
+      "relatedMetadataTypes": [],
+      "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+      "referenceDoc": "_sf_utilities/ajudAI/contexto-seg-controle-acesso-gov.md",
+      "notes": "XML reaproveitado do retrieve de acesso (passo 6b): traz as permissões dos componentes recuperados no mesmo pedido."
+    },
+    {
+      "group": "PermissionSetGroup",
+      "primaryMetadataType": "PermissionSetGroup",
+      "relatedMetadataTypes": [],
+      "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+      "referenceDoc": "_sf_utilities/ajudAI/contexto-seg-controle-acesso-gov.md",
+      "notes": "XML reaproveitado do retrieve de acesso (passo 6b)."
+    },
+    {
+      "group": "SharingRules",
+      "primaryMetadataType": "SharingRules",
+      "relatedMetadataTypes": [],
+      "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+      "referenceDoc": "_sf_utilities/ajudAI/contexto-seg-controle-acesso-gov.md",
+      "usesRunIndex": true,
+      "notes": "Um documento por objeto. XML reaproveitado do retrieve de acesso (passo 6b); OWD do objeto vem do CustomObject processado na execução."
+    },
+    {
+      "group": "Role",
+      "primaryMetadataType": "Role",
+      "relatedMetadataTypes": [],
+      "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+      "referenceDoc": "_sf_utilities/ajudAI/contexto-seg-controle-acesso-gov.md",
+      "usesRunIndex": true,
+      "notes": "Hierarquia (parentRole) montada com todos os papéis processados na execução."
+    },
+    {
+      "group": "PublicGroup",
+      "primaryMetadataType": "Group",
+      "relatedMetadataTypes": [],
+      "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+      "referenceDoc": "_sf_utilities/ajudAI/contexto-seg-controle-acesso-gov.md",
+      "notes": "Grupos públicos. Membros não são documentados (proteção de dados)."
+    },
+    {
+      "group": "OrgSecurity",
+      "primaryMetadataType": "SecuritySettings",
+      "relatedMetadataTypes": [],
+      "documentStrategy": "ONE_DOCUMENT_PER_ORG",
+      "referenceDoc": "_sf_utilities/ajudAI/contexto-seg-controle-acesso-gov.md",
+      "fixedComponents": [ { "fullName": "Security", "retrieveType": "Settings" } ],
+      "usesRunIndex": true,
+      "notes": "Documento único da org: Settings:Security (sem inventário) + OWD dos CustomObject processados + Organization (dados internos). Forma do retrieve (Settings:Security) e o tipo listado em metadata-types a confirmar no piloto."
     }
   ]
 }

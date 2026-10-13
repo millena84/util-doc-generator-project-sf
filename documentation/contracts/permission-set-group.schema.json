@@ -1,0 +1,110 @@
+{
+  "metadataType": "PermissionSetGroup",
+  "apiVersion": "67.0",
+  "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+  "xmlFilePattern": "**/*.permissionsetgroup-meta.xml",
+  "template": "modelo-doc-permission-set-group-vapi-{apiMajor}.md",
+  "titlePath": "@fullName",
+  "referenceDoc": "_sf_utilities/ajudAI/contexto-seg-controle-acesso-gov.md",
+  "classification": "Documento de todo permission set group. XML reaproveitado do retrieve de acesso (passo 6b).",
+  "properties": [
+    {
+      "name": "Name",
+      "placeholder": "psg_name",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Label",
+      "placeholder": "label",
+      "path": "label",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Description",
+      "placeholder": "description",
+      "path": "description",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "HasActivationRequired",
+      "placeholder": "has_activation_required",
+      "path": "hasActivationRequired",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Status",
+      "placeholder": "status",
+      "path": "status",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação",
+      "notes": "Situação do recálculo das permissões agregadas, como no XML."
+    }
+  ],
+  "tables": [
+    {
+      "markdownSection": "Permission sets incluídos",
+      "builder": "list_values",
+      "source": "XML",
+      "args": {
+        "path": "permissionSets",
+        "valuePlaceholder": "included_ps"
+      },
+      "emptyValue": "Não aplicável"
+    },
+    {
+      "markdownSection": "Muting permission sets",
+      "builder": "list_values",
+      "source": "XML",
+      "args": {
+        "path": "mutingPermissionSets",
+        "valuePlaceholder": "muting_ps"
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Desativam, dentro do grupo, permissões herdadas dos permission sets incluídos."
+    },
+    {
+      "markdownSection": "Dados internos",
+      "builder": "internal_record_properties",
+      "source": "Objeto interno",
+      "args": {
+        "keyPlaceholder": "internal_property",
+        "valuePlaceholder": "internal_value"
+      },
+      "emptyValue": "Não informado"
+    },
+    {
+      "markdownSection": "Acesso e configuração",
+      "builder": "access_rows",
+      "source": "XML",
+      "args": {
+        "notApplicable": "Permission set group é atribuído a usuários; usuários não são documentados (proteção de dados)"
+      },
+      "emptyValue": "Não informado",
+      "notes": "Sem concessão por perfil/permission set."
+    }
+  ],
+  "internalData": {
+    "enabled": true,
+    "source": "Objeto interno",
+    "object": "PermissionSetGroup",
+    "useToolingApi": false,
+    "query": "SELECT Id, DeveloperName, MasterLabel, Status, HasActivationRequired, CreatedDate, LastModifiedDate FROM PermissionSetGroup WHERE DeveloperName = '{developerName}'",
+    "expectSingleRecord": true,
+    "blocking": false,
+    "validationPending": "Objeto PermissionSetGroup: confirmar campos no piloto."
+  },
+  "evidence": [
+    "Metadata API PermissionSetGroup — developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_permissionsetgroup.htm",
+    "Metadata API MutingPermissionSet (API 46+) — developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_mutingpermissionset.htm"
+  ]
+}

@@ -186,6 +186,57 @@
       "emptyValue": "Não aplicável"
     },
     {
+      "markdownSection": "Custom Permissions",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "customPermissions",
+        "columns": {
+          "custom_permission": "name"
+        },
+        "where": [
+          {
+            "path": "enabled",
+            "equals": "true"
+          }
+        ]
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "customPermissions (name/enabled): formato a confirmar no piloto."
+    },
+    {
+      "markdownSection": "Páginas Visualforce",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "pageAccesses",
+        "columns": {
+          "apex_page": "apexPage"
+        },
+        "where": [
+          {
+            "path": "enabled",
+            "equals": "true"
+          }
+        ]
+      },
+      "emptyValue": "Não aplicável"
+    },
+    {
+      "markdownSection": "Guias",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "tabSettings",
+        "columns": {
+          "tab": "tab",
+          "tab_visibility": "visibility"
+        }
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "tabSettings (tab/visibility): a confirmar no piloto."
+    },
+    {
       "markdownSection": "Dados internos",
       "builder": "internal_record_properties",
       "source": "Objeto interno",

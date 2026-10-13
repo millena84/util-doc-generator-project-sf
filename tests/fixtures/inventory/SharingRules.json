@@ -1,0 +1,11 @@
+[
+  {
+    "fullName": "Pedido__c",
+    "type": "SharingRules",
+    "fileName": "sharingRules/Pedido__c.sharingRules",
+    "id": "0PS000000000000AAA",
+    "namespacePrefix": "",
+    "manageableState": "unmanaged",
+    "lastModifiedDate": "2026-10-01T00:00:00.000Z"
+  }
+]

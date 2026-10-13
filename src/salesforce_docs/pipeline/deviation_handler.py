@@ -24,6 +24,14 @@ class DocumentUnit(dict):
 
 def build_units(group, inventories, mvp):
     primary_items = inventories.get(group.primary_type) or []
+    fixed = group.data.get("fixedComponents")
+    if fixed:
+        # Componente único conhecido (ex.: Settings:Security): sem inventário; o retrieve usa
+        # retrieveType:fullName e a pasta/documento seguem o tipo principal do grupo.
+        return [DocumentUnit(
+            unitId=f"{group.name}:{group.primary_type}:{c['fullName']}", group=group.name,
+            metadataType=c.get("retrieveType") or group.primary_type, documentType=group.primary_type,
+            fullName=c["fullName"], inventoryItem={}, records=[]) for c in fixed]
     if group.unit_mode == "PER_COMPONENT":
         units = []
         for item in primary_items:

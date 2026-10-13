@@ -58,6 +58,24 @@
 |---|---|
 | {{ user_permission }} | XML |
 
+## Custom Permissions
+
+| Custom Permission | Fonte |
+|---|---|
+| {{ custom_permission }} | XML |
+
+## Páginas Visualforce
+
+| Página | Fonte |
+|---|---|
+| {{ apex_page }} | XML |
+
+## Guias
+
+| Guia | Visibilidade | Fonte |
+|---|---|---|
+| {{ tab }} | {{ tab_visibility }} | XML |
+
 ## Dados internos
 
 | Propriedade | Valor | Fonte |

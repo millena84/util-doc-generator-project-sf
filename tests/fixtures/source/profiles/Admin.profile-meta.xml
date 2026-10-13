@@ -12,6 +12,11 @@
         <modifyAllRecords>true</modifyAllRecords><object>Pedido__c</object><viewAllRecords>true</viewAllRecords>
     </objectPermissions>
     <recordTypeVisibilities><default>true</default><recordType>Pedido__c.Padrao</recordType><visible>true</visible></recordTypeVisibilities>
+    <layoutAssignments><layout>Pedido__c-Pedido Layout</layout></layoutAssignments>
+    <layoutAssignments><layout>Pedido__c-Pedido Layout Venda</layout><recordType>Pedido__c.Padrao</recordType></layoutAssignments>
+    <loginHours><mondayEnd>1080</mondayEnd><mondayStart>480</mondayStart></loginHours>
+    <loginIpRanges><description>Rede corporativa (simulada)</description><endAddress>10.0.0.254</endAddress><startAddress>10.0.0.1</startAddress></loginIpRanges>
     <userLicense>Salesforce</userLicense>
+    <tabVisibilities><tab>Pedido__c</tab><visibility>DefaultOn</visibility></tabVisibilities>
     <userPermissions><enabled>true</enabled><name>ModifyAllData</name></userPermissions>
 </Profile>

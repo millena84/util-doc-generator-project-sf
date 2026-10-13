@@ -113,7 +113,8 @@ class AccessDocumentsTest(P3Base):
                 self.assertNotIn("usuario.membro.sentinela", self.read(c["document"]))
 
     def test_regenerate_offline_rebuilds_access(self):
-        before = {c["component"]: self.read(c["document"]) for c in self.state.data["components"]
+        # unitId: o mesmo nome pode ter mais de um documento (ex.: Pedido__c objeto e regras).
+        before = {c["unitId"]: self.read(c["document"]) for c in self.state.data["components"]
                   if c.get("role") == "primary" and c.get("document")}
         fake_sf_env("old_cli")
         pipeline = DocumentPipeline(self.root, runner=CliRunner(executable="/nao/existe/sf"), stream=io.StringIO())
@@ -121,7 +122,7 @@ class AccessDocumentsTest(P3Base):
         self.assertEqual(code, EXIT_OK)
         for c in state2.data["components"]:
             if c.get("role") == "primary" and c.get("document"):
-                self.assertEqual(self.read(c["document"]), before[c["component"]], c["component"])
+                self.assertEqual(self.read(c["document"]), before[c["unitId"]], c["unitId"])
 
 
 class AccessUnavailableTest(P3Base):
