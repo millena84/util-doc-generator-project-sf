@@ -70,7 +70,7 @@ def _related_from_record(rec):
 
 # Relações que só se comprovam lendo o XML de CADA candidato (exigem retrieve de
 # componentes que podem não pertencer ao principal selecionado).
-CANDIDATE_SCAN_MATCHES = ("FIELD_EQUALS_PRIMARY", "REFERENCE_SCAN")
+CANDIDATE_SCAN_MATCHES = ("FIELD_EQUALS_PRIMARY", "REFERENCE_SCAN", "FIELD_EQUALS_PRIMARY_NAME")
 
 
 def resolve_related(unit, primary, group, processor, inventories, enabled_types, log,
@@ -129,6 +129,23 @@ def resolve_related(unit, primary, group, processor, inventories, enabled_types,
                 rec = fetch(rtype, item)
                 if rec and field_equals_primary(primary["fullName"], rec.get("data"), rel_cfg["field"]):
                     related.append(_related_from_record(rec))
+        elif match == "FIELD_EQUALS_PRIMARY_NAME":
+            # Principal `Objeto.Nome` (ex.: BusinessProcess Opportunity.Venda): candidatos do mesmo
+            # objeto (`Objeto.*`) cujo campo `field` no XML é exatamente `Nome`.
+            obj, _, name = primary["fullName"].partition(".")
+            for item in candidates:
+                if not item["fullName"].startswith(f"{obj}."):
+                    continue
+                rec = fetch(rtype, item)
+                if rec and name and name in values_at(rec.get("data") or {}, rel_cfg["field"]):
+                    related.append(_related_from_record(rec))
+        elif match == "NAME_PREFIX":
+            # Componentes cujo nome começa por `<principal>.` (ex.: Territory2 Modelo.Territorio).
+            for item in candidates:
+                if item["fullName"].startswith(f"{primary['fullName']}."):
+                    rec = fetch(rtype, item)
+                    if rec:
+                        related.append(_related_from_record(rec))
         elif match == "PRIMARY_FIELD_REFERENCES":
             # Relação comprovada pelo XML do principal: o valor exato em `field` é o fullName
             # de um componente existente no inventário do tipo relacionado.

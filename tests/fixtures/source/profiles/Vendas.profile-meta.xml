@@ -9,4 +9,5 @@
         <modifyAllRecords>false</modifyAllRecords><object>Pedido__c</object><viewAllRecords>false</viewAllRecords>
     </objectPermissions>
     <userLicense>Salesforce</userLicense>
+    <userPermissions><enabled>true</enabled><name>ConvertLeads</name></userPermissions>
 </Profile>

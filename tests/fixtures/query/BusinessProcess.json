@@ -1,0 +1,16 @@
+{
+  "done": true,
+  "totalSize": 1,
+  "records": [
+    {
+      "attributes": {
+        "type": "BusinessProcess"
+      },
+      "Id": "019000000000000AAA",
+      "Name": "Venda_Enterprise",
+      "TableEnumOrId": "Opportunity",
+      "IsActive": true,
+      "Description": "Ciclo de vendas para contas corporativas (simulado)"
+    }
+  ]
+}

@@ -248,7 +248,7 @@ def table_placeholders(table):
     if builder == "list_values":
         return {args.get("valuePlaceholder", "value")} | (
             {args["labelPlaceholder"]} if args.get("labelPlaceholder") else set())
-    if builder in ("child_properties", "internal_record_properties"):
+    if builder in ("child_properties", "internal_record_properties", "leaf_properties"):
         return {args.get("keyPlaceholder", "property"), args.get("valuePlaceholder", "value")}
     return None
 

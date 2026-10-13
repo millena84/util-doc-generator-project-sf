@@ -12,6 +12,7 @@ from salesforce_docs.parsing.apex_trigger_parser import parse_apex_trigger
 from salesforce_docs.parsing.event_channel_parser import parse_event_channel_member
 from salesforce_docs.parsing.flexipage_parser import parse_flexipage
 from salesforce_docs.parsing.lwc_parser import parse_lwc_bundle
+from salesforce_docs.parsing.sales_parser import parse_business_process, parse_lead_convert
 from salesforce_docs.parsing.service_rules_parser import parse_queue, parse_service_rules
 
 SOURCE_PARSERS = {
@@ -26,6 +27,9 @@ SOURCE_PARSERS = {
     # regras de atendimento e filas: leem o próprio XML, mascarando dado pessoal
     "service-rules": parse_service_rules,
     "queue": parse_queue,
+    # Sales Cloud (Onda 08): leem o próprio XML
+    "business-process": parse_business_process,
+    "lead-convert": parse_lead_convert,
 }
 
 

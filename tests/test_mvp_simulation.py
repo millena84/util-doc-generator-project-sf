@@ -11,7 +11,7 @@ from salesforce_docs import status as st
 
 API = "inventory/org-dev/api-v67"
 
-# Documento -> modelo esperado (os 35 modelos de documentation/models/api-v67).
+# Documento -> modelo esperado (os 39 modelos de documentation/models/api-v67).
 EXPECTED_DOCS = {
     "doc-meu-flow-flow.md": "modelo-doc-flow-vapi-67.md",
     "doc-tela-cadastro-flow.md": "modelo-doc-flow-vapi-67.md",
@@ -53,6 +53,11 @@ EXPECTED_DOCS = {
     "doc-pedidoacaorapida-lwc-quick-action.md": "modelo-doc-lwc-quick-action-vapi-67.md",
     "doc-pedidotelaflow-lwc.md": "modelo-doc-lwc-vapi-67.md",
     "doc-pedidotelaflow-lwc-flow-screen.md": "modelo-doc-lwc-flow-screen-vapi-67.md",
+    # Sales Cloud (Onda 08)
+    "doc-opportunity-venda-enterprise-business-process.md": "modelo-doc-business-process-vapi-67.md",
+    "doc-leadconvertsettings-lead-convert.md": "modelo-doc-lead-convert-settings-vapi-67.md",
+    "doc-modelo-vendas-territory-model.md": "modelo-doc-territory2-model-vapi-67.md",
+    "doc-receita-principal-opportunity-split-type.md": "modelo-doc-opportunity-split-type-vapi-67.md",
     # Service Cloud (Onda 07)
     "doc-case-assignment-rules.md": "modelo-doc-assignment-rules-vapi-67.md",
     "doc-case-auto-response-rules.md": "modelo-doc-auto-response-rules-vapi-67.md",
@@ -120,11 +125,14 @@ LISTED_TYPES = {
     "PlatformEventChannelMember": "platform-event-channel-members",
     "AssignmentRules": "assignment-rules", "AutoResponseRules": "auto-response-rules",
     "EscalationRules": "escalation-rules", "Queue": "queues",
+    "BusinessProcess": "business-processes",
+    "Territory2Model": "territory2-models", "Territory2": "territory2-models", "Territory2Rule": "territory2-models",
+    "OpportunitySplitType": "opportunity-split-types",
 }
 # Tipos documentados cujo XML vem do retrieve das fontes de acesso (passo 6b).
 PREFETCHED_TYPES = {"PermissionSet", "Profile", "PermissionSetGroup", "SharingRules", "Queue"}
 # Tipos com componente fixo (fixedComponents): habilitação verificada, sem listagem (passo 6).
-FIXED_TYPES = {"SecuritySettings"}
+FIXED_TYPES = {"SecuritySettings", "LeadConvertSettings"}
 # Tipos que só chegam pelo retrieve do CustomObject (passo 7).
 CHILD_TYPES = ["CustomField", "RecordType", "ValidationRule", "WebLink"]
 

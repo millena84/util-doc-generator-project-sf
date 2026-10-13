@@ -1,0 +1,16 @@
+{
+  "done": true,
+  "totalSize": 1,
+  "records": [
+    {
+      "attributes": {
+        "type": "Territory2Model"
+      },
+      "Id": "0MA000000000000AAA",
+      "DeveloperName": "Modelo_Vendas",
+      "Name": "Modelo de Vendas 2026",
+      "State": "Active",
+      "ActivatedDate": "2026-01-01T00:00:00.000+0000"
+    }
+  ]
+}

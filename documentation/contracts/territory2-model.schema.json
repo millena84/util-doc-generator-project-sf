@@ -1,0 +1,113 @@
+{
+  "metadataType": "Territory2Model",
+  "apiVersion": "67.0",
+  "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+  "xmlFilePattern": "**/territory2Models/*/*.territory2Model-meta.xml",
+  "template": "modelo-doc-territory2-model-vapi-{apiMajor}.md",
+  "titlePath": "@fullName",
+  "referenceDoc": "_sf_utilities/ajudAI/contexto-doc-sales-cloud.md",
+  "classification": "Documento de todo modelo de territórios, com seus territórios e regras.",
+  "properties": [
+    {
+      "name": "Name",
+      "placeholder": "model_name",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação"
+    }
+  ],
+  "tables": [
+    {
+      "markdownSection": "Configurações do modelo",
+      "builder": "leaf_properties",
+      "source": "XML",
+      "args": {
+        "keyPlaceholder": "leaf_key",
+        "valuePlaceholder": "leaf_value",
+        "exclude": []
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Folhas do XML como estão (nomes de elemento não confirmados nesta adaptação)."
+    },
+    {
+      "markdownSection": "Territórios",
+      "builder": "related_rows",
+      "source": "XML",
+      "args": {
+        "metadataType": "Territory2",
+        "columns": {
+          "territory": "@fullName",
+          "territory_label": "name",
+          "territory_type": "territory2Type",
+          "parent_territory": "parentTerritory",
+          "account_access": "accountAccessLevel",
+          "opportunity_access": "opportunityAccessLevel",
+          "case_access": "caseAccessLevel",
+          "rule_associations": "ruleAssociations"
+        }
+      },
+      "emptyValue": "Não informado",
+      "notes": "Territory2 com nome <modelo>.* (NAME_PREFIX). Nomes de elemento a confirmar; usuários nunca são documentados."
+    },
+    {
+      "markdownSection": "Regras de atribuição",
+      "builder": "related_rows",
+      "source": "XML",
+      "args": {
+        "metadataType": "Territory2Rule",
+        "columns": {
+          "rule": "@fullName",
+          "rule_active": "active",
+          "rule_object": "objectType",
+          "rule_logic": "booleanFilter",
+          "rule_items": "ruleItems"
+        }
+      },
+      "emptyValue": "Não informado",
+      "notes": "Territory2Rule com nome <modelo>.* (NAME_PREFIX)."
+    },
+    {
+      "markdownSection": "Dados internos",
+      "builder": "internal_record_properties",
+      "source": "Objeto interno",
+      "args": {
+        "keyPlaceholder": "internal_property",
+        "valuePlaceholder": "internal_value"
+      },
+      "emptyValue": "Não informado"
+    },
+    {
+      "markdownSection": "Acesso e configuração",
+      "builder": "access_rows",
+      "source": "XML",
+      "args": {
+        "byPath": [
+          {
+            "names": [
+              "ManageTerritories"
+            ],
+            "accessKey": "UserPermission",
+            "via": "Permissão de sistema {name}"
+          }
+        ]
+      },
+      "emptyValue": "Não informado",
+      "notes": "Permissão de gestão de territórios (nome de API a confirmar)."
+    }
+  ],
+  "internalData": {
+    "enabled": true,
+    "source": "Objeto interno",
+    "object": "Territory2Model",
+    "useToolingApi": false,
+    "query": "SELECT Id, DeveloperName, Name, State, ActivatedDate FROM Territory2Model WHERE DeveloperName = '{developerName}'",
+    "expectSingleRecord": true,
+    "blocking": false,
+    "validationPending": "Objeto Territory2Model: confirmar campos (State, ActivatedDate) no piloto."
+  },
+  "evidence": [
+    "Territory2Model, Territory2, Territory2Rule e Territory2Type (Metadata API; exigem Sales Territories habilitado; todo Territory2 tem um Territory2Type) — developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_territory2model.htm",
+    "Territory2Settings: acesso padrão a contas e oportunidades — developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_territory2settings.htm"
+  ]
+}

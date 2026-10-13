@@ -1,0 +1,124 @@
+{
+  "metadataType": "BusinessProcess",
+  "apiVersion": "67.0",
+  "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+  "xmlFilePattern": "**/objects/*/businessProcesses/*.businessProcess-meta.xml",
+  "template": "modelo-doc-business-process-vapi-{apiMajor}.md",
+  "titlePath": "@fullName",
+  "referenceDoc": "_sf_utilities/ajudAI/contexto-doc-sales-cloud.md",
+  "classification": "Documento de todo processo de negócio (vendas, lead, suporte, solução).",
+  "properties": [
+    {
+      "name": "Name",
+      "placeholder": "process_name",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação",
+      "notes": "Objeto.Processo (ex.: Opportunity.Venda)."
+    },
+    {
+      "name": "MasterLabel",
+      "placeholder": "master_label",
+      "path": "masterLabel",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Description",
+      "placeholder": "description",
+      "path": "description",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "IsActive",
+      "placeholder": "is_active",
+      "path": "isActive",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Valor padrão",
+      "placeholder": "default_value",
+      "path": "process.defaultValue",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação",
+      "notes": "Valor com <default>true</default>."
+    }
+  ],
+  "tables": [
+    {
+      "markdownSection": "Valores do processo",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "process.values",
+        "columns": {
+          "value_order": "order",
+          "process_value": "value",
+          "value_default": "default"
+        }
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "values/fullName: valores da picklist (ex.: StageName) disponíveis neste processo."
+    },
+    {
+      "markdownSection": "Record types que usam o processo",
+      "builder": "related_rows",
+      "source": "XML",
+      "args": {
+        "metadataType": "RecordType",
+        "columns": {
+          "record_type": "@fullName",
+          "rt_label": "label",
+          "rt_active": "active"
+        }
+      },
+      "emptyValue": "Não informado",
+      "notes": "Record types do mesmo objeto cujo <businessProcess> é este processo (relação FIELD_EQUALS_PRIMARY_NAME)."
+    },
+    {
+      "markdownSection": "Dados internos",
+      "builder": "internal_record_properties",
+      "source": "Objeto interno",
+      "args": {
+        "keyPlaceholder": "internal_property",
+        "valuePlaceholder": "internal_value"
+      },
+      "emptyValue": "Não informado"
+    },
+    {
+      "markdownSection": "Acesso e configuração",
+      "builder": "access_rows",
+      "source": "XML",
+      "args": {
+        "relatedAccess": {
+          "metadataType": "RecordType",
+          "accessKey": "RecordType"
+        }
+      },
+      "emptyValue": "Não informado",
+      "notes": "recordTypeVisibilities dos record types que usam o processo (passo 6b)."
+    }
+  ],
+  "internalData": {
+    "enabled": true,
+    "source": "Objeto interno",
+    "object": "BusinessProcess",
+    "useToolingApi": false,
+    "query": "SELECT Id, Name, TableEnumOrId, IsActive, Description FROM BusinessProcess WHERE Name = '{shortName}' AND TableEnumOrId = '{objectName}'",
+    "expectSingleRecord": true,
+    "blocking": false,
+    "validationPending": "Objeto BusinessProcess: confirmar campos e o filtro por objeto (TableEnumOrId) no piloto."
+  },
+  "evidence": [
+    "Business Process (Object Reference): acompanha ciclos de vendas, lead, suporte e solução mostrando valores de picklist por perfil — developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_businessprocess.htm",
+    "RecordType (Metadata API): record types oferecem processos de negócio, valores de picklist e layouts diferentes — developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_recordtype.htm",
+    "Metadata API BusinessProcess — developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_businessprocess.htm"
+  ]
+}

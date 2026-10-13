@@ -21,7 +21,7 @@ STRATEGY_UNIT_MODES = {
 }
 
 RELATION_MATCHES = {"SAME_FULL_NAME", "CHILD_OF_PRIMARY", "FIELD_EQUALS_PRIMARY", "REFERENCE_SCAN",
-                    "PRIMARY_FIELD_REFERENCES"}
+                    "PRIMARY_FIELD_REFERENCES", "FIELD_EQUALS_PRIMARY_NAME", "NAME_PREFIX"}
 
 
 class MetadataTypeGroup:
@@ -51,7 +51,8 @@ class MetadataTypeGroup:
                     f"Grupo {self.name}: relation para {rel.get('metadataType')} "
                     "não consta em relatedMetadataTypes"
                 )
-            if rel["match"] in ("FIELD_EQUALS_PRIMARY", "PRIMARY_FIELD_REFERENCES") and not rel.get("field"):
+            if rel["match"] in ("FIELD_EQUALS_PRIMARY", "PRIMARY_FIELD_REFERENCES", "FIELD_EQUALS_PRIMARY_NAME") \
+                    and not rel.get("field"):
                 raise ConfigError(f"Grupo {self.name}: {rel['match']} exige 'field' em {rel}")
         if self.unit_mode == "PER_TYPE_WITH_RECORDS" and not self.type_definition:
             raise ConfigError(f"Grupo {self.name}: {self.document_strategy} exige 'typeDefinition'")

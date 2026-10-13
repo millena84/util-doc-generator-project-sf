@@ -158,6 +158,19 @@ sf data query --use-tooling-api --target-org dev --json --query "SELECT Id, Name
 - **Tooling:** relate se `AutoResponseRule`/`EscalationRule` existem como objetos e se o filtro `SobjectType` funciona.
 - **Fila:** confira os contêineres de `queueMembers` (papéis, grupos) e se `queueRoutingConfig` vem no XML.
 
+## 5h. Sales Cloud (Onda 08)
+
+```bash
+bin/sf-docs.sh run --group BusinessProcess --group LeadConvertSettings --group Territory2Model --group OpportunitySplitType --non-interactive
+sf project retrieve start --metadata LeadConvertSettings --target-org dev --json | python3 -c "import json,sys; print([(f['type'], f['fullName']) for f in json.load(sys.stdin)['result'].get('files', [])])"
+```
+
+- **Processo de vendas:** o `<businessProcess>` do RecordType traz só o nome do processo (sem o objeto)? Os record types listados batem com o Setup?
+- **LeadConvertSettings:** fullName do componente e nomes de `objectMapping`/`mappingFields`; relate se os pares não aparecerem na tabela de-para.
+- **Territórios:** fullName `Modelo.Territorio` e `Modelo.Regra`? Elementos de nível de acesso e `ruleAssociations`. **Não cole usuários** no relato.
+- **Permissões:** nomes de API `ConvertLeads`, `ManageTerritories`, `ManageOpportunitySplits` nos XMLs de perfil.
+- **Split type:** elemento real do "total deve somar 100%" (`isTotalValidated`?).
+
 ## 6. Acesso e configuração
 
 O ponto mais importante: confirmar se o XML de Profile/PermissionSet traz as permissões **só** dos componentes recuperados no mesmo pedido. O utilitário já recupera tudo junto (passo 6b), mas o resultado precisa ser conferido:

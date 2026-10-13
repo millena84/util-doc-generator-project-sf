@@ -523,5 +523,61 @@
       "fullName": "Case",
       "path": "escalationRules/Case.escalationRules-meta.xml"
     }
+  ],
+  "BusinessProcess:Opportunity.Venda_Enterprise": [
+    {
+      "type": "BusinessProcess",
+      "fullName": "Opportunity.Venda_Enterprise",
+      "path": "objects/Opportunity/businessProcesses/Venda_Enterprise.businessProcess-meta.xml"
+    }
+  ],
+  "RecordType:Opportunity.Enterprise": [
+    {
+      "type": "RecordType",
+      "fullName": "Opportunity.Enterprise",
+      "path": "objects/Opportunity/recordTypes/Enterprise.recordType-meta.xml"
+    }
+  ],
+  "RecordType:Opportunity.Varejo": [
+    {
+      "type": "RecordType",
+      "fullName": "Opportunity.Varejo",
+      "path": "objects/Opportunity/recordTypes/Varejo.recordType-meta.xml"
+    }
+  ],
+  "LeadConvertSettings:LeadConvertSettings": [
+    {
+      "type": "LeadConvertSettings",
+      "fullName": "LeadConvertSettings",
+      "path": "leadConvertSettings/LeadConvertSettings.LeadConvertSetting-meta.xml"
+    }
+  ],
+  "Territory2Model:Modelo_Vendas": [
+    {
+      "type": "Territory2Model",
+      "fullName": "Modelo_Vendas",
+      "path": "territory2Models/Modelo_Vendas/Modelo_Vendas.territory2Model-meta.xml"
+    }
+  ],
+  "Territory2:Modelo_Vendas.Sudeste": [
+    {
+      "type": "Territory2",
+      "fullName": "Modelo_Vendas.Sudeste",
+      "path": "territory2Models/Modelo_Vendas/territories/Sudeste.territory2-meta.xml"
+    }
+  ],
+  "Territory2Rule:Modelo_Vendas.Regra_SP": [
+    {
+      "type": "Territory2Rule",
+      "fullName": "Modelo_Vendas.Regra_SP",
+      "path": "territory2Models/Modelo_Vendas/rules/Regra_SP.territory2Rule-meta.xml"
+    }
+  ],
+  "OpportunitySplitType:Receita_Principal": [
+    {
+      "type": "OpportunitySplitType",
+      "fullName": "Receita_Principal",
+      "path": "opportunitySplitTypes/Receita_Principal.opportunitySplitType-meta.xml"
+    }
   ]
 }
