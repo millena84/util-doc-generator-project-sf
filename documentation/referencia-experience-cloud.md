@@ -4,7 +4,7 @@ Conteúdo **genérico da plataforma** sobre sites do Experience Cloud (Network, 
 
 > **Origem:** adaptado de `_sf_utilities/ajudAI/contexto-doc-experience-cloud.md` (Onda 09), na versão `ca067b0` do repositório `millena84/_sf_utilities`. É material de referência, não normativo.
 >
-> O acesso direto a developer.salesforce.com não estava disponível no ambiente da adaptação (2026-10-13). Nenhum item abaixo foi conferido na página oficial nesta adaptação: os itens *a confirmar* ficam para o piloto (`piloto-org-real.md`, item 5i).
+> O acesso direto a developer.salesforce.com não estava disponível no ambiente da adaptação (2026-10-13). Nenhum item abaixo foi conferido na página oficial nesta adaptação: os itens *a confirmar* ficam para o piloto (`piloto-org-real.md`, fase C9).
 
 ## Fontes oficiais
 

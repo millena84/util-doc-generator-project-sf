@@ -113,7 +113,7 @@ Antes de qualquer piloto real:
 4. combine onde os dados coletados serão armazenados, quem poderá acessá-los e quando serão removidos;
 5. comece com um escopo reduzido e revise as saídas antes de ampliar.
 
-A versão atual ainda precisa das refatorações de seleção explícita e das proteções descritas em `proximos-passos.md`. Portanto, não trate um alias como proteção suficiente contra executar na org errada.
+O alias sozinho não protege contra executar na org errada: a proteção é a aprovação explícita do `orgId` em `approvedOrgs` (abaixo).
 
 ### Aprovar a org-alvo (obrigatório)
 
@@ -209,7 +209,7 @@ Os caminhos configurados atualmente incluem:
 
 Trate todo conteúdo proveniente da org como dado interno potencialmente sensível. O `.gitignore` não deve ser usado como único controle de segurança. Não faça commit, upload de artifact ou compartilhamento desses diretórios sem revisão e autorização explícitas.
 
-O layout de saída atual usa diretório de data. A evolução para isolamento por `runId` e proteção contra sobrescrita está descrita em `proximos-passos.md`.
+O layout padrão (`execution.outputLayout = BY_DATE`) junta o que foi processado no dia em `saida/docs/doc-<alias>-MMDDAA/`; versões anteriores com conteúdo diferente vão para `_substituidos/`. `BY_RUN` isola cada execução numa subpasta `<runId>/`. Detalhes em `protecao-de-dados.md`.
 
 ## 8. Interpretar o resultado
 
@@ -217,20 +217,19 @@ Consulte o sumário do terminal e `runs/<runId>.json`. Alguns estados existentes
 
 - **Modelo ausente:** o comportamento esperado é avisar, não gerar aquele documento e continuar as outras unidades. Isso não significa que o tipo ausente tenha sido descoberto/processado.
 - **`PARTIAL_SUCCESS`:** houve resultado parcial; revise unidades, avisos e falhas antes de considerar a saída utilizável.
-- **`SUCCESS`:** não conclua cobertura completa apenas pelo nome do status. Confira tipos descobertos, selecionados e documentados; a semântica de cobertura global será reforçada na terceira refatoração.
+- **`SUCCESS`:** não conclua cobertura completa apenas pelo nome do status. Confira a linha **Cobertura** e as tabelas de tipos (descobertos, configurados, selecionados, documentados) em `runs/<runId>/resumo.md`.
 - **Simulação:** resultados com CLI/Metadata API simuladas são exemplos de teste, não documentação obtida da org real.
 
-## 9. Procedimento mínimo para o primeiro piloto controlado
+## 9. Primeiro teste em org real
 
-1. Use checkout/commit aprovado.
-2. Rode `validate-config` e toda a suíte de testes.
-3. Confirme autorização, alias, org-alvo e usuário.
-4. Restrinja o escopo ao necessário; não suponha que `run` documentará toda a org.
-5. Execute em armazenamento aprovado e com acesso restrito.
-6. Revise estado do run, tipos não cobertos, erros, raws/XMLs e documentos gerados.
-7. Procure segredos e informação que não deveria ser divulgada.
-8. Registre cobertura, limitações e aprovação do responsável.
-9. Remova os dados locais conforme a política de retenção definida.
+O roteiro completo está em [`piloto-org-real.md`](piloto-org-real.md): validação sem org, aprovação da org, execução mínima, conferência do acesso (passo 6b), confirmação por grupo (C0–C10), execução completa, revisão de proteção de dados, critérios de aprovação e de parada, modelo de relato e limpeza. Em resumo:
+
+1. Use um commit aprovado e rode `validate-config --strict` e toda a suíte de testes.
+2. Confirme autorização, alias, org-alvo e usuário; registre a org em `approvedOrgs`.
+3. Comece com um grupo pequeno e amplie fase a fase; não suponha que `run` documenta toda a org.
+4. Execute em armazenamento aprovado e com acesso restrito.
+5. Revise o `resumo.md`, os documentos e a busca por dados sensíveis antes de compartilhar qualquer coisa.
+6. Registre cobertura, limitações e aprovação do responsável; remova os dados locais conforme a retenção combinada.
 
 ## Referências
 

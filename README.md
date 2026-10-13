@@ -118,7 +118,7 @@ Registro da auditoria de segurança de 2026-10-11 (10 riscos: 1 crítico, 2 alto
 | DA-08 | 🟡 Documentação de uma mesma coleta dividida entre pastas após `--resume`; orgs diferentes na mesma pasta do dia | **Resolvido**: padrão `BY_DATE` com pasta por org (`doc-<alias>-MMDDAA`, dono registrado em `.org.json`); retomada/regeneração gravam na pasta da coleta original (`resumeOutput`). | Retomada muito antiga mistura datas na pasta: o `resumo.md` lista componentes por dia e recomenda execução nova. |
 | DA-12 | 🟢 `org-display.sanitized.json` (identidade da org, sem segredo) fora do `.gitignore` | **Decisão**: mantido acessível e não ignorado para uso local; tabela de `protecao-de-dados.md` corrigida. | Reavaliar (ignorar no Git) ao adotar GitHub Actions. |
 | DA-03 | 🟡 Normalizado de um filho sobrescrito por outro filho de tipo diferente com o mesmo fullName (ex.: RecordType e ValidationRule `Pedido__c.Padrao`) | **Resolvido**: o nome do normalizado de filho inclui o tipo (`<tipo>--<comp>.json`). | Normalizados antigos (sem o tipo) ficam órfãos após a próxima execução/`regenerate`; podem ser apagados. |
-| DA-05 | 🟡 Dados internos de componente de pacote podem incluir homônimo de outro namespace (consultas não filtram `NamespacePrefix`) | **Mitigado**: o documento (logo após "Dados internos"), o run state e o log avisam quando o componente tem namespace e a consulta não filtra. | Filtrar por namespace depois de confirmar os campos no piloto (`documentation/piloto-org-real.md`, item 4). |
+| DA-05 | 🟡 Dados internos de componente de pacote podem incluir homônimo de outro namespace (consultas não filtram `NamespacePrefix`) | **Mitigado**: o documento (logo após "Dados internos"), o run state e o log avisam quando o componente tem namespace e a consulta não filtra. | Filtrar por namespace depois de confirmar os campos no piloto (`documentation/piloto-org-real.md`, Apêndice B). |
 | DA-10, DA-13, DA-14 | 🟢 Premissas da CLI/org não confirmadas: `connectedStatus` em JWT/scratch, `ConnectedApplication.Name` × fullName, formato de `sf org auth show-access-token --json` | **Pendente de piloto**: erro nessas premissas não vaza dados (a execução para com mensagem clara ou a seção fica "Não informado"). | Roteiro com comandos e resultado esperado: `documentation/piloto-org-real.md`. |
 | 2–10 | Demais riscos da auditoria (2 altos, 5 médios, 2 baixos) | **Não detalhados** neste registro. | Incluir descrição, localização e decisão quando o relatório completo estiver disponível. |
 
@@ -210,7 +210,7 @@ Comportamento:
 - **Cobertura**: `coverage` no run state e linha "Cobertura: COMPLETE/INCOMPLETE" no log.
 - **Retomada**: só reaproveita o que for compatível (org, API, política, escopo, contratos/modelos); motivos em `resume.reprocessed`.
 - Inventário de artefatos, sensibilidade e retenção: [`documentation/protecao-de-dados.md`](documentation/protecao-de-dados.md).
-- Premissas a confirmar numa org real (comandos e resultado esperado): [`documentation/piloto-org-real.md`](documentation/piloto-org-real.md).
+- Primeiro teste do MVP numa org real (fases com critério de passagem, premissas a confirmar, revisão de proteção de dados e modelo de relato): [`documentation/piloto-org-real.md`](documentation/piloto-org-real.md).
 
 ## Refatoração 3 — riscos de segurança, cobertura e execução
 
