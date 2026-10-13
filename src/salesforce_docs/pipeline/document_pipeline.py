@@ -14,7 +14,8 @@ from salesforce_docs.config.metadata_types_loader import load_metadata_types
 from salesforce_docs import __version__
 from salesforce_docs.config.scope import WILDCARD, describe_effective, resolve_scope
 from salesforce_docs.errors import ConfigError, GlobalFailure, SessionExpiredError
-from salesforce_docs.extraction import inventory_extractor, metadata_types_extractor, schema_extractor
+from salesforce_docs.extraction import (access_extractor, inventory_extractor, metadata_types_extractor,
+                                        schema_extractor)
 from salesforce_docs.extraction.internal_data_extractor import developer_name, extract_internal_data
 from salesforce_docs.pipeline import deviation_handler
 from salesforce_docs.pipeline.component_pipeline import ComponentProcessor, normalize_record
@@ -61,6 +62,8 @@ class PipelineContext:
         self.docs_dir = None
         self.writer = None
         self.discovered_types = None   # passo 4 (None = listagem não executada)
+        self.access_index = None       # passo 6b (None = índice de acesso indisponível)
+        self.prefetched = {}           # (tipo, nome) -> arquivos já recuperados no retrieve de acesso
         self.processed_types = set()   # retrieve + normalização com sucesso
         self.contracts = ContractStore(app.contracts_dir, mvp)
         self.templates = None
@@ -134,6 +137,7 @@ class DocumentPipeline:
             enabled = self._step4_metadata_types(p, effective)
             self._step5_schemas(p, enabled)
             inventories = self._step6_inventories(p, enabled)
+            self._step6b_access_sources(p, enabled, inventories, effective)
             self._steps7_to_10(p, enabled, inventories, skip_units, effective, current_unit)
         except SessionExpiredError as exc:
             if current_unit["entry"] is not None:
@@ -708,6 +712,79 @@ class DocumentPipeline:
         p.run_state.step("6-list-metadata", st.SUCCESS, f"{len(inventories)} tipo(s)")
         return inventories
 
+    # Passo 6b -----------------------------------------------------------
+    def _doc_specs(self, enabled, inventories, effective):
+        """Componentes documentados que entram no retrieve de acesso.
+
+        selection.mode ALL: o tipo inteiro (`Tipo`); SELECTED: sempre `Tipo:Nome` dos componentes
+        documentados (mesmo com `components: ALL`) — nada fora da seleção é recuperado.
+        """
+        whole_types = str(self.app.selection.mode).upper() == "ALL"
+        specs = set()
+        for group_name in enabled:
+            group = self.mvp.group(group_name)
+            component_filter = effective.get(group_name)
+            for unit in deviation_handler.build_units(group, inventories, self.mvp):
+                if component_filter is not None and unit["fullName"] not in component_filter:
+                    continue
+                specs.add(unit["metadataType"] if whole_types else f"{unit['metadataType']}:{unit['fullName']}")
+        return specs
+
+    def _step6b_access_sources(self, p, enabled, inventories, effective):
+        """Retrieve único de Profile/PermissionSet/PermissionSetGroup/Queue/SharingRules junto com
+        os componentes documentados; índice derivado de 'onde cada componente está configurado'."""
+        cfg = self.mvp.access_sources
+        if not cfg or not cfg.get("enabled", True):
+            p.run_state.set("access", {"status": "DISABLED"})
+            return
+        available = getattr(p, "discovered_types", None) or set()
+        specs, missing = access_extractor.access_specs(cfg, self._doc_specs(enabled, inventories, effective),
+                                                       available)
+        access_dir = p.inventory_dir / cfg.get("folder", "access")
+        info = {"status": None, "specs": specs, "missingTypes": missing, "index": None}
+        if missing:
+            p.log.warn(f"Passo 6b: tipos de acesso não habilitados na org: {', '.join(missing)}")
+        if not any(t in specs for t in cfg.get("retrieveTypes", [])):
+            info["status"] = st.NOT_ENABLED
+            p.run_state.set("access", info)
+            return
+        res = access_extractor.retrieve_access_sources(p.runner, p.session, specs, access_dir,
+                                                       p.errors_dir, self.root)
+        if not res["ok"]:
+            info.update(status=st.RETRIEVE_FAILED, error=self.masker(res["error"]))
+            p.run_state.set("access", info)
+            p.log.warn(f"Passo 6b: retrieve das fontes de acesso falhou ({self.masker(res['error'])}); "
+                       "seções de acesso ficam 'Não informado'")
+            return
+        source_types = set(cfg.get("retrieveTypes", []))
+        index = access_extractor.build_access_index(
+            [f for f in res["files"] if f.get("type") in source_types], self.root, cfg)
+        info.update(status=st.SUCCESS, retrieveRaw=res["retrieveRaw"],
+                    index=access_extractor.save_access_index(index, access_dir, self.root, res["retrieveRaw"]),
+                    sourceFiles=len(index["sourceFiles"]), problems=res["problems"])
+        p.access_index = index
+        # Fontes que também são documentadas (ex.: PermissionSet) reaproveitam o XML completo.
+        for f in res["files"]:
+            if f.get("type") in source_types:
+                p.prefetched.setdefault((f["type"], f["fullName"]), []).append(f)
+        p.prefetched_raw = res["retrieveRaw"]
+        p.run_state.set("access", info)
+        p.run_state.step("6b-access-sources", st.SUCCESS, info["index"])
+        p.log.info(f"Passo 6b: {len(index['sourceFiles'])} fonte(s) de acesso; índice em {info['index']}")
+
+    def _load_access_index(self, p, source):
+        """Regeneração: reconstrói o índice a partir dos XMLs de acesso da execução de origem."""
+        info = source.data.get("access") or {}
+        cfg = self.mvp.access_sources
+        if not cfg or not info.get("index") or not (self.root / info["index"]).is_file():
+            return
+        saved = read_json(self.root / info["index"])
+        files = [f for f in saved.get("sourceFiles", []) if (self.root / f["path"]).is_file()]
+        if len(files) != len(saved.get("sourceFiles", [])):
+            p.log.warn("Regeneração: fontes de acesso ausentes; seções de acesso podem ficar incompletas")
+        p.access_index = access_extractor.build_access_index(files, self.root, cfg)
+        p.run_state.set("access", dict(info, regeneratedFrom=source.run_id))
+
     # Pasta de saída ------------------------------------------------------
     def _open_writer(self, p, alias, org_id, source=None):
         """Define a pasta dos documentos e cria o OutputWriter.
@@ -980,6 +1057,7 @@ class DocumentPipeline:
                             sensitive=self.mvp.render_blocked_elements,
                             developer_name=developer_name(unit["fullName"], primary.get("namespacePrefix")))
         ctx.unresolved_related = set(unresolved_types)
+        ctx.access_index = p.access_index
         result = self.renderer.render(template, contract, ctx)
         if not result.ok:
             p.log.error(f"{unit['unitId']}: documento inválido: {result.errors}")
@@ -1073,6 +1151,7 @@ class DocumentPipeline:
         p = PipelineContext(self.root, self.app, self.mvp, self.runner, state, log, self.masker)
         p.bind_session(session)
         self._open_writer(p, session.alias, (source.data.get("session") or {}).get("orgId"), source)
+        self._load_access_index(p, source)
         state.set("apiVersion", session.api_version)
         self._regenerate_differences(p, source)
         if (p.catalog_dir / "metadata-types.raw.json").is_file():

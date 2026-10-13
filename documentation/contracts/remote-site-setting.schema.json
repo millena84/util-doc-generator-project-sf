@@ -76,6 +76,16 @@
       },
       "emptyValue": "Não aplicável",
       "notes": "Tooling API RemoteProxy não documenta campo de nome filtrável (SiteName não consta da lista oficial de campos). Seção 'Não aplicável' até confirmação."
+    },
+    {
+      "markdownSection": "Acesso e configuração",
+      "builder": "access_rows",
+      "source": "XML",
+      "args": {
+        "notApplicable": "Remote Site Setting vale para a org inteira; não há atribuição por perfil ou permission set."
+      },
+      "emptyValue": "Não informado",
+      "notes": "Onde o componente está configurado: perfis, permission sets e permission set groups (via) que concedem acesso, a partir do XML (accessSources, passo 6b). Sem índice de acesso: 'Não informado'."
     }
   ]
 }

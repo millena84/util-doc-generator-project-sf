@@ -8,7 +8,8 @@ FAKE_SF_SCENARIO  lista separada por vírgula: old_cli, no_alias, disconnected,
                   mvp_complete (usa a camada tests/fixtures/mvp-complete por cima
                   das fixtures base: todos os metadata types do MVP com componentes),
                   org_id=<orgId> (org display devolve outro orgId),
-                  extra_alias=<alias> (segunda org na CLI, com esse alias)
+                  extra_alias=<alias> (segunda org na CLI, com esse alias),
+                  fail_access_retrieve (falha no retrieve em lote das fontes de acesso)
                   sleep_on_retrieve=<fullName> (dorme 30s: testa timeout),
                   scale_flows=<N> (N Flows sintéticos Gerado_0001...),
                   leak_token_on_retrieve=<fullName> (erro cujo texto contém o accessToken),
@@ -136,6 +137,29 @@ if cmd[:3] == ["org", "list", "metadata"]:
     if p.is_file():
         out({"status": 0, "result": json.loads(p.read_text())})
     out({"status": 0, "result": []})
+
+if cmd[:3] == ["project", "retrieve", "start"] and (
+        len(opt(args, "--metadata")) > 1 or ":" not in opt(args, "--metadata")[0]):
+    # Retrieve em lote (fontes de acesso): `Tipo` = todos do tipo; `Tipo:Nome` = um componente.
+    if "fail_access_retrieve" in SCEN:
+        err("RetrieveFailed", "Falha simulada no retrieve das fontes de acesso")
+    data = manifest()
+    keys = []
+    for spec in opt(args, "--metadata"):
+        keys += [k for k in data if k == spec or (":" not in spec and k.startswith(spec + ":"))]
+    cwd = Path.cwd()
+    files, seen = [], set()
+    for key in keys:
+        for e in data[key]:
+            if e["path"] in seen:
+                continue
+            seen.add(e["path"])
+            src = FIX / "source" / e["path"]
+            dest = cwd / "force-app" / "main" / "default" / e["path"]
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(src, dest)
+            files.append({"fullName": e["fullName"], "type": e["type"], "state": "Created", "filePath": str(dest)})
+    out({"status": 0, "result": {"done": True, "status": "Succeeded", "success": True, "files": files}})
 
 if cmd[:3] == ["project", "retrieve", "start"]:
     spec = opt(args, "--metadata")[0]

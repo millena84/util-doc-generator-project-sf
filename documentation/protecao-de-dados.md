@@ -34,7 +34,9 @@
 | Resumo da execução | `runs/<runId>/resumo.md` | status, cobertura, identidade da org, lacunas e métricas; gerado a partir do run state já mascarado e mascarado de novo | padrão | versionável após revisão | junto do run state |
 | Run state | `runs/run-*.json` | status, caminhos, avisos; todo texto passa pela máscara (token e valores secretos encontrados no XML) | 0600 | versionável após revisão | histórico de auditoria (ex.: 90 dias) |
 | Logs (stderr) | terminal / CI | mesmas mensagens do run state, mascaradas | — | — | conforme política do ambiente |
-| Markdown | `saida/docs/doc-<alias>-MMDDAA/` (+ `.org.json` com o orgId dono da pasta) | só propriedades do contrato; nunca `sensitiveXmlElements` nem `omitFromDocumentation` | padrão do sistema | revisar antes de publicar | conforme documentação do projeto |
+| Fontes de acesso | `inventory/.../access/components/` (Profile, PermissionSet, PermissionSetGroup, Queue, SharingRules) e `access/retrieve.raw.json` | permissões de perfis e permission sets; membros de filas (podem incluir usuários) | 0600 | **ignorado** (`components/`) | junto do XML |
+| Índice de acesso | `inventory/.../access/access-index.json` | nomes de perfis/permission sets/grupos/filas e o acesso concedido; **sem usuários** | 0600 | versionável após revisão | junto do XML |
+| Markdown | `saida/docs/doc-<alias>-MMDDAA/` (+ `.org.json` com o orgId dono da pasta) | só propriedades do contrato; nunca `sensitiveXmlElements` nem `omitFromDocumentation`; seção "Acesso e configuração" com perfis, permission sets e grupos (decisão de 2026-10-13); nunca usuários atribuídos nem membros de filas | padrão do sistema | revisar antes de publicar | conforme documentação do projeto |
 | Versões substituídas | `saida/docs/.../_substituidos/<runId>/` | documento anterior quando outra execução gera conteúdo diferente | padrão | revisar | apagar após conferência |
 
 `dataProtection.privateFiles = true` (padrão) grava raws, cópias de XML, normalizados e run state com permissão `0600`.

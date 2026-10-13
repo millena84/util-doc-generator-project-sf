@@ -96,6 +96,16 @@
         "valuePlaceholder": "internal_value"
       },
       "emptyValue": "Não informado"
+    },
+    {
+      "markdownSection": "Acesso e configuração",
+      "builder": "access_rows",
+      "source": "XML",
+      "args": {
+        "notApplicable": "Certificate não é atribuído a perfil ou permission set; o uso é configurado no componente consumidor."
+      },
+      "emptyValue": "Não informado",
+      "notes": "Onde o componente está configurado: perfis, permission sets e permission set groups (via) que concedem acesso, a partir do XML (accessSources, passo 6b). Sem índice de acesso: 'Não informado'."
     }
   ]
 }

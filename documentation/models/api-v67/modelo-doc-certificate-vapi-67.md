@@ -17,3 +17,9 @@
 | Propriedade | Valor | Fonte |
 |---|---|---|
 | {{ internal_property }} | {{ internal_value }} | Tooling API |
+
+## Acesso e configuração
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| {{ origin_type }} | {{ origin_name }} | {{ access_granted }} | {{ access_via }} | XML |

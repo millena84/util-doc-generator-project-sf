@@ -57,6 +57,7 @@ Categorias:
 1. Criado o modelo novo `modelo-doc-flow-autolaunched-vapi-67.md`. Modelos de NamedCredential, RemoteSiteSetting e Certificate ficam para o Lote B.
 2. Dado sensível/bloqueado: a **linha é omitida** e o nome da propriedade vai para `omittedProperties` no run state (sem terceiro valor além de `Não informado`/`Não aplicável`).
 3. `consumerKey`, `contactEmail/Phone`, `callbackUrl` omitidos por padrão (`omitFromDocumentation`).
+   - **Revisão (2026-10-13, decisão da usuária):** `commaSeparatedPermissionSet` e `commaSeparatedProfile` **saíram** de `omitFromDocumentation`. Todo documento passa a listar perfis, permission sets e permission set groups que concedem acesso (seção "Acesso e configuração", fonte XML). Usuários atribuídos continuam fora.
 4. Valores de records de Custom Metadata não são renderizados.
 5. `inventory/**/components/` e `inventory/**/normalized/` no `.gitignore` (raw intacto em disco, fora do Git). Segredos são redigidos (`[REDACTED]`) apenas no derivado normalizado.
 

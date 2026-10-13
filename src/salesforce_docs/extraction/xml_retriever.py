@@ -54,27 +54,30 @@ def _messages_from_result(result):
     return out
 
 
-def retrieve_component(runner, session, metadata_type, full_name, components_dir, raw_path,
-                       errors_raw_path, project_root):
-    spec = f"{metadata_type}:{full_name}"
+def retrieve_specs(runner, session, specs, components_dir, raw_path, errors_raw_path, project_root):
+    """`sf project retrieve start` com uma ou mais especificações (`Tipo:Nome` ou só `Tipo`).
+
+    Retorna dict com status bruto da chamada, arquivos copiados byte a byte para
+    `components_dir`, problemas e caminho do raw.
+    """
+    args = ["project", "retrieve", "start"]
+    for spec in specs:
+        args += ["--metadata", spec]
     with tempfile.TemporaryDirectory(prefix="sfdocs-retrieve-") as tmp:
         project_dir = Path(tmp)
         (project_dir / "sfdx-project.json").write_text(_project_json(session.api_version), encoding="utf-8")
         (project_dir / PACKAGE_DIR).mkdir()
         result = runner.run(
-            ["project", "retrieve", "start", "--metadata", spec, "--target-org", session.alias,
-             "--api-version", session.api_version, "--json"],
+            args + ["--target-org", session.alias, "--api-version", session.api_version, "--json"],
             raw_path=raw_path, error_raw_path=errors_raw_path, cwd=str(project_dir),
         )
-        outcome = {"metadataType": metadata_type, "fullName": full_name,
-                   "retrieveRaw": rel(result.raw_path, project_root) if result.raw_path else None,
-                   "files": [], "status": None, "error": None}
+        out = {"ok": result.ok, "error": None if result.ok else result.error_message,
+               "retrieveRaw": rel(result.raw_path, project_root) if result.raw_path else None,
+               "files": [], "problems": []}
         if not result.ok:
-            outcome.update(status=st.RETRIEVE_FAILED, error=result.error_message)
-            return outcome
+            return out
         files = _files_from_result(result.result)
         failed = [f for f in files if str(f.get("state", "")).lower() == "failed"]
-        copied = []
         for f in files:
             if f in failed or not f.get("filePath"):
                 continue
@@ -86,11 +89,23 @@ def retrieve_component(runner, session, metadata_type, full_name, components_dir
             dest = components_dir / _relative_to_package(src, project_dir)
             dest.parent.mkdir(parents=True, exist_ok=True)
             copy_private(src, dest)  # cópia byte a byte: XML original intacto (0600)
-            copied.append({"type": f.get("type"), "fullName": f.get("fullName"),
-                           "path": rel(dest, project_root), "sha256": sha256_file(dest)})
-    outcome["files"] = copied
-    problems = [f"{f.get('type')}:{f.get('fullName')}: {f.get('error') or f.get('problem') or 'Failed'}"
-                for f in failed] + _messages_from_result(result.result)
+            out["files"].append({"type": f.get("type"), "fullName": f.get("fullName"),
+                                 "path": rel(dest, project_root), "sha256": sha256_file(dest)})
+    out["problems"] = [f"{f.get('type')}:{f.get('fullName')}: {f.get('error') or f.get('problem') or 'Failed'}"
+                       for f in failed] + _messages_from_result(result.result)
+    return out
+
+
+def retrieve_component(runner, session, metadata_type, full_name, components_dir, raw_path,
+                       errors_raw_path, project_root):
+    spec = f"{metadata_type}:{full_name}"
+    res = retrieve_specs(runner, session, [spec], components_dir, raw_path, errors_raw_path, project_root)
+    outcome = {"metadataType": metadata_type, "fullName": full_name, "retrieveRaw": res["retrieveRaw"],
+               "files": res["files"], "status": None, "error": None}
+    if not res["ok"]:
+        outcome.update(status=st.RETRIEVE_FAILED, error=res["error"])
+        return outcome
+    copied, problems = res["files"], res["problems"]
     main = find_main_file(copied, metadata_type, full_name)
     if not copied:
         outcome.update(status=st.RETRIEVE_FAILED,

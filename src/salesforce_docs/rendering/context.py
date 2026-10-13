@@ -33,6 +33,8 @@ class RenderContext:
         self.omitted = omitted if omitted is not None else set()
         # Tipos relacionados não verificados (seleção restrita): "Não informado", não "Não aplicável".
         self.unresolved_related = set()
+        # Índice "onde o componente está configurado" (passo 6b); None = indisponível.
+        self.access_index = None
 
     def omit(self, name):
         self.omitted.add(f"{self.metadata_type}:{self.full_name}:{name}")
@@ -44,6 +46,13 @@ class RenderContext:
                              contracts=self.contracts, sensitive=self.sensitive,
                              omitted=self.omitted)
         ctx.unresolved_related = self.unresolved_related
+        ctx.access_index = self.access_index
+        return ctx
+
+    def root(self):
+        ctx = self
+        while ctx.parent is not None:
+            ctx = ctx.parent
         return ctx
 
     def related_of(self, metadata_type):

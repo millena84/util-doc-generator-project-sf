@@ -105,7 +105,8 @@ class ScopePipelineTest(PipelineTestBase):
     def retrieved(self):
         out = []
         for line in self.calls().splitlines():
-            if line.startswith("project retrieve start"):
+            # O retrieve das fontes de acesso (passo 6b) é verificado em tests/test_acesso.py.
+            if line.startswith("project retrieve start") and "--metadata Profile" not in line:
                 out.append(line.split("--metadata ")[1].split(" ")[0])
         return sorted(out)
 

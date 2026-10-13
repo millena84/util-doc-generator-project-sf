@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SharingRules xmlns="http://soap.sforce.com/2006/04/metadata">
+    <sharingCriteriaRules>
+        <fullName>Pedidos_Altos</fullName>
+        <accessLevel>Read</accessLevel>
+        <label>Pedidos Altos</label>
+        <sharedTo><role>Gerente_Vendas</role></sharedTo>
+        <criteriaItems><field>Valor__c</field><operation>greaterThan</operation><value>1000</value></criteriaItems>
+    </sharingCriteriaRules>
+    <sharingOwnerRules>
+        <fullName>Pedidos_Suporte</fullName>
+        <accessLevel>Edit</accessLevel>
+        <label>Pedidos Suporte</label>
+        <sharedTo><group>Grupo_Suporte</group></sharedTo>
+        <sharedFrom><roleAndSubordinates>Vendas</roleAndSubordinates></sharedFrom>
+    </sharingOwnerRules>
+</SharingRules>

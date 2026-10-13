@@ -9,4 +9,6 @@
         <scopes>Api</scopes>
         <scopes>RefreshToken</scopes>
     </oauthConfig>
+    <permissionSetName>Integracao_API</permissionSetName>
+    <profileName>Vendas</profileName>
 </ConnectedApp>

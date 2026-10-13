@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Queue xmlns="http://soap.sforce.com/2006/04/metadata">
+    <doesSendEmailToMembers>false</doesSendEmailToMembers>
+    <name>Fila de Pedidos</name>
+    <queueMembers>
+        <users><user>usuario.membro.sentinela@example.invalid</user></users>
+    </queueMembers>
+    <queueSobject><sobjectType>Pedido__c</sobjectType></queueSobject>
+    <queueSobject><sobjectType>Case</sobjectType></queueSobject>
+</Queue>

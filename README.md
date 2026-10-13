@@ -60,6 +60,7 @@ Códigos de saída: `0` sucesso (inclui `PARTIAL_SUCCESS` e `COMPLETED_WITH_GAPS
 | 4 | `sf org list metadata-types` | `catalog/.../metadata-types.raw.json` | `metadata-types.index.json` |
 | 5 | `describeValueType()` via Metadata API (SOAP, `urllib`) | `catalog/.../schemas/<tipo>.describevaluetype.raw.json` | `<tipo>.schema.json` |
 | 6 | `sf org list metadata --metadata-type <tipo>` | `inventory/.../<pasta>/inventory.raw.json` | `inventory.index.json` |
+| 6b | Fontes de acesso: `sf project retrieve start` **único** com Profile, PermissionSet, PermissionSetGroup, Queue, SharingRules **e** os componentes documentados | `inventory/.../access/retrieve.raw.json` + XMLs em `access/components/` | `access/access-index.json` |
 | 7 | `sf project retrieve start --metadata <tipo>:<nome>` | `inventory/.../<pasta>/retrieve/<comp>.raw.json` + XML original em `components/` | — |
 | 8 | XML → JSON | — | `inventory/.../<pasta>/normalized/<comp>.json` (filhos: `<tipo>--<comp>.json`, ex.: `record-type--pedido-c-padrao.json`) |
 | 9 | `sf data query` (se o contrato prever) | `inventory/.../<pasta>/internal-data/<comp>.raw.json` | — |
@@ -74,7 +75,7 @@ Estado da execução: `runs/run-<AAAAMMDD-HHMMSS>.json`. Respostas de erro ficam
 - **Retrieve**: roda em um projeto SFDX temporário; o XML é copiado byte a byte, preservando as pastas do formato source (ex.: `objects/Obj__c/fields/...`).
 - **Valores ausentes**: `Não aplicável` quando o `describeValueType` comprova que o campo não existe no tipo; `Não informado` quando existe mas não veio no XML/dado interno.
 - **Dados sensíveis**: elementos listados em `sensitiveXmlElements` (ex.: `consumerSecret`) nunca são renderizados e são substituídos por `[REDACTED]` no JSON normalizado (o XML original fica intacto); o run log avisa quando um XML recuperado os contém. `ExtlClntAppGlobalOauthSettings` é tipo excluído (contém consumer secret).
-- **Valores sujeitos a decisão de segurança** (`omitFromDocumentation`: `consumerKey`, `callbackUrl`, `contactEmail/Phone`, `certificate`, `parameterValue`, permission sets/perfis, usuários de execução): nunca entram no Markdown. A linha é **omitida** (sem criar valor além de `Não informado`/`Não aplicável`) e o nome da propriedade fica em `omittedProperties` no run state. Valores (`<values>`) de records de Custom Metadata também não são renderizados.
+- **Valores sujeitos a decisão de segurança** (`omitFromDocumentation`: `consumerKey`, `callbackUrl`, `contactEmail/Phone`, `certificate`, `parameterValue`, usuários de execução; permission sets e perfis autorizados **saíram** da lista — ver "Acesso e configuração"): nunca entram no Markdown. A linha é **omitida** (sem criar valor além de `Não informado`/`Não aplicável`) e o nome da propriedade fica em `omittedProperties` no run state. Valores (`<values>`) de records de Custom Metadata também não são renderizados.
 - **`inventory/**/components/` e `inventory/**/normalized/` estão no `.gitignore`**: o raw é preservado em disco, mas pode conter valores sensíveis.
 - **External Client App**: o nome correto do metadata type é `ExternalClientApplication` (Metadata API). O grupo continua chamado `ExternalClientApp`.
 - **Dados internos**: todo documento principal (e os subdocumentos de Flow) tem a seção "Dados internos". As consultas não bloqueiam a execução; objeto inacessível → "Não informado". Com `expectSingleRecord`, mais de um registro para o componente é descartado como ambíguo. `validate-config` recusa consulta que selecione campo de `sensitiveXmlElements` ou `omitFromDocumentation`, e campos bloqueados devolvidos pela org não são renderizados.
@@ -89,6 +90,20 @@ Estado da execução: `runs/run-<AAAAMMDD-HHMMSS>.json`. Respostas de erro ficam
   | External Credential | `ExternalCredential` | padrão | `validationPending` |
   | External Client App | — | — | "Não aplicável": nenhum objeto consultável confirmado em documentação oficial |
   | Remote Site Setting | — | — | "Não aplicável": `RemoteProxy` (Tooling) não documenta campo de nome filtrável |
+
+## Acesso e configuração (onde cada componente está configurado)
+
+Todo documento termina com a seção **"Acesso e configuração"**: perfis, permission sets e permission set groups que concedem acesso ao componente, com o acesso concedido (ex.: `Ler, Editar`, `Executar`) e o caminho (`via Permission Set X`). Fonte: **XML**.
+
+- **Retrieve único (passo 6b)**: Profile, PermissionSet, PermissionSetGroup, Queue e SharingRules são recuperados **junto com os componentes documentados**, porque o XML de Profile (e possivelmente de PermissionSet) só traz permissões dos componentes presentes no mesmo retrieve. Em `selection.mode = SELECTED` entram só os componentes selecionados; as fontes de acesso entram sempre (todas), pois sem elas não há como saber quem tem acesso — desligável com `accessSources.enabled = false`.
+- **Configuração** (`accessSources` em `config/metadata-types-mvp.json`): quais elementos do XML concedem acesso a qual tipo (`classAccesses` → ApexClass, `flowAccesses` → Flow, `objectPermissions` → CustomObject, `fieldPermissions` → campos, `recordTypeVisibilities`, `customMetadataTypeAccesses`, `externalCredentialPrincipalAccesses`). Concessão com `enabled`/flag `false` não é acesso.
+- **Por tipo**: Connected App usa `profileName`/`permissionSetName` do próprio XML; External Client App, `commaSeparatedProfile`/`commaSeparatedPermissionSet` da política OAuth; Named Credential, os principals da External Credential relacionada; Remote Site Setting e Certificate: "Não aplicável" (sem atribuição por perfil/permission set). Subdocumentos herdam a lista do componente principal.
+- **Role, fila e grupo** controlam acesso a **registros**, não a componentes: aparecem no Custom Object, na seção **"Compartilhamento e filas"** (filas que aceitam o objeto e regras de compartilhamento para role, grupo ou fila).
+- **Documento de Permission Set** (`modelo-doc-permission-set`): objetos (ler, criar, editar, excluir, ver/modificar todos), **campos** (ler/editar), classes, flows, Custom Metadata Types, record types, principals de External Credential, permissões de sistema e os grupos que o incluem. O XML vem do retrieve de acesso (completo); o permission set não é recuperado de novo.
+- **Não entram**: usuários atribuídos (`PermissionSetAssignment`) e membros de filas/grupos — dados pessoais que não descrevem o componente.
+- **Sem índice** (retrieve de acesso falhou ou desligado): a seção fica "Não informado" — nunca "sem acesso". Com índice e nenhuma concessão: "Nenhuma concessão encontrada".
+- **Regra**: `validate-config` falha se um contrato com modelo não tiver exatamente uma tabela `access_rows` (tipos sem atribuição declaram `args.notApplicable` com o motivo) ou se "Acesso e configuração" não for a **última** seção do modelo — vale para os tipos que vierem nas próximas ondas.
+- `regenerate` reconstrói o índice a partir dos XMLs de acesso da execução de origem, sem acessar a org.
 
 ## Riscos conhecidos (tratar futuramente, se necessário)
 
@@ -117,6 +132,7 @@ Registro da auditoria de segurança de 2026-10-11 (10 riscos: 1 crítico, 2 alto
 | CustomMetadata | `ONE_DOCUMENT_PER_TYPE_AND_RECORDS` | records `Tipo.Record` agrupados no tipo `Tipo__mdt` (`typeDefinition`); campos do `__mdt` como filhos (`CHILD_OF_PRIMARY`) |
 | NamedCredential | `SINGLE_DOCUMENT_PER_NAMED_CREDENTIAL_WITH_RELATED_COMPONENTS` | `ExternalCredential` cujo fullName aparece exatamente em `namedCredentialParameters.externalCredential` do XML da NC (`PRIMARY_FIELD_REFERENCES`); as propriedades da EC vêm do XML da própria EC, com arquivo e sha256 |
 | ExternalCredential, ConnectedApp, RemoteSiteSetting, Certificate | `ONE_DOCUMENT_PER_COMPONENT` | — (Certificate: só o `.crt-meta.xml` é lido; o `.crt` fica só como raw) |
+| PermissionSet | `ONE_DOCUMENT_PER_COMPONENT` | — (XML do retrieve de acesso, passo 6b) |
 | ApexClass | `ONE_DOCUMENT_PER_COMPONENT` + subdocumentos por papel | — (o `.cls` é lido pelo parser estrutural configurado em `sourceParser`; classes de pacote gerenciado `ns__*` são excluídas por `componentFilter`) |
 
 Cada componente (principal ou relacionado) é extraído e normalizado de forma independente; a agregação acontece apenas no documento.
@@ -237,11 +253,11 @@ Os testes usam uma Salesforce CLI **simulada** (`tests/fixtures/bin/sf`) e respo
 ### Simulação de todas as documentações do MVP
 
 ```bash
-python3 -m unittest tests.test_mvp_simulation        # verifica os 17 modelos e os 18 metadata types
+python3 -m unittest tests.test_mvp_simulation        # verifica os 18 modelos e os 19 metadata types
 python3 -m tests.simulate_mvp --out /tmp/sim-mvp     # executa e gera o relatório passo a passo
 ```
 
-O cenário `mvp_complete` da CLI simulada sobrepõe `tests/fixtures/mvp-complete/` às fixtures base, de modo que todo metadata type do MVP tenha ao menos um componente. O relatório versionado em `documentation/simulacao/relatorio-simulacao-mvp.md` mostra, para essa simulação, a saída no terminal, os comandos por passo, a situação de cada tipo, a árvore de arquivos e o conteúdo dos 28 documentos gerados.
+O cenário `mvp_complete` da CLI simulada sobrepõe `tests/fixtures/mvp-complete/` às fixtures base, de modo que todo metadata type do MVP tenha ao menos um componente. O relatório versionado em `documentation/simulacao/relatorio-simulacao-mvp.md` mostra, para essa simulação, a saída no terminal, os comandos por passo, a situação de cada tipo, a árvore de arquivos e o conteúdo dos 30 documentos gerados.
 
 | Grupo | Documento(s) / modelo | Tipos que aparecem dentro do documento |
 |---|---|---|
@@ -254,6 +270,7 @@ O cenário `mvp_complete` da CLI simulada sobrepõe `tests/fixtures/mvp-complete
 | Certificate | `modelo-doc-certificate` | — |
 | CustomObject | `modelo-doc-custom-object` | CustomField, RecordType, ValidationRule, WebLink |
 | CustomMetadata | `modelo-doc-custom-metadata` | campos e records do tipo `__mdt` |
+| PermissionSet | `modelo-doc-permission-set` | grupos que incluem o permission set |
 | ApexClass | `modelo-doc-apex-class` + subdocumentos `modelo-doc-apex-batch`, `modelo-doc-apex-queueable`, `modelo-doc-apex-scheduler` e `modelo-doc-apex-future` (um por método) | — |
 
 ## Estrutura

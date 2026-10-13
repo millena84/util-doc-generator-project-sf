@@ -17,6 +17,11 @@
     "NamedCredential": { "folder": "named-credentials" },
     "RemoteSiteSetting": { "folder": "remote-site-settings" },
     "Certificate": { "folder": "certificates" },
+    "PermissionSet": {
+      "folder": "permission-sets",
+      "contract": "permission-set.schema.json",
+      "documentSlug": "permission-set"
+    },
     "ApexClass": {
       "folder": "apex-classes",
       "contract": "apex-class.schema.json",
@@ -52,13 +57,38 @@
     "certificate",
     "jsonWebKey",
     "parameterValue",
-    "commaSeparatedPermissionSet",
-    "commaSeparatedProfile",
     "clientCredentialsFlowUser",
     "executeHandlerAs",
     "principal",
     "endpoint"
   ],
+  "accessSources": {
+    "notes": "Onde cada componente está configurado (perfil, permission set, permission set group, fila, regra de compartilhamento). Fonte: XML. Os tipos abaixo são recuperados num retrieve único junto com os componentes documentados, para que o XML do Profile/PermissionSet traga as permissões desses componentes.",
+    "enabled": true,
+    "folder": "access",
+    "retrieveTypes": ["Profile", "PermissionSet", "PermissionSetGroup", "Queue", "SharingRules"],
+    "grantContainers": { "Profile": "Perfil", "PermissionSet": "Permission Set" },
+    "grants": [
+      { "element": "classAccesses", "nameField": "apexClass", "enabledField": "enabled", "accessKey": "ApexClass", "accessLabel": "Executar" },
+      { "element": "flowAccesses", "nameField": "flow", "enabledField": "enabled", "accessKey": "Flow", "accessLabel": "Executar" },
+      { "element": "objectPermissions", "nameField": "object", "accessKey": "CustomObject",
+        "flags": { "allowRead": "Ler", "allowCreate": "Criar", "allowEdit": "Editar", "allowDelete": "Excluir", "viewAllRecords": "Ver todos", "modifyAllRecords": "Modificar todos" } },
+      { "element": "fieldPermissions", "nameField": "field", "accessKey": "CustomField",
+        "flags": { "readable": "Ler", "editable": "Editar" } },
+      { "element": "recordTypeVisibilities", "nameField": "recordType", "enabledField": "visible", "accessKey": "RecordType", "accessLabel": "Visível" },
+      { "element": "customMetadataTypeAccesses", "nameField": "name", "enabledField": "enabled", "accessKey": "CustomMetadataType", "accessLabel": "Ler" },
+      { "element": "externalCredentialPrincipalAccesses", "nameField": "externalCredentialPrincipal", "enabledField": "enabled", "accessKey": "ExternalCredentialPrincipal", "accessLabel": "Usar principal" }
+    ],
+    "permissionSetGroups": { "metadataType": "PermissionSetGroup", "element": "permissionSets", "label": "Permission Set Group" },
+    "queues": { "metadataType": "Queue", "element": "queueSobject", "field": "sobjectType", "label": "Fila" },
+    "sharingRules": {
+      "metadataType": "SharingRules",
+      "elements": { "sharingCriteriaRules": "Regra de compartilhamento por critério", "sharingOwnerRules": "Regra de compartilhamento por proprietário" },
+      "sharedTo": "sharedTo",
+      "accessLevel": "accessLevel"
+    },
+    "validationPending": "objectPermissions, PermissionSetGroup.permissionSets, SharingRules.sharedTo e o formato de externalCredentialPrincipal não confirmados nesta adaptação; confirmar no piloto (documentation/piloto-org-real.md)."
+  },
   "metadataTypeGroups": [
     {
       "group": "Flow",
@@ -202,6 +232,13 @@
           "documentSuffix": "apex-future"
         }
       ]
+    },
+    {
+      "group": "PermissionSet",
+      "primaryMetadataType": "PermissionSet",
+      "relatedMetadataTypes": [],
+      "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+      "notes": "XML reaproveitado do retrieve de acesso (passo 6b): vem completo, com as permissões dos componentes documentados."
     }
   ]
 }

@@ -2,94 +2,102 @@
 
 > **SIMULADO.** CLI `sf` simulada (`tests/fixtures/bin/sf`, cenário `mvp_complete`) e Metadata API simulada. Nenhum dado veio de uma org real. Gerado por `python3 -m tests.simulate_mvp`.
 
-- Execução: `run-20261012-220711` — status **SUCCESS** — código de saída `0`
+- Execução: `run-20261013-033128` — status **SUCCESS** — código de saída `0`
 - Org: `dev` — API `67.0`
-- Cobertura: **COMPLETE** — 18 documentada(s) de 18 no escopo; lacunas: 0 (nenhuma)
+- Cobertura: **COMPLETE** — 20 documentada(s) de 20 no escopo; lacunas: 0 (nenhuma)
 
 ## 1. Saída no terminal
 
 ```
-[22:07:11] INFO  Seleção ALL: {'ApexClass': ['ALL'], 'Certificate': ['ALL'], 'ConnectedApp': ['ALL'], 'CustomMetadata': ['ALL'], 'CustomObject': ['ALL'], 'ExternalClientApp': ['ALL'], 'ExternalCredential': ['ALL'], 'Flow': ['ALL'], 'NamedCredential': ['ALL'], 'RemoteSiteSetting': ['ALL']}
-[22:07:11] WARN  Verificação de Git indisponível (fora de repositório Git): proteção de versionamento não verificada
-[22:07:11] INFO  Passo 1: Salesforce CLI 2.60.0 (mínima 2.0.0)
-[22:07:11] INFO  Passo 2: alias 'dev' autenticado
-[22:07:11] INFO  Passo 3: `sf org display` exibiu credenciais; gravado só o envelope sanitizado
-[22:07:11] INFO  Passo 3: usuario.simulado@example.com conectado; API 67.0 (detectada 67.0, fonte: sf org display)
-[22:07:11] INFO  Passo 3b: org 00D000000000000AAA aprovada (approvedOrgs)
-[22:07:11] INFO  Passo 3c: token de acesso obtido via `sf org display` (não persistido)
-[22:07:11] INFO  Passo 4: grupos habilitados: Flow, ExternalClientApp, ExternalCredential, ConnectedApp, CustomObject, CustomMetadata, NamedCredential, RemoteSiteSetting, Certificate, ApexClass
-[22:07:12] INFO  Passo 6: Flow -> 3 componente(s)
-[22:07:12] INFO  Passo 6: FlowDefinition -> 1 componente(s)
-[22:07:12] INFO  Passo 6: ExternalClientApplication -> 1 componente(s)
-[22:07:12] INFO  Passo 6: ExtlClntAppOauthSettings -> 2 componente(s)
-[22:07:12] INFO  Passo 6: ExtlClntAppConfigurablePolicies -> 1 componente(s)
-[22:07:12] INFO  Passo 6: ExtlClntAppOauthConfigurablePolicies -> 1 componente(s)
-[22:07:12] INFO  Passo 6: ExternalCredential -> 1 componente(s)
-[22:07:12] INFO  Passo 6: ConnectedApp -> 1 componente(s)
-[22:07:12] INFO  Passo 6: CustomObject -> 3 componente(s)
-[22:07:12] INFO  Passo 6: CustomMetadata -> 2 componente(s)
-[22:07:12] INFO  Passo 6: NamedCredential -> 2 componente(s)
-[22:07:12] INFO  Passo 6: RemoteSiteSetting -> 1 componente(s)
-[22:07:12] INFO  Passo 6: Certificate -> 1 componente(s)
-[22:07:12] INFO  Passo 6: ApexClass -> 7 componente(s)
-[22:07:12] INFO  [1/18] Flow:Flow:Meu_Flow
-[22:07:12] INFO  Flow:Flow:Meu_Flow: processando
-[22:07:12] INFO  Flow:Flow:Meu_Flow: SUCCESS -> saida/docs/doc-dev-101226/doc-meu-flow-flow.md
-[22:07:12] INFO  [2/18] Flow:Flow:Processa_Pedido
-[22:07:12] INFO  Flow:Flow:Processa_Pedido: processando
-[22:07:12] INFO  Flow:Flow:Processa_Pedido: SUCCESS -> saida/docs/doc-dev-101226/doc-processa-pedido-flow.md
-[22:07:12] INFO  [3/18] Flow:Flow:Tela_Cadastro
-[22:07:12] INFO  Flow:Flow:Tela_Cadastro: processando
-[22:07:12] INFO  Flow:Flow:Tela_Cadastro: SUCCESS -> saida/docs/doc-dev-101226/doc-tela-cadastro-flow.md
-[22:07:12] INFO  [4/18] ExternalClientApp:ExternalClientApplication:Minha_ECA
-[22:07:12] INFO  ExternalClientApp:ExternalClientApplication:Minha_ECA: processando
-[22:07:13] INFO  ExternalClientApp:ExternalClientApplication:Minha_ECA: SUCCESS -> saida/docs/doc-dev-101226/doc-minha-eca-external-client-app.md
-[22:07:13] INFO  [5/18] ExternalCredential:ExternalCredential:Minha_EC
-[22:07:13] INFO  ExternalCredential:ExternalCredential:Minha_EC: processando
-[22:07:13] INFO  ExternalCredential:ExternalCredential:Minha_EC: SUCCESS -> saida/docs/doc-dev-101226/doc-minha-ec-external-credential.md
-[22:07:13] INFO  [6/18] ConnectedApp:ConnectedApp:Meu_App
-[22:07:13] INFO  ConnectedApp:ConnectedApp:Meu_App: processando
-[22:07:13] INFO  ConnectedApp:ConnectedApp:Meu_App: SUCCESS -> saida/docs/doc-dev-101226/doc-meu-app-connected-app.md
-[22:07:13] INFO  [7/18] CustomObject:CustomObject:Pedido__c
-[22:07:13] INFO  CustomObject:CustomObject:Pedido__c: processando
-[22:07:13] INFO  CustomObject:CustomObject:Pedido__c: SUCCESS -> saida/docs/doc-dev-101226/doc-pedido-c-custom-object.md
-[22:07:13] INFO  [8/18] CustomMetadata:CustomMetadata:Config__mdt
-[22:07:13] INFO  CustomMetadata:CustomMetadata:Config__mdt: processando
-[22:07:13] INFO  CustomMetadata:CustomMetadata:Config__mdt: SUCCESS -> saida/docs/doc-dev-101226/doc-config-mdt-custom-metadata.md
-[22:07:13] INFO  [9/18] NamedCredential:NamedCredential:Minha_NC
-[22:07:13] INFO  NamedCredential:NamedCredential:Minha_NC: processando
-[22:07:13] INFO  NamedCredential:NamedCredential:Minha_NC: SUCCESS -> saida/docs/doc-dev-101226/doc-minha-nc-named-credential.md
-[22:07:13] INFO  [10/18] NamedCredential:NamedCredential:NC_Legada
-[22:07:13] INFO  NamedCredential:NamedCredential:NC_Legada: processando
-[22:07:13] INFO  NamedCredential:NamedCredential:NC_Legada: SUCCESS -> saida/docs/doc-dev-101226/doc-nc-legada-named-credential.md
-[22:07:13] INFO  [11/18] RemoteSiteSetting:RemoteSiteSetting:Meu_Site
-[22:07:13] INFO  RemoteSiteSetting:RemoteSiteSetting:Meu_Site: processando
-[22:07:13] INFO  RemoteSiteSetting:RemoteSiteSetting:Meu_Site: SUCCESS -> saida/docs/doc-dev-101226/doc-meu-site-remote-site-setting.md
-[22:07:13] INFO  [12/18] Certificate:Certificate:Meu_Certificado
-[22:07:13] INFO  Certificate:Certificate:Meu_Certificado: processando
-[22:07:14] INFO  Certificate:Certificate:Meu_Certificado: SUCCESS -> saida/docs/doc-dev-101226/doc-meu-certificado-certificate.md
-[22:07:14] INFO  [13/18] ApexClass:ApexClass:AccountSyncQueueable
-[22:07:14] INFO  ApexClass:ApexClass:AccountSyncQueueable: processando
-[22:07:14] INFO  ApexClass:ApexClass:AccountSyncQueueable: SUCCESS -> saida/docs/doc-dev-101226/doc-accountsyncqueueable-apex-class.md
-[22:07:14] INFO  [14/18] ApexClass:ApexClass:DailyOrderCleanupScheduler
-[22:07:14] INFO  ApexClass:ApexClass:DailyOrderCleanupScheduler: processando
-[22:07:14] INFO  ApexClass:ApexClass:DailyOrderCleanupScheduler: SUCCESS -> saida/docs/doc-dev-101226/doc-dailyordercleanupscheduler-apex-class.md
-[22:07:14] INFO  [15/18] ApexClass:ApexClass:IntegrationAsyncHelper
-[22:07:14] INFO  ApexClass:ApexClass:IntegrationAsyncHelper: processando
-[22:07:14] INFO  ApexClass:ApexClass:IntegrationAsyncHelper: SUCCESS -> saida/docs/doc-dev-101226/doc-integrationasynchelper-apex-class.md
-[22:07:14] INFO  [16/18] ApexClass:ApexClass:MultiRoleJob
-[22:07:14] INFO  ApexClass:ApexClass:MultiRoleJob: processando
-[22:07:14] INFO  ApexClass:ApexClass:MultiRoleJob: SUCCESS -> saida/docs/doc-dev-101226/doc-multirolejob-apex-class.md
-[22:07:14] INFO  [17/18] ApexClass:ApexClass:OrderCleanupBatch
-[22:07:14] INFO  ApexClass:ApexClass:OrderCleanupBatch: processando
-[22:07:14] INFO  ApexClass:ApexClass:OrderCleanupBatch: SUCCESS -> saida/docs/doc-dev-101226/doc-ordercleanupbatch-apex-class.md
-[22:07:14] INFO  [18/18] ApexClass:ApexClass:PedidoService
-[22:07:14] INFO  ApexClass:ApexClass:PedidoService: processando
-[22:07:14] INFO  ApexClass:ApexClass:PedidoService: SUCCESS -> saida/docs/doc-dev-101226/doc-pedidoservice-apex-class.md
-[22:07:14] INFO  Execução run-20261012-220711 finalizada: SUCCESS {'SUCCESS': 18}
-[22:07:14] INFO  Cobertura: COMPLETE — 18 documentada(s) de 18 no escopo; lacunas bloqueantes: 0; avisos: 0
-[22:07:14] INFO  Tipos: configurados 18, processados 18, documentados 10, sem modelo 0, fora do escopo 0, não habilitados 0, descobertos e não configurados 3
-[22:07:14] INFO  Log: runs/run-20261012-220711.json
+[03:31:28] INFO  Seleção ALL: {'ApexClass': ['ALL'], 'Certificate': ['ALL'], 'ConnectedApp': ['ALL'], 'CustomMetadata': ['ALL'], 'CustomObject': ['ALL'], 'ExternalClientApp': ['ALL'], 'ExternalCredential': ['ALL'], 'Flow': ['ALL'], 'NamedCredential': ['ALL'], 'PermissionSet': ['ALL'], 'RemoteSiteSetting': ['ALL']}
+[03:31:28] WARN  Verificação de Git indisponível (fora de repositório Git): proteção de versionamento não verificada
+[03:31:28] INFO  Passo 1: Salesforce CLI 2.60.0 (mínima 2.0.0)
+[03:31:28] INFO  Passo 2: alias 'dev' autenticado
+[03:31:28] INFO  Passo 3: `sf org display` exibiu credenciais; gravado só o envelope sanitizado
+[03:31:28] INFO  Passo 3: usuario.simulado@example.com conectado; API 67.0 (detectada 67.0, fonte: sf org display)
+[03:31:28] INFO  Passo 3b: org 00D000000000000AAA aprovada (approvedOrgs)
+[03:31:28] INFO  Passo 3c: token de acesso obtido via `sf org display` (não persistido)
+[03:31:28] INFO  Passo 4: grupos habilitados: Flow, ExternalClientApp, ExternalCredential, ConnectedApp, CustomObject, CustomMetadata, NamedCredential, RemoteSiteSetting, Certificate, ApexClass, PermissionSet
+[03:31:28] INFO  Passo 6: Flow -> 3 componente(s)
+[03:31:28] INFO  Passo 6: FlowDefinition -> 1 componente(s)
+[03:31:28] INFO  Passo 6: ExternalClientApplication -> 1 componente(s)
+[03:31:28] INFO  Passo 6: ExtlClntAppOauthSettings -> 2 componente(s)
+[03:31:28] INFO  Passo 6: ExtlClntAppConfigurablePolicies -> 1 componente(s)
+[03:31:28] INFO  Passo 6: ExtlClntAppOauthConfigurablePolicies -> 1 componente(s)
+[03:31:28] INFO  Passo 6: ExternalCredential -> 1 componente(s)
+[03:31:28] INFO  Passo 6: ConnectedApp -> 1 componente(s)
+[03:31:28] INFO  Passo 6: CustomObject -> 3 componente(s)
+[03:31:28] INFO  Passo 6: CustomMetadata -> 2 componente(s)
+[03:31:28] INFO  Passo 6: NamedCredential -> 2 componente(s)
+[03:31:29] INFO  Passo 6: RemoteSiteSetting -> 1 componente(s)
+[03:31:29] INFO  Passo 6: Certificate -> 1 componente(s)
+[03:31:29] INFO  Passo 6: ApexClass -> 7 componente(s)
+[03:31:29] INFO  Passo 6: PermissionSet -> 2 componente(s)
+[03:31:29] INFO  Passo 6b: 7 fonte(s) de acesso; índice em inventory/org-dev/api-v67/access/access-index.json
+[03:31:29] INFO  [1/20] Flow:Flow:Meu_Flow
+[03:31:29] INFO  Flow:Flow:Meu_Flow: processando
+[03:31:29] INFO  Flow:Flow:Meu_Flow: SUCCESS -> saida/docs/doc-dev-101326/doc-meu-flow-flow.md
+[03:31:29] INFO  [2/20] Flow:Flow:Processa_Pedido
+[03:31:29] INFO  Flow:Flow:Processa_Pedido: processando
+[03:31:29] INFO  Flow:Flow:Processa_Pedido: SUCCESS -> saida/docs/doc-dev-101326/doc-processa-pedido-flow.md
+[03:31:29] INFO  [3/20] Flow:Flow:Tela_Cadastro
+[03:31:29] INFO  Flow:Flow:Tela_Cadastro: processando
+[03:31:29] INFO  Flow:Flow:Tela_Cadastro: SUCCESS -> saida/docs/doc-dev-101326/doc-tela-cadastro-flow.md
+[03:31:29] INFO  [4/20] ExternalClientApp:ExternalClientApplication:Minha_ECA
+[03:31:29] INFO  ExternalClientApp:ExternalClientApplication:Minha_ECA: processando
+[03:31:29] INFO  ExternalClientApp:ExternalClientApplication:Minha_ECA: SUCCESS -> saida/docs/doc-dev-101326/doc-minha-eca-external-client-app.md
+[03:31:29] INFO  [5/20] ExternalCredential:ExternalCredential:Minha_EC
+[03:31:29] INFO  ExternalCredential:ExternalCredential:Minha_EC: processando
+[03:31:29] INFO  ExternalCredential:ExternalCredential:Minha_EC: SUCCESS -> saida/docs/doc-dev-101326/doc-minha-ec-external-credential.md
+[03:31:29] INFO  [6/20] ConnectedApp:ConnectedApp:Meu_App
+[03:31:29] INFO  ConnectedApp:ConnectedApp:Meu_App: processando
+[03:31:29] INFO  ConnectedApp:ConnectedApp:Meu_App: SUCCESS -> saida/docs/doc-dev-101326/doc-meu-app-connected-app.md
+[03:31:29] INFO  [7/20] CustomObject:CustomObject:Pedido__c
+[03:31:29] INFO  CustomObject:CustomObject:Pedido__c: processando
+[03:31:30] INFO  CustomObject:CustomObject:Pedido__c: SUCCESS -> saida/docs/doc-dev-101326/doc-pedido-c-custom-object.md
+[03:31:30] INFO  [8/20] CustomMetadata:CustomMetadata:Config__mdt
+[03:31:30] INFO  CustomMetadata:CustomMetadata:Config__mdt: processando
+[03:31:30] INFO  CustomMetadata:CustomMetadata:Config__mdt: SUCCESS -> saida/docs/doc-dev-101326/doc-config-mdt-custom-metadata.md
+[03:31:30] INFO  [9/20] NamedCredential:NamedCredential:Minha_NC
+[03:31:30] INFO  NamedCredential:NamedCredential:Minha_NC: processando
+[03:31:30] INFO  NamedCredential:NamedCredential:Minha_NC: SUCCESS -> saida/docs/doc-dev-101326/doc-minha-nc-named-credential.md
+[03:31:30] INFO  [10/20] NamedCredential:NamedCredential:NC_Legada
+[03:31:30] INFO  NamedCredential:NamedCredential:NC_Legada: processando
+[03:31:30] INFO  NamedCredential:NamedCredential:NC_Legada: SUCCESS -> saida/docs/doc-dev-101326/doc-nc-legada-named-credential.md
+[03:31:30] INFO  [11/20] RemoteSiteSetting:RemoteSiteSetting:Meu_Site
+[03:31:30] INFO  RemoteSiteSetting:RemoteSiteSetting:Meu_Site: processando
+[03:31:30] INFO  RemoteSiteSetting:RemoteSiteSetting:Meu_Site: SUCCESS -> saida/docs/doc-dev-101326/doc-meu-site-remote-site-setting.md
+[03:31:30] INFO  [12/20] Certificate:Certificate:Meu_Certificado
+[03:31:30] INFO  Certificate:Certificate:Meu_Certificado: processando
+[03:31:30] INFO  Certificate:Certificate:Meu_Certificado: SUCCESS -> saida/docs/doc-dev-101326/doc-meu-certificado-certificate.md
+[03:31:30] INFO  [13/20] ApexClass:ApexClass:AccountSyncQueueable
+[03:31:30] INFO  ApexClass:ApexClass:AccountSyncQueueable: processando
+[03:31:30] INFO  ApexClass:ApexClass:AccountSyncQueueable: SUCCESS -> saida/docs/doc-dev-101326/doc-accountsyncqueueable-apex-class.md
+[03:31:30] INFO  [14/20] ApexClass:ApexClass:DailyOrderCleanupScheduler
+[03:31:30] INFO  ApexClass:ApexClass:DailyOrderCleanupScheduler: processando
+[03:31:30] INFO  ApexClass:ApexClass:DailyOrderCleanupScheduler: SUCCESS -> saida/docs/doc-dev-101326/doc-dailyordercleanupscheduler-apex-class.md
+[03:31:30] INFO  [15/20] ApexClass:ApexClass:IntegrationAsyncHelper
+[03:31:30] INFO  ApexClass:ApexClass:IntegrationAsyncHelper: processando
+[03:31:30] INFO  ApexClass:ApexClass:IntegrationAsyncHelper: SUCCESS -> saida/docs/doc-dev-101326/doc-integrationasynchelper-apex-class.md
+[03:31:30] INFO  [16/20] ApexClass:ApexClass:MultiRoleJob
+[03:31:30] INFO  ApexClass:ApexClass:MultiRoleJob: processando
+[03:31:30] INFO  ApexClass:ApexClass:MultiRoleJob: SUCCESS -> saida/docs/doc-dev-101326/doc-multirolejob-apex-class.md
+[03:31:30] INFO  [17/20] ApexClass:ApexClass:OrderCleanupBatch
+[03:31:30] INFO  ApexClass:ApexClass:OrderCleanupBatch: processando
+[03:31:31] INFO  ApexClass:ApexClass:OrderCleanupBatch: SUCCESS -> saida/docs/doc-dev-101326/doc-ordercleanupbatch-apex-class.md
+[03:31:31] INFO  [18/20] ApexClass:ApexClass:PedidoService
+[03:31:31] INFO  ApexClass:ApexClass:PedidoService: processando
+[03:31:31] INFO  ApexClass:ApexClass:PedidoService: SUCCESS -> saida/docs/doc-dev-101326/doc-pedidoservice-apex-class.md
+[03:31:31] INFO  [19/20] PermissionSet:PermissionSet:Integracao_API
+[03:31:31] INFO  PermissionSet:PermissionSet:Integracao_API: processando
+[03:31:31] INFO  PermissionSet:PermissionSet:Integracao_API: SUCCESS -> saida/docs/doc-dev-101326/doc-integracao-api-permission-set.md
+[03:31:31] INFO  [20/20] PermissionSet:PermissionSet:Leitura_Pedidos
+[03:31:31] INFO  PermissionSet:PermissionSet:Leitura_Pedidos: processando
+[03:31:31] INFO  PermissionSet:PermissionSet:Leitura_Pedidos: SUCCESS -> saida/docs/doc-dev-101326/doc-leitura-pedidos-permission-set.md
+[03:31:31] INFO  Execução run-20261013-033128 finalizada: SUCCESS {'SUCCESS': 20}
+[03:31:31] INFO  Cobertura: COMPLETE — 20 documentada(s) de 20 no escopo; lacunas bloqueantes: 0; avisos: 0
+[03:31:31] INFO  Tipos: configurados 19, processados 19, documentados 11, sem modelo 0, fora do escopo 0, não habilitados 0, descobertos e não configurados 7
+[03:31:31] INFO  Log: runs/run-20261013-033128.json
 ```
 
 ## 2. Comandos executados na CLI (por passo)
@@ -114,47 +122,51 @@
 | 16 | 6 | `sf org list metadata --metadata-type RemoteSiteSetting --target-org dev --api-version 67.0 --json` |
 | 17 | 6 | `sf org list metadata --metadata-type Certificate --target-org dev --api-version 67.0 --json` |
 | 18 | 6 | `sf org list metadata --metadata-type ApexClass --target-org dev --api-version 67.0 --json` |
-| 19 | 7 | `sf project retrieve start --metadata Flow:Meu_Flow --target-org dev --api-version 67.0 --json` |
-| 20 | 7 | `sf project retrieve start --metadata FlowDefinition:Meu_Flow --target-org dev --api-version 67.0 --json` |
-| 21 | 9 | `sf data query --query SELECT Id, VersionNumber, Status FROM Flow WHERE Definition.DeveloperName = 'Meu_Flow' ORDER BY VersionNumber --use-tooling-api --target-org dev --api-version 67.0 --json` |
-| 22 | 7 | `sf project retrieve start --metadata Flow:Processa_Pedido --target-org dev --api-version 67.0 --json` |
-| 23 | 9 | `sf data query --query SELECT Id, VersionNumber, Status FROM Flow WHERE Definition.DeveloperName = 'Processa_Pedido' ORDER BY VersionNumber --use-tooling-api --target-org dev --api-version 67.0 --json` |
-| 24 | 7 | `sf project retrieve start --metadata Flow:Tela_Cadastro --target-org dev --api-version 67.0 --json` |
-| 25 | 9 | `sf data query --query SELECT Id, VersionNumber, Status FROM Flow WHERE Definition.DeveloperName = 'Tela_Cadastro' ORDER BY VersionNumber --use-tooling-api --target-org dev --api-version 67.0 --json` |
-| 26 | 7 | `sf project retrieve start --metadata ExternalClientApplication:Minha_ECA --target-org dev --api-version 67.0 --json` |
-| 27 | 7 | `sf project retrieve start --metadata ExtlClntAppOauthSettings:Minha_ECA_oauth --target-org dev --api-version 67.0 --json` |
-| 28 | 7 | `sf project retrieve start --metadata ExtlClntAppOauthSettings:Outra_ECA_oauth --target-org dev --api-version 67.0 --json` |
-| 29 | 7 | `sf project retrieve start --metadata ExtlClntAppConfigurablePolicies:Minha_ECA_plcy --target-org dev --api-version 67.0 --json` |
-| 30 | 7 | `sf project retrieve start --metadata ExtlClntAppOauthConfigurablePolicies:Minha_ECA_oauthPlcy --target-org dev --api-version 67.0 --json` |
-| 31 | 7 | `sf project retrieve start --metadata ExternalCredential:Minha_EC --target-org dev --api-version 67.0 --json` |
-| 32 | 9 | `sf data query --query SELECT Id, DeveloperName, MasterLabel, CreatedDate, LastModifiedDate FROM ExternalCredential WHERE DeveloperName = 'Minha_EC' --target-org dev --api-version 67.0 --json` |
-| 33 | 7 | `sf project retrieve start --metadata ConnectedApp:Meu_App --target-org dev --api-version 67.0 --json` |
-| 34 | 9 | `sf data query --query SELECT Id, Name, OptionsAllowAdminApprovedUsersOnly FROM ConnectedApplication WHERE Name = 'Meu_App' --target-org dev --api-version 67.0 --json` |
-| 35 | 7 | `sf project retrieve start --metadata CustomObject:Pedido__c --target-org dev --api-version 67.0 --json` |
-| 36 | 9 | `sf data query --query SELECT QualifiedApiName, Label, PluralLabel, KeyPrefix, LastModifiedDate FROM EntityDefinition WHERE QualifiedApiName = 'Pedido__c' --use-tooling-api --target-org dev --api-version 67.0 --json` |
-| 37 | 7 | `sf project retrieve start --metadata CustomObject:Config__mdt --target-org dev --api-version 67.0 --json` |
-| 38 | 7 | `sf project retrieve start --metadata CustomMetadata:Config.Padrao --target-org dev --api-version 67.0 --json` |
-| 39 | 7 | `sf project retrieve start --metadata CustomMetadata:Config.Secundario --target-org dev --api-version 67.0 --json` |
-| 40 | 9 | `sf data query --query SELECT QualifiedApiName, Label, PluralLabel, KeyPrefix, LastModifiedDate FROM EntityDefinition WHERE QualifiedApiName = 'Config__mdt' --use-tooling-api --target-org dev --api-version 67.0 --json` |
-| 41 | 7 | `sf project retrieve start --metadata NamedCredential:Minha_NC --target-org dev --api-version 67.0 --json` |
-| 42 | 9 | `sf data query --query SELECT Id, DeveloperName FROM NamedCredential WHERE DeveloperName = 'Minha_NC' --target-org dev --api-version 67.0 --json` |
-| 43 | 7 | `sf project retrieve start --metadata NamedCredential:NC_Legada --target-org dev --api-version 67.0 --json` |
-| 44 | 9 | `sf data query --query SELECT Id, DeveloperName FROM NamedCredential WHERE DeveloperName = 'NC_Legada' --target-org dev --api-version 67.0 --json` |
-| 45 | 7 | `sf project retrieve start --metadata RemoteSiteSetting:Meu_Site --target-org dev --api-version 67.0 --json` |
-| 46 | 7 | `sf project retrieve start --metadata Certificate:Meu_Certificado --target-org dev --api-version 67.0 --json` |
-| 47 | 9 | `sf data query --query SELECT DeveloperName, ExpirationDate, KeySize FROM Certificate WHERE DeveloperName = 'Meu_Certificado' --use-tooling-api --target-org dev --api-version 67.0 --json` |
-| 48 | 7 | `sf project retrieve start --metadata ApexClass:AccountSyncQueueable --target-org dev --api-version 67.0 --json` |
-| 49 | 9 | `sf data query --query SELECT Id, Name, ApiVersion, Status, IsValid, LengthWithoutComments, CreatedDate, LastModifiedDate FROM ApexClass WHERE Name = 'AccountSyncQueueable' --target-org dev --api-version 67.0 --json` |
-| 50 | 7 | `sf project retrieve start --metadata ApexClass:DailyOrderCleanupScheduler --target-org dev --api-version 67.0 --json` |
-| 51 | 9 | `sf data query --query SELECT Id, Name, ApiVersion, Status, IsValid, LengthWithoutComments, CreatedDate, LastModifiedDate FROM ApexClass WHERE Name = 'DailyOrderCleanupScheduler' --target-org dev --api-version 67.0 --json` |
-| 52 | 7 | `sf project retrieve start --metadata ApexClass:IntegrationAsyncHelper --target-org dev --api-version 67.0 --json` |
-| 53 | 9 | `sf data query --query SELECT Id, Name, ApiVersion, Status, IsValid, LengthWithoutComments, CreatedDate, LastModifiedDate FROM ApexClass WHERE Name = 'IntegrationAsyncHelper' --target-org dev --api-version 67.0 --json` |
-| 54 | 7 | `sf project retrieve start --metadata ApexClass:MultiRoleJob --target-org dev --api-version 67.0 --json` |
-| 55 | 9 | `sf data query --query SELECT Id, Name, ApiVersion, Status, IsValid, LengthWithoutComments, CreatedDate, LastModifiedDate FROM ApexClass WHERE Name = 'MultiRoleJob' --target-org dev --api-version 67.0 --json` |
-| 56 | 7 | `sf project retrieve start --metadata ApexClass:OrderCleanupBatch --target-org dev --api-version 67.0 --json` |
-| 57 | 9 | `sf data query --query SELECT Id, Name, ApiVersion, Status, IsValid, LengthWithoutComments, CreatedDate, LastModifiedDate FROM ApexClass WHERE Name = 'OrderCleanupBatch' --target-org dev --api-version 67.0 --json` |
-| 58 | 7 | `sf project retrieve start --metadata ApexClass:PedidoService --target-org dev --api-version 67.0 --json` |
-| 59 | 9 | `sf data query --query SELECT Id, Name, ApiVersion, Status, IsValid, LengthWithoutComments, CreatedDate, LastModifiedDate FROM ApexClass WHERE Name = 'PedidoService' --target-org dev --api-version 67.0 --json` |
+| 19 | 6 | `sf org list metadata --metadata-type PermissionSet --target-org dev --api-version 67.0 --json` |
+| 20 | 7 | `sf project retrieve start --metadata Profile --metadata PermissionSet --metadata PermissionSetGroup --metadata Queue --metadata SharingRules --metadata ApexClass --metadata Certificate --metadata ConnectedApp --metadata CustomObject --metadata ExternalClientApplication --metadata ExternalCredential --metadata Flow --metadata NamedCredential --metadata RemoteSiteSetting --target-org dev --api-version 67.0 --json` |
+| 21 | 7 | `sf project retrieve start --metadata Flow:Meu_Flow --target-org dev --api-version 67.0 --json` |
+| 22 | 7 | `sf project retrieve start --metadata FlowDefinition:Meu_Flow --target-org dev --api-version 67.0 --json` |
+| 23 | 9 | `sf data query --query SELECT Id, VersionNumber, Status FROM Flow WHERE Definition.DeveloperName = 'Meu_Flow' ORDER BY VersionNumber --use-tooling-api --target-org dev --api-version 67.0 --json` |
+| 24 | 7 | `sf project retrieve start --metadata Flow:Processa_Pedido --target-org dev --api-version 67.0 --json` |
+| 25 | 9 | `sf data query --query SELECT Id, VersionNumber, Status FROM Flow WHERE Definition.DeveloperName = 'Processa_Pedido' ORDER BY VersionNumber --use-tooling-api --target-org dev --api-version 67.0 --json` |
+| 26 | 7 | `sf project retrieve start --metadata Flow:Tela_Cadastro --target-org dev --api-version 67.0 --json` |
+| 27 | 9 | `sf data query --query SELECT Id, VersionNumber, Status FROM Flow WHERE Definition.DeveloperName = 'Tela_Cadastro' ORDER BY VersionNumber --use-tooling-api --target-org dev --api-version 67.0 --json` |
+| 28 | 7 | `sf project retrieve start --metadata ExternalClientApplication:Minha_ECA --target-org dev --api-version 67.0 --json` |
+| 29 | 7 | `sf project retrieve start --metadata ExtlClntAppOauthSettings:Minha_ECA_oauth --target-org dev --api-version 67.0 --json` |
+| 30 | 7 | `sf project retrieve start --metadata ExtlClntAppOauthSettings:Outra_ECA_oauth --target-org dev --api-version 67.0 --json` |
+| 31 | 7 | `sf project retrieve start --metadata ExtlClntAppConfigurablePolicies:Minha_ECA_plcy --target-org dev --api-version 67.0 --json` |
+| 32 | 7 | `sf project retrieve start --metadata ExtlClntAppOauthConfigurablePolicies:Minha_ECA_oauthPlcy --target-org dev --api-version 67.0 --json` |
+| 33 | 7 | `sf project retrieve start --metadata ExternalCredential:Minha_EC --target-org dev --api-version 67.0 --json` |
+| 34 | 9 | `sf data query --query SELECT Id, DeveloperName, MasterLabel, CreatedDate, LastModifiedDate FROM ExternalCredential WHERE DeveloperName = 'Minha_EC' --target-org dev --api-version 67.0 --json` |
+| 35 | 7 | `sf project retrieve start --metadata ConnectedApp:Meu_App --target-org dev --api-version 67.0 --json` |
+| 36 | 9 | `sf data query --query SELECT Id, Name, OptionsAllowAdminApprovedUsersOnly FROM ConnectedApplication WHERE Name = 'Meu_App' --target-org dev --api-version 67.0 --json` |
+| 37 | 7 | `sf project retrieve start --metadata CustomObject:Pedido__c --target-org dev --api-version 67.0 --json` |
+| 38 | 9 | `sf data query --query SELECT QualifiedApiName, Label, PluralLabel, KeyPrefix, LastModifiedDate FROM EntityDefinition WHERE QualifiedApiName = 'Pedido__c' --use-tooling-api --target-org dev --api-version 67.0 --json` |
+| 39 | 7 | `sf project retrieve start --metadata CustomObject:Config__mdt --target-org dev --api-version 67.0 --json` |
+| 40 | 7 | `sf project retrieve start --metadata CustomMetadata:Config.Padrao --target-org dev --api-version 67.0 --json` |
+| 41 | 7 | `sf project retrieve start --metadata CustomMetadata:Config.Secundario --target-org dev --api-version 67.0 --json` |
+| 42 | 9 | `sf data query --query SELECT QualifiedApiName, Label, PluralLabel, KeyPrefix, LastModifiedDate FROM EntityDefinition WHERE QualifiedApiName = 'Config__mdt' --use-tooling-api --target-org dev --api-version 67.0 --json` |
+| 43 | 7 | `sf project retrieve start --metadata NamedCredential:Minha_NC --target-org dev --api-version 67.0 --json` |
+| 44 | 9 | `sf data query --query SELECT Id, DeveloperName FROM NamedCredential WHERE DeveloperName = 'Minha_NC' --target-org dev --api-version 67.0 --json` |
+| 45 | 7 | `sf project retrieve start --metadata NamedCredential:NC_Legada --target-org dev --api-version 67.0 --json` |
+| 46 | 9 | `sf data query --query SELECT Id, DeveloperName FROM NamedCredential WHERE DeveloperName = 'NC_Legada' --target-org dev --api-version 67.0 --json` |
+| 47 | 7 | `sf project retrieve start --metadata RemoteSiteSetting:Meu_Site --target-org dev --api-version 67.0 --json` |
+| 48 | 7 | `sf project retrieve start --metadata Certificate:Meu_Certificado --target-org dev --api-version 67.0 --json` |
+| 49 | 9 | `sf data query --query SELECT DeveloperName, ExpirationDate, KeySize FROM Certificate WHERE DeveloperName = 'Meu_Certificado' --use-tooling-api --target-org dev --api-version 67.0 --json` |
+| 50 | 7 | `sf project retrieve start --metadata ApexClass:AccountSyncQueueable --target-org dev --api-version 67.0 --json` |
+| 51 | 9 | `sf data query --query SELECT Id, Name, ApiVersion, Status, IsValid, LengthWithoutComments, CreatedDate, LastModifiedDate FROM ApexClass WHERE Name = 'AccountSyncQueueable' --target-org dev --api-version 67.0 --json` |
+| 52 | 7 | `sf project retrieve start --metadata ApexClass:DailyOrderCleanupScheduler --target-org dev --api-version 67.0 --json` |
+| 53 | 9 | `sf data query --query SELECT Id, Name, ApiVersion, Status, IsValid, LengthWithoutComments, CreatedDate, LastModifiedDate FROM ApexClass WHERE Name = 'DailyOrderCleanupScheduler' --target-org dev --api-version 67.0 --json` |
+| 54 | 7 | `sf project retrieve start --metadata ApexClass:IntegrationAsyncHelper --target-org dev --api-version 67.0 --json` |
+| 55 | 9 | `sf data query --query SELECT Id, Name, ApiVersion, Status, IsValid, LengthWithoutComments, CreatedDate, LastModifiedDate FROM ApexClass WHERE Name = 'IntegrationAsyncHelper' --target-org dev --api-version 67.0 --json` |
+| 56 | 7 | `sf project retrieve start --metadata ApexClass:MultiRoleJob --target-org dev --api-version 67.0 --json` |
+| 57 | 9 | `sf data query --query SELECT Id, Name, ApiVersion, Status, IsValid, LengthWithoutComments, CreatedDate, LastModifiedDate FROM ApexClass WHERE Name = 'MultiRoleJob' --target-org dev --api-version 67.0 --json` |
+| 58 | 7 | `sf project retrieve start --metadata ApexClass:OrderCleanupBatch --target-org dev --api-version 67.0 --json` |
+| 59 | 9 | `sf data query --query SELECT Id, Name, ApiVersion, Status, IsValid, LengthWithoutComments, CreatedDate, LastModifiedDate FROM ApexClass WHERE Name = 'OrderCleanupBatch' --target-org dev --api-version 67.0 --json` |
+| 60 | 7 | `sf project retrieve start --metadata ApexClass:PedidoService --target-org dev --api-version 67.0 --json` |
+| 61 | 9 | `sf data query --query SELECT Id, Name, ApiVersion, Status, IsValid, LengthWithoutComments, CreatedDate, LastModifiedDate FROM ApexClass WHERE Name = 'PedidoService' --target-org dev --api-version 67.0 --json` |
+| 62 | 9 | `sf data query --query SELECT Id, Name, Label, IsOwnedByProfile, CreatedDate, LastModifiedDate FROM PermissionSet WHERE Name = 'Integracao_API' --target-org dev --api-version 67.0 --json` |
+| 63 | 9 | `sf data query --query SELECT Id, Name, Label, IsOwnedByProfile, CreatedDate, LastModifiedDate FROM PermissionSet WHERE Name = 'Leitura_Pedidos' --target-org dev --api-version 67.0 --json` |
 
 O passo 5 (`describeValueType`) é SOAP direto na Metadata API, fora da CLI; o passo 8 (XML → JSON) e o passo 10 (Markdown) são locais.
 
@@ -176,6 +188,7 @@ O passo 5 (`describeValueType`) é SOAP direto na Metadata API, fora da CLI; o p
 | Flow | ENABLED | SUCCESS | SUCCESS | 3 |
 | FlowDefinition | ENABLED | SUCCESS | SUCCESS | 1 |
 | NamedCredential | ENABLED | SUCCESS | SUCCESS | 2 |
+| PermissionSet | ENABLED | SUCCESS | SUCCESS | 2 |
 | RecordType | ENABLED | SUCCESS | via retrieve do CustomObject | — |
 | RemoteSiteSetting | ENABLED | SUCCESS | SUCCESS | 1 |
 | ValidationRule | ENABLED | SUCCESS | via retrieve do CustomObject | — |
@@ -213,6 +226,8 @@ O passo 5 (`describeValueType`) é SOAP direto na Metadata API, fora da CLI; o p
 | `doc-ordercleanupbatch-apex-class.md` | `modelo-doc-apex-class-vapi-67.md` | ApexClass:OrderCleanupBatch | — | SUCCESS |
 | `doc-ordercleanupbatch-apex-batch.md` | `modelo-doc-apex-batch-vapi-67.md` | ApexClass:OrderCleanupBatch | (subdocumento) | SUCCESS |
 | `doc-pedidoservice-apex-class.md` | `modelo-doc-apex-class-vapi-67.md` | ApexClass:PedidoService | — | SUCCESS |
+| `doc-integracao-api-permission-set.md` | `modelo-doc-permission-set-vapi-67.md` | PermissionSet:Integracao_API | — | SUCCESS |
+| `doc-leitura-pedidos-permission-set.md` | `modelo-doc-permission-set-vapi-67.md` | PermissionSet:Leitura_Pedidos | — | SUCCESS |
 
 ## 5. Rastreamento de um componente: `Flow:Meu_Flow`
 
@@ -264,7 +279,7 @@ O passo 5 (`describeValueType`) é SOAP direto na Metadata API, fora da CLI; o p
       "directoryName": "connectedApps",
       "suffix": "connectedApp",
       "inFolder": false,
-... (120 linhas omitidas)
+... (155 linhas omitidas)
 ```
 
 **Passo 5** — `catalog/org-dev/api-v67/schemas/flow.schema.json`
@@ -333,7 +348,7 @@ O passo 5 (`describeValueType`) é SOAP direto na Metadata API, fora da CLI; o p
         "fullName": "Meu_Flow",
         "type": "Flow",
         "state": "Created",
-        "filePath": "/tmp/sfdocs-retrieve-nn08z3ye/force-app/main/default/flows/Meu_Flow.flow-meta.xml"
+        "filePath": "/tmp/sfdocs-retrieve-rqwoh4s6/force-app/main/default/flows/Meu_Flow.flow-meta.xml"
       }
     ]
   }
@@ -496,6 +511,8 @@ catalog/org-dev/api-v67/schemas/flow.describevaluetype.raw.json
 catalog/org-dev/api-v67/schemas/flow.schema.json
 catalog/org-dev/api-v67/schemas/named-credential.describevaluetype.raw.json
 catalog/org-dev/api-v67/schemas/named-credential.schema.json
+catalog/org-dev/api-v67/schemas/permission-set.describevaluetype.raw.json
+catalog/org-dev/api-v67/schemas/permission-set.schema.json
 catalog/org-dev/api-v67/schemas/record-type.describevaluetype.raw.json
 catalog/org-dev/api-v67/schemas/record-type.schema.json
 catalog/org-dev/api-v67/schemas/remote-site-setting.describevaluetype.raw.json
@@ -504,6 +521,47 @@ catalog/org-dev/api-v67/schemas/validation-rule.describevaluetype.raw.json
 catalog/org-dev/api-v67/schemas/validation-rule.schema.json
 catalog/org-dev/api-v67/schemas/web-link.describevaluetype.raw.json
 catalog/org-dev/api-v67/schemas/web-link.schema.json
+inventory/org-dev/api-v67/access/access-index.json
+inventory/org-dev/api-v67/access/components/certs/Meu_Certificado.crt
+inventory/org-dev/api-v67/access/components/certs/Meu_Certificado.crt-meta.xml
+inventory/org-dev/api-v67/access/components/classes/AccountSyncQueueable.cls
+inventory/org-dev/api-v67/access/components/classes/AccountSyncQueueable.cls-meta.xml
+inventory/org-dev/api-v67/access/components/classes/DailyOrderCleanupScheduler.cls
+inventory/org-dev/api-v67/access/components/classes/DailyOrderCleanupScheduler.cls-meta.xml
+inventory/org-dev/api-v67/access/components/classes/IntegrationAsyncHelper.cls
+inventory/org-dev/api-v67/access/components/classes/IntegrationAsyncHelper.cls-meta.xml
+inventory/org-dev/api-v67/access/components/classes/MultiRoleJob.cls
+inventory/org-dev/api-v67/access/components/classes/MultiRoleJob.cls-meta.xml
+inventory/org-dev/api-v67/access/components/classes/OrderCleanupBatch.cls
+inventory/org-dev/api-v67/access/components/classes/OrderCleanupBatch.cls-meta.xml
+inventory/org-dev/api-v67/access/components/classes/PedidoService.cls
+inventory/org-dev/api-v67/access/components/classes/PedidoService.cls-meta.xml
+inventory/org-dev/api-v67/access/components/connectedApps/Meu_App.connectedApp-meta.xml
+inventory/org-dev/api-v67/access/components/externalClientApps/Minha_ECA.eca-meta.xml
+inventory/org-dev/api-v67/access/components/externalCredentials/Minha_EC.externalCredential-meta.xml
+inventory/org-dev/api-v67/access/components/flows/Meu_Flow.flow-meta.xml
+inventory/org-dev/api-v67/access/components/flows/Processa_Pedido.flow-meta.xml
+inventory/org-dev/api-v67/access/components/flows/Tela_Cadastro.flow-meta.xml
+inventory/org-dev/api-v67/access/components/namedCredentials/Minha_NC.namedCredential-meta.xml
+inventory/org-dev/api-v67/access/components/namedCredentials/NC_Legada.namedCredential-meta.xml
+inventory/org-dev/api-v67/access/components/objects/Config__mdt/Config__mdt.object-meta.xml
+inventory/org-dev/api-v67/access/components/objects/Config__mdt/fields/Ativo__c.field-meta.xml
+inventory/org-dev/api-v67/access/components/objects/Config__mdt/fields/Chave_API__c.field-meta.xml
+inventory/org-dev/api-v67/access/components/objects/Pedido__c/Pedido__c.object-meta.xml
+inventory/org-dev/api-v67/access/components/objects/Pedido__c/fields/Status__c.field-meta.xml
+inventory/org-dev/api-v67/access/components/objects/Pedido__c/fields/Valor__c.field-meta.xml
+inventory/org-dev/api-v67/access/components/objects/Pedido__c/recordTypes/Padrao.recordType-meta.xml
+inventory/org-dev/api-v67/access/components/objects/Pedido__c/validationRules/Valor_Positivo.validationRule-meta.xml
+inventory/org-dev/api-v67/access/components/objects/Pedido__c/webLinks/Imprimir_Pedido.webLink-meta.xml
+inventory/org-dev/api-v67/access/components/permissionsetgroups/PSG_Integracao.permissionsetgroup-meta.xml
+inventory/org-dev/api-v67/access/components/permissionsets/Integracao_API.permissionset-meta.xml
+inventory/org-dev/api-v67/access/components/permissionsets/Leitura_Pedidos.permissionset-meta.xml
+inventory/org-dev/api-v67/access/components/profiles/Admin.profile-meta.xml
+inventory/org-dev/api-v67/access/components/profiles/Vendas.profile-meta.xml
+inventory/org-dev/api-v67/access/components/queues/Fila_Pedidos.queue-meta.xml
+inventory/org-dev/api-v67/access/components/remoteSiteSettings/Meu_Site.remoteSite-meta.xml
+inventory/org-dev/api-v67/access/components/sharingRules/Pedido__c.sharingRules-meta.xml
+inventory/org-dev/api-v67/access/retrieve.raw.json
 inventory/org-dev/api-v67/apex-classes/components/classes/AccountSyncQueueable.cls
 inventory/org-dev/api-v67/apex-classes/components/classes/AccountSyncQueueable.cls-meta.xml
 inventory/org-dev/api-v67/apex-classes/components/classes/DailyOrderCleanupScheduler.cls
@@ -639,48 +697,56 @@ inventory/org-dev/api-v67/named-credentials/normalized/minha-nc.json
 inventory/org-dev/api-v67/named-credentials/normalized/nc-legada.json
 inventory/org-dev/api-v67/named-credentials/retrieve/minha-nc.raw.json
 inventory/org-dev/api-v67/named-credentials/retrieve/nc-legada.raw.json
+inventory/org-dev/api-v67/permission-sets/internal-data/integracao-api.raw.json
+inventory/org-dev/api-v67/permission-sets/internal-data/leitura-pedidos.raw.json
+inventory/org-dev/api-v67/permission-sets/inventory.index.json
+inventory/org-dev/api-v67/permission-sets/inventory.raw.json
+inventory/org-dev/api-v67/permission-sets/normalized/integracao-api.json
+inventory/org-dev/api-v67/permission-sets/normalized/leitura-pedidos.json
 inventory/org-dev/api-v67/remote-site-settings/components/remoteSiteSettings/Meu_Site.remoteSite-meta.xml
 inventory/org-dev/api-v67/remote-site-settings/inventory.index.json
 inventory/org-dev/api-v67/remote-site-settings/inventory.raw.json
 inventory/org-dev/api-v67/remote-site-settings/normalized/meu-site.json
 inventory/org-dev/api-v67/remote-site-settings/retrieve/meu-site.raw.json
-runs/run-20261012-220711/resumo.md
-runs/run-20261012-220711.json
-saida/docs/doc-dev-101226/.manifest.json
-saida/docs/doc-dev-101226/.org.json
-saida/docs/doc-dev-101226/doc-accountsyncqueueable-apex-class.md
-saida/docs/doc-dev-101226/doc-accountsyncqueueable-apex-queueable.md
-saida/docs/doc-dev-101226/doc-config-mdt-custom-metadata.md
-saida/docs/doc-dev-101226/doc-dailyordercleanupscheduler-apex-class.md
-saida/docs/doc-dev-101226/doc-dailyordercleanupscheduler-apex-scheduler.md
-saida/docs/doc-dev-101226/doc-integrationasynchelper-apex-class.md
-saida/docs/doc-dev-101226/doc-integrationasynchelper-processordersasync-apex-future.md
-saida/docs/doc-dev-101226/doc-integrationasynchelper-recalc-apex-future.md
-saida/docs/doc-dev-101226/doc-meu-app-connected-app.md
-saida/docs/doc-dev-101226/doc-meu-certificado-certificate.md
-saida/docs/doc-dev-101226/doc-meu-flow-flow-trigger.md
-saida/docs/doc-dev-101226/doc-meu-flow-flow.md
-saida/docs/doc-dev-101226/doc-meu-site-remote-site-setting.md
-saida/docs/doc-dev-101226/doc-minha-ec-external-credential.md
-saida/docs/doc-dev-101226/doc-minha-eca-external-client-app.md
-saida/docs/doc-dev-101226/doc-minha-nc-named-credential.md
-saida/docs/doc-dev-101226/doc-multirolejob-apex-batch.md
-saida/docs/doc-dev-101226/doc-multirolejob-apex-class.md
-saida/docs/doc-dev-101226/doc-multirolejob-apex-scheduler.md
-saida/docs/doc-dev-101226/doc-nc-legada-named-credential.md
-saida/docs/doc-dev-101226/doc-ordercleanupbatch-apex-batch.md
-saida/docs/doc-dev-101226/doc-ordercleanupbatch-apex-class.md
-saida/docs/doc-dev-101226/doc-pedido-c-custom-object.md
-saida/docs/doc-dev-101226/doc-pedidoservice-apex-class.md
-saida/docs/doc-dev-101226/doc-processa-pedido-flow-autolaunched.md
-saida/docs/doc-dev-101226/doc-processa-pedido-flow.md
-saida/docs/doc-dev-101226/doc-tela-cadastro-dados-cliente-flow-screen.md
-saida/docs/doc-dev-101226/doc-tela-cadastro-flow.md
+runs/run-20261013-033128/resumo.md
+runs/run-20261013-033128.json
+saida/docs/doc-dev-101326/.manifest.json
+saida/docs/doc-dev-101326/.org.json
+saida/docs/doc-dev-101326/doc-accountsyncqueueable-apex-class.md
+saida/docs/doc-dev-101326/doc-accountsyncqueueable-apex-queueable.md
+saida/docs/doc-dev-101326/doc-config-mdt-custom-metadata.md
+saida/docs/doc-dev-101326/doc-dailyordercleanupscheduler-apex-class.md
+saida/docs/doc-dev-101326/doc-dailyordercleanupscheduler-apex-scheduler.md
+saida/docs/doc-dev-101326/doc-integracao-api-permission-set.md
+saida/docs/doc-dev-101326/doc-integrationasynchelper-apex-class.md
+saida/docs/doc-dev-101326/doc-integrationasynchelper-processordersasync-apex-future.md
+saida/docs/doc-dev-101326/doc-integrationasynchelper-recalc-apex-future.md
+saida/docs/doc-dev-101326/doc-leitura-pedidos-permission-set.md
+saida/docs/doc-dev-101326/doc-meu-app-connected-app.md
+saida/docs/doc-dev-101326/doc-meu-certificado-certificate.md
+saida/docs/doc-dev-101326/doc-meu-flow-flow-trigger.md
+saida/docs/doc-dev-101326/doc-meu-flow-flow.md
+saida/docs/doc-dev-101326/doc-meu-site-remote-site-setting.md
+saida/docs/doc-dev-101326/doc-minha-ec-external-credential.md
+saida/docs/doc-dev-101326/doc-minha-eca-external-client-app.md
+saida/docs/doc-dev-101326/doc-minha-nc-named-credential.md
+saida/docs/doc-dev-101326/doc-multirolejob-apex-batch.md
+saida/docs/doc-dev-101326/doc-multirolejob-apex-class.md
+saida/docs/doc-dev-101326/doc-multirolejob-apex-scheduler.md
+saida/docs/doc-dev-101326/doc-nc-legada-named-credential.md
+saida/docs/doc-dev-101326/doc-ordercleanupbatch-apex-batch.md
+saida/docs/doc-dev-101326/doc-ordercleanupbatch-apex-class.md
+saida/docs/doc-dev-101326/doc-pedido-c-custom-object.md
+saida/docs/doc-dev-101326/doc-pedidoservice-apex-class.md
+saida/docs/doc-dev-101326/doc-processa-pedido-flow-autolaunched.md
+saida/docs/doc-dev-101326/doc-processa-pedido-flow.md
+saida/docs/doc-dev-101326/doc-tela-cadastro-dados-cliente-flow-screen.md
+saida/docs/doc-dev-101326/doc-tela-cadastro-flow.md
 ```
 
 ## 7. Conteúdo dos documentos finais
 
-### `saida/docs/doc-dev-101226/doc-meu-flow-flow.md`
+### `saida/docs/doc-dev-101326/doc-meu-flow-flow.md`
 
 ```markdown
 # Flow: Meu_Flow
@@ -724,9 +790,15 @@ _Fonte: XML_
 |---|---|---|---|
 | 1 | Obsolete | 301000000000001AAA | Tooling API |
 | 2 | Active | 301000000000002AAA | Tooling API |
+
+## Acesso e configuração
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| Perfil | Admin | Executar | — | XML |
 ```
 
-### `saida/docs/doc-dev-101226/doc-meu-flow-flow-trigger.md`
+### `saida/docs/doc-dev-101326/doc-meu-flow-flow-trigger.md`
 
 ```markdown
 # Flow Trigger: Meu_Flow
@@ -753,9 +825,15 @@ _Fonte: XML_
 |---|---|---|---|
 | 1 | Obsolete | 301000000000001AAA | Tooling API |
 | 2 | Active | 301000000000002AAA | Tooling API |
+
+## Acesso e configuração
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| Perfil | Admin | Executar | — | XML |
 ```
 
-### `saida/docs/doc-dev-101226/doc-processa-pedido-flow.md`
+### `saida/docs/doc-dev-101326/doc-processa-pedido-flow.md`
 
 ```markdown
 # Flow: Processa_Pedido
@@ -790,9 +868,15 @@ _Fonte: XML_
 |---|---|---|---|
 | 1 | Obsolete | 301000000000001AAA | Tooling API |
 | 2 | Active | 301000000000002AAA | Tooling API |
+
+## Acesso e configuração
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| Nenhuma concessão encontrada | — | — | — | XML |
 ```
 
-### `saida/docs/doc-dev-101226/doc-processa-pedido-flow-autolaunched.md`
+### `saida/docs/doc-dev-101326/doc-processa-pedido-flow-autolaunched.md`
 
 ```markdown
 # Autolaunched Flow: Processa_Pedido
@@ -827,9 +911,15 @@ _Fonte: XML_
 |---|---|---|---|
 | 1 | Obsolete | 301000000000001AAA | Tooling API |
 | 2 | Active | 301000000000002AAA | Tooling API |
+
+## Acesso e configuração
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| Nenhuma concessão encontrada | — | — | — | XML |
 ```
 
-### `saida/docs/doc-dev-101226/doc-tela-cadastro-flow.md`
+### `saida/docs/doc-dev-101326/doc-tela-cadastro-flow.md`
 
 ```markdown
 # Flow: Tela_Cadastro
@@ -864,9 +954,16 @@ _Fonte: XML_
 |---|---|---|---|
 | 1 | Obsolete | 301000000000001AAA | Tooling API |
 | 2 | Active | 301000000000002AAA | Tooling API |
+
+## Acesso e configuração
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| Permission Set | Integracao_API | Executar | — | XML |
+| Permission Set Group | PSG_Integracao | Executar | Permission Set Integracao_API | XML |
 ```
 
-### `saida/docs/doc-dev-101226/doc-tela-cadastro-dados-cliente-flow-screen.md`
+### `saida/docs/doc-dev-101326/doc-tela-cadastro-dados-cliente-flow-screen.md`
 
 ```markdown
 # Flow Screen: Dados_Cliente
@@ -897,9 +994,16 @@ _Fonte: XML_
 |---|---|---|---|
 | 1 | Obsolete | 301000000000001AAA | Tooling API |
 | 2 | Active | 301000000000002AAA | Tooling API |
+
+## Acesso e configuração
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| Permission Set | Integracao_API | Executar | — | XML |
+| Permission Set Group | PSG_Integracao | Executar | Permission Set Integracao_API | XML |
 ```
 
-### `saida/docs/doc-dev-101226/doc-minha-eca-external-client-app.md`
+### `saida/docs/doc-dev-101326/doc-minha-eca-external-client-app.md`
 
 ```markdown
 # External Client App: Minha_ECA
@@ -934,7 +1038,7 @@ _Fonte: XML_
 
 **ExtlClntAppOauthConfigurablePolicies: Minha_ECA_oauthPlcy**
 
-_Arquivo: `inventory/org-dev/api-v67/extl-clnt-app-oauth-configurable-policies/components/extlClntAppOauthPolicies/Minha_ECA_oauthPlcy.ecaOauthPlcy-meta.xml` · sha256 `4686e2b22fdc507c…`_
+_Arquivo: `inventory/org-dev/api-v67/extl-clnt-app-oauth-configurable-policies/components/extlClntAppOauthPolicies/Minha_ECA_oauthPlcy.ecaOauthPlcy-meta.xml` · sha256 `03b6ce1846607417…`_
 
 | Propriedade | Valor | Fonte |
 |---|---|---|
@@ -984,9 +1088,17 @@ _Fonte: XML_
 | Propriedade | Valor | Fonte |
 |---|---|---|
 | Não aplicável | Não aplicável | Objeto interno |
+
+## Acesso e configuração
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| Perfil | Vendas | Autorizado no componente | ExtlClntAppOauthConfigurablePolicies Minha_ECA_oauthPlcy | XML |
+| Permission Set | Integracao_API | Autorizado no componente | ExtlClntAppOauthConfigurablePolicies Minha_ECA_oauthPlcy | XML |
+| Permission Set | Leitura_Pedidos | Autorizado no componente | ExtlClntAppOauthConfigurablePolicies Minha_ECA_oauthPlcy | XML |
 ```
 
-### `saida/docs/doc-dev-101226/doc-minha-ec-external-credential.md`
+### `saida/docs/doc-dev-101326/doc-minha-ec-external-credential.md`
 
 ```markdown
 # External Credential: Minha_EC
@@ -1020,9 +1132,16 @@ _Fonte: XML_
 | MasterLabel | Minha EC | Objeto interno |
 | CreatedDate | 2026-09-01T12:00:00.000+0000 | Objeto interno |
 | LastModifiedDate | 2026-10-01T12:00:00.000+0000 | Objeto interno |
+
+## Acesso e configuração
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| Permission Set | Integracao_API | Usar principal | Principal Principal_Integracao | XML |
+| Permission Set Group | PSG_Integracao | Usar principal | Principal Principal_Integracao; Permission Set Integracao_API | XML |
 ```
 
-### `saida/docs/doc-dev-101226/doc-meu-app-connected-app.md`
+### `saida/docs/doc-dev-101326/doc-meu-app-connected-app.md`
 
 ```markdown
 # Connected App: Meu_App
@@ -1048,9 +1167,16 @@ _Fonte: XML_
 | Id | 0H4000000000001AAA | Objeto interno |
 | Name | Meu_App | Objeto interno |
 | OptionsAllowAdminApprovedUsersOnly | True | Objeto interno |
+
+## Acesso e configuração
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| Perfil | Vendas | Autorizado no componente | — | XML |
+| Permission Set | Integracao_API | Autorizado no componente | — | XML |
 ```
 
-### `saida/docs/doc-dev-101226/doc-pedido-c-custom-object.md`
+### `saida/docs/doc-dev-101326/doc-pedido-c-custom-object.md`
 
 ```markdown
 # Custom Object: Pedido__c
@@ -1099,9 +1225,27 @@ _Fonte: XML_
 | PluralLabel | Pedidos | Tooling API |
 | KeyPrefix | a01 | Tooling API |
 | LastModifiedDate | 2026-01-10T12:00:00.000+0000 | Tooling API |
+
+## Compartilhamento e filas
+
+| Tipo | Nome | Compartilhado com | Nível de acesso | Fonte |
+|---|---|---|---|---|
+| Fila | Fila_Pedidos | — | — | XML |
+| Regra de compartilhamento por critério | Pedidos_Altos | role: Gerente_Vendas | Read | XML |
+| Regra de compartilhamento por proprietário | Pedidos_Suporte | group: Grupo_Suporte | Edit | XML |
+
+## Acesso e configuração
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| Perfil | Admin | Ler, Criar, Editar, Excluir, Ver todos, Modificar todos | — | XML |
+| Perfil | Vendas | Ler | — | XML |
+| Permission Set | Integracao_API | Ler, Editar | — | XML |
+| Permission Set | Leitura_Pedidos | Ler | — | XML |
+| Permission Set Group | PSG_Integracao | Ler, Editar | Permission Set Integracao_API | XML |
 ```
 
-### `saida/docs/doc-dev-101226/doc-config-mdt-custom-metadata.md`
+### `saida/docs/doc-dev-101326/doc-config-mdt-custom-metadata.md`
 
 ```markdown
 # Custom Metadata: Config__mdt
@@ -1139,9 +1283,16 @@ _Fonte: XML_
 | PluralLabel | Configs | Tooling API |
 | KeyPrefix | m00 | Tooling API |
 | LastModifiedDate | 2026-01-11T12:00:00.000+0000 | Tooling API |
+
+## Acesso e configuração
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| Perfil | Admin | Ler | — | XML |
+| Permission Set | Leitura_Pedidos | Ler | — | XML |
 ```
 
-### `saida/docs/doc-dev-101226/doc-minha-nc-named-credential.md`
+### `saida/docs/doc-dev-101326/doc-minha-nc-named-credential.md`
 
 ```markdown
 # Named Credential: Minha_NC
@@ -1197,9 +1348,16 @@ _Fonte: XML_
 |---|---|---|
 | Id | 0XA000000000001AAA | Objeto interno |
 | DeveloperName | Minha_NC | Objeto interno |
+
+## Acesso e configuração
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| Permission Set | Integracao_API | Usar principal | ExternalCredential Minha_EC (principal Principal_Integracao) | XML |
+| Permission Set Group | PSG_Integracao | Usar principal | ExternalCredential Minha_EC (principal Principal_Integracao); Permission Set Integracao_API | XML |
 ```
 
-### `saida/docs/doc-dev-101226/doc-nc-legada-named-credential.md`
+### `saida/docs/doc-dev-101326/doc-nc-legada-named-credential.md`
 
 ```markdown
 # Named Credential: NC_Legada
@@ -1244,9 +1402,15 @@ _Fonte: XML_
 | Propriedade | Valor | Fonte |
 |---|---|---|
 | Não informado | Não informado | Objeto interno |
+
+## Acesso e configuração
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| Nenhuma concessão encontrada | — | — | — | XML |
 ```
 
-### `saida/docs/doc-dev-101226/doc-meu-site-remote-site-setting.md`
+### `saida/docs/doc-dev-101326/doc-meu-site-remote-site-setting.md`
 
 ```markdown
 # Remote Site Setting: Meu_Site
@@ -1266,9 +1430,15 @@ _Fonte: XML_
 | Propriedade | Valor | Fonte |
 |---|---|---|
 | Não aplicável | Não aplicável | Objeto interno |
+
+## Acesso e configuração
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| Não aplicável | Remote Site Setting vale para a org inteira; não há atribuição por perfil ou permission set. | — | — | XML |
 ```
 
-### `saida/docs/doc-dev-101226/doc-meu-certificado-certificate.md`
+### `saida/docs/doc-dev-101326/doc-meu-certificado-certificate.md`
 
 ```markdown
 # Certificate: Meu_Certificado
@@ -1292,9 +1462,15 @@ _Fonte: XML_
 | DeveloperName | Meu_Certificado | Tooling API |
 | ExpirationDate | 2027-10-01 | Tooling API |
 | KeySize | 2048 | Tooling API |
+
+## Acesso e configuração
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| Não aplicável | Certificate não é atribuído a perfil ou permission set; o uso é configurado no componente consumidor. | — | — | XML |
 ```
 
-### `saida/docs/doc-dev-101226/doc-accountsyncqueueable-apex-class.md`
+### `saida/docs/doc-dev-101326/doc-accountsyncqueueable-apex-class.md`
 
 ```markdown
 # Classe Apex: AccountSyncQueueable
@@ -1344,9 +1520,16 @@ _Fonte: XML_
 | LengthWithoutComments | 400 | Objeto interno |
 | CreatedDate | 2026-01-01T00:00:00.000+0000 | Objeto interno |
 | LastModifiedDate | 2026-10-01T00:00:00.000+0000 | Objeto interno |
+
+## Acesso e configuração
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| Permission Set | Integracao_API | Executar | — | XML |
+| Permission Set Group | PSG_Integracao | Executar | Permission Set Integracao_API | XML |
 ```
 
-### `saida/docs/doc-dev-101226/doc-accountsyncqueueable-apex-queueable.md`
+### `saida/docs/doc-dev-101326/doc-accountsyncqueueable-apex-queueable.md`
 
 ```markdown
 # Queueable Apex: AccountSyncQueueable
@@ -1407,9 +1590,16 @@ Limites de governança, formas de invocação e monitoramento: ver `documentatio
 | LengthWithoutComments | 400 | Objeto interno |
 | CreatedDate | 2026-01-01T00:00:00.000+0000 | Objeto interno |
 | LastModifiedDate | 2026-10-01T00:00:00.000+0000 | Objeto interno |
+
+## Acesso e configuração
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| Permission Set | Integracao_API | Executar | — | XML |
+| Permission Set Group | PSG_Integracao | Executar | Permission Set Integracao_API | XML |
 ```
 
-### `saida/docs/doc-dev-101226/doc-dailyordercleanupscheduler-apex-class.md`
+### `saida/docs/doc-dev-101326/doc-dailyordercleanupscheduler-apex-class.md`
 
 ```markdown
 # Classe Apex: DailyOrderCleanupScheduler
@@ -1460,9 +1650,15 @@ Limites de governança, formas de invocação e monitoramento: ver `documentatio
 | LengthWithoutComments | 401 | Objeto interno |
 | CreatedDate | 2026-01-01T00:00:00.000+0000 | Objeto interno |
 | LastModifiedDate | 2026-10-01T00:00:00.000+0000 | Objeto interno |
+
+## Acesso e configuração
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| Nenhuma concessão encontrada | — | — | — | XML |
 ```
 
-### `saida/docs/doc-dev-101226/doc-dailyordercleanupscheduler-apex-scheduler.md`
+### `saida/docs/doc-dev-101326/doc-dailyordercleanupscheduler-apex-scheduler.md`
 
 ```markdown
 # Scheduled Apex: DailyOrderCleanupScheduler
@@ -1519,9 +1715,15 @@ Limites de governança, formas de invocação e monitoramento: ver `documentatio
 | LengthWithoutComments | 401 | Objeto interno |
 | CreatedDate | 2026-01-01T00:00:00.000+0000 | Objeto interno |
 | LastModifiedDate | 2026-10-01T00:00:00.000+0000 | Objeto interno |
+
+## Acesso e configuração
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| Nenhuma concessão encontrada | — | — | — | XML |
 ```
 
-### `saida/docs/doc-dev-101226/doc-integrationasynchelper-apex-class.md`
+### `saida/docs/doc-dev-101326/doc-integrationasynchelper-apex-class.md`
 
 ```markdown
 # Classe Apex: IntegrationAsyncHelper
@@ -1572,9 +1774,15 @@ Limites de governança, formas de invocação e monitoramento: ver `documentatio
 | LengthWithoutComments | 402 | Objeto interno |
 | CreatedDate | 2026-01-01T00:00:00.000+0000 | Objeto interno |
 | LastModifiedDate | 2026-10-01T00:00:00.000+0000 | Objeto interno |
+
+## Acesso e configuração
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| Nenhuma concessão encontrada | — | — | — | XML |
 ```
 
-### `saida/docs/doc-dev-101226/doc-integrationasynchelper-processordersasync-apex-future.md`
+### `saida/docs/doc-dev-101326/doc-integrationasynchelper-processordersasync-apex-future.md`
 
 ```markdown
 # Método @future: processOrdersAsync
@@ -1620,9 +1828,15 @@ Limites de governança, formas de invocação e monitoramento: ver `documentatio
 | LengthWithoutComments | 402 | Objeto interno |
 | CreatedDate | 2026-01-01T00:00:00.000+0000 | Objeto interno |
 | LastModifiedDate | 2026-10-01T00:00:00.000+0000 | Objeto interno |
+
+## Acesso e configuração
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| Nenhuma concessão encontrada | — | — | — | XML |
 ```
 
-### `saida/docs/doc-dev-101226/doc-integrationasynchelper-recalc-apex-future.md`
+### `saida/docs/doc-dev-101326/doc-integrationasynchelper-recalc-apex-future.md`
 
 ```markdown
 # Método @future: recalc
@@ -1668,9 +1882,15 @@ Limites de governança, formas de invocação e monitoramento: ver `documentatio
 | LengthWithoutComments | 402 | Objeto interno |
 | CreatedDate | 2026-01-01T00:00:00.000+0000 | Objeto interno |
 | LastModifiedDate | 2026-10-01T00:00:00.000+0000 | Objeto interno |
+
+## Acesso e configuração
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| Nenhuma concessão encontrada | — | — | — | XML |
 ```
 
-### `saida/docs/doc-dev-101226/doc-multirolejob-apex-class.md`
+### `saida/docs/doc-dev-101326/doc-multirolejob-apex-class.md`
 
 ```markdown
 # Classe Apex: MultiRoleJob
@@ -1724,9 +1944,15 @@ Limites de governança, formas de invocação e monitoramento: ver `documentatio
 | LengthWithoutComments | 403 | Objeto interno |
 | CreatedDate | 2026-01-01T00:00:00.000+0000 | Objeto interno |
 | LastModifiedDate | 2026-10-01T00:00:00.000+0000 | Objeto interno |
+
+## Acesso e configuração
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| Nenhuma concessão encontrada | — | — | — | XML |
 ```
 
-### `saida/docs/doc-dev-101226/doc-multirolejob-apex-batch.md`
+### `saida/docs/doc-dev-101326/doc-multirolejob-apex-batch.md`
 
 ```markdown
 # Batch Apex: MultiRoleJob
@@ -1789,9 +2015,15 @@ Limites de governança, formas de invocação e monitoramento: ver `documentatio
 | LengthWithoutComments | 403 | Objeto interno |
 | CreatedDate | 2026-01-01T00:00:00.000+0000 | Objeto interno |
 | LastModifiedDate | 2026-10-01T00:00:00.000+0000 | Objeto interno |
+
+## Acesso e configuração
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| Nenhuma concessão encontrada | — | — | — | XML |
 ```
 
-### `saida/docs/doc-dev-101226/doc-multirolejob-apex-scheduler.md`
+### `saida/docs/doc-dev-101326/doc-multirolejob-apex-scheduler.md`
 
 ```markdown
 # Scheduled Apex: MultiRoleJob
@@ -1848,9 +2080,15 @@ Limites de governança, formas de invocação e monitoramento: ver `documentatio
 | LengthWithoutComments | 403 | Objeto interno |
 | CreatedDate | 2026-01-01T00:00:00.000+0000 | Objeto interno |
 | LastModifiedDate | 2026-10-01T00:00:00.000+0000 | Objeto interno |
+
+## Acesso e configuração
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| Nenhuma concessão encontrada | — | — | — | XML |
 ```
 
-### `saida/docs/doc-dev-101226/doc-ordercleanupbatch-apex-class.md`
+### `saida/docs/doc-dev-101326/doc-ordercleanupbatch-apex-class.md`
 
 ```markdown
 # Classe Apex: OrderCleanupBatch
@@ -1903,9 +2141,15 @@ Limites de governança, formas de invocação e monitoramento: ver `documentatio
 | LengthWithoutComments | 404 | Objeto interno |
 | CreatedDate | 2026-01-01T00:00:00.000+0000 | Objeto interno |
 | LastModifiedDate | 2026-10-01T00:00:00.000+0000 | Objeto interno |
+
+## Acesso e configuração
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| Perfil | Admin | Executar | — | XML |
 ```
 
-### `saida/docs/doc-dev-101226/doc-ordercleanupbatch-apex-batch.md`
+### `saida/docs/doc-dev-101326/doc-ordercleanupbatch-apex-batch.md`
 
 ```markdown
 # Batch Apex: OrderCleanupBatch
@@ -1968,9 +2212,15 @@ Limites de governança, formas de invocação e monitoramento: ver `documentatio
 | LengthWithoutComments | 404 | Objeto interno |
 | CreatedDate | 2026-01-01T00:00:00.000+0000 | Objeto interno |
 | LastModifiedDate | 2026-10-01T00:00:00.000+0000 | Objeto interno |
+
+## Acesso e configuração
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| Perfil | Admin | Executar | — | XML |
 ```
 
-### `saida/docs/doc-dev-101226/doc-pedidoservice-apex-class.md`
+### `saida/docs/doc-dev-101326/doc-pedidoservice-apex-class.md`
 
 ```markdown
 # Classe Apex: PedidoService
@@ -2019,5 +2269,174 @@ Limites de governança, formas de invocação e monitoramento: ver `documentatio
 | LengthWithoutComments | 405 | Objeto interno |
 | CreatedDate | 2026-01-01T00:00:00.000+0000 | Objeto interno |
 | LastModifiedDate | 2026-10-01T00:00:00.000+0000 | Objeto interno |
+
+## Acesso e configuração
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| Perfil | Admin | Executar | — | XML |
+| Perfil | Vendas | Executar | — | XML |
+```
+
+### `saida/docs/doc-dev-101326/doc-integracao-api-permission-set.md`
+
+```markdown
+# Permission Set: Integracao_API
+
+## Identificação
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| Name | Integracao_API | XML |
+| Label | Integração API | XML |
+| Description | Acesso da integração (SIMULADO) | XML |
+| License | Não aplicável | XML |
+| HasActivationRequired | false | XML |
+
+## Objetos
+
+| Objeto | Ler | Criar | Editar | Excluir | Ver todos | Modificar todos | Fonte |
+|---|---|---|---|---|---|---|---|
+| Pedido__c | true | false | true | false | false | false | XML |
+
+## Campos
+
+| Campo | Ler | Editar | Fonte |
+|---|---|---|---|
+| Pedido__c.Status__c | true | false | XML |
+
+## Classes Apex
+
+| Classe | Fonte |
+|---|---|
+| AccountSyncQueueable | XML |
+
+## Flows
+
+| Flow | Fonte |
+|---|---|
+| Tela_Cadastro | XML |
+
+## Custom Metadata Types
+
+| Tipo | Fonte |
+|---|---|
+| Não aplicável | XML |
+
+## Record types
+
+| Record type | Visível | Fonte |
+|---|---|---|
+| Não aplicável | Não aplicável | XML |
+
+## Principals de External Credential
+
+| Principal | Fonte |
+|---|---|
+| Minha_EC-Principal_Integracao | XML |
+
+## Permissões de sistema
+
+| Permissão | Fonte |
+|---|---|
+| ApiEnabled | XML |
+
+## Dados internos
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| Id | 0PS000000000000AAA | Objeto interno |
+| Name | Integracao_API | Objeto interno |
+| Label | Integração API | Objeto interno |
+| IsOwnedByProfile | False | Objeto interno |
+| CreatedDate | 2026-01-01T00:00:00.000+0000 | Objeto interno |
+| LastModifiedDate | 2026-10-01T00:00:00.000+0000 | Objeto interno |
+
+## Acesso e configuração
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| Permission Set Group | PSG_Integracao | Inclui o permission set | — | XML |
+```
+
+### `saida/docs/doc-dev-101326/doc-leitura-pedidos-permission-set.md`
+
+```markdown
+# Permission Set: Leitura_Pedidos
+
+## Identificação
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| Name | Leitura_Pedidos | XML |
+| Label | Leitura de Pedidos | XML |
+| Description | Não aplicável | XML |
+| License | Não aplicável | XML |
+| HasActivationRequired | false | XML |
+
+## Objetos
+
+| Objeto | Ler | Criar | Editar | Excluir | Ver todos | Modificar todos | Fonte |
+|---|---|---|---|---|---|---|---|
+| Pedido__c | true | false | false | false | false | false | XML |
+
+## Campos
+
+| Campo | Ler | Editar | Fonte |
+|---|---|---|---|
+| Não aplicável | Não aplicável | Não aplicável | XML |
+
+## Classes Apex
+
+| Classe | Fonte |
+|---|---|
+| Não aplicável | XML |
+
+## Flows
+
+| Flow | Fonte |
+|---|---|
+| Não aplicável | XML |
+
+## Custom Metadata Types
+
+| Tipo | Fonte |
+|---|---|
+| Config__mdt | XML |
+
+## Record types
+
+| Record type | Visível | Fonte |
+|---|---|---|
+| Não aplicável | Não aplicável | XML |
+
+## Principals de External Credential
+
+| Principal | Fonte |
+|---|---|
+| Não aplicável | XML |
+
+## Permissões de sistema
+
+| Permissão | Fonte |
+|---|---|
+| Não aplicável | XML |
+
+## Dados internos
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| Id | 0PS000000000001AAA | Objeto interno |
+| Name | Leitura_Pedidos | Objeto interno |
+| Label | Leitura de Pedidos | Objeto interno |
+| IsOwnedByProfile | False | Objeto interno |
+| CreatedDate | 2026-01-01T00:00:00.000+0000 | Objeto interno |
+| LastModifiedDate | 2026-10-01T00:00:00.000+0000 | Objeto interno |
+
+## Acesso e configuração
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| Nenhuma concessão encontrada | — | — | — | XML |
 ```
 

@@ -46,6 +46,7 @@ def validate_project(app_config, mvp_config, contracts, strict=False) -> list:
             e, w = validate_template(name, contract, app_config)
             errors.extend(e)
             warnings.extend(w)
+            errors.extend(validate_access_section(name, contract, app_config))
         else:
             warnings.extend(_templateless_usage(name, contract, contracts, mvp_config))
     warnings.extend(_unused_models(app_config, contracts))
@@ -54,6 +55,39 @@ def validate_project(app_config, mvp_config, contracts, strict=False) -> list:
     if errors:
         raise ConfigError("Contratos/modelos inválidos:\n- " + "\n- ".join(errors))
     return warnings
+
+
+ACCESS_BUILDER = "access_rows"
+
+
+def validate_access_section(name, contract, app_config):
+    """Todo documento termina com "onde o componente está configurado".
+
+    Exige exatamente uma tabela `access_rows` no contrato (tipos sem atribuição declaram
+    `args.notApplicable` com o motivo) e que a seção dela seja a ÚLTIMA do modelo.
+    """
+    from salesforce_docs.rendering.template_loader import TemplateLoader
+
+    tables = [t for t in contract.get("tables", []) if t.get("builder") == ACCESS_BUILDER]
+    if len(tables) != 1:
+        return [f"{name}: o contrato precisa de exatamente uma tabela '{ACCESS_BUILDER}' "
+                "(seção 'Acesso e configuração'; use args.notApplicable com o motivo quando o tipo "
+                "não tiver atribuição por perfil/permission set)"]
+    api = app_config.default_api_version or "67.0"
+    loader = TemplateLoader(app_config.models_dir(api), api)
+    try:
+        text = loader.load(contract["template"])
+    except ValueError:
+        return []  # nome de modelo inválido já é erro em validate_template
+    if text is None:
+        return []  # modelo ausente: NO_TEMPLATE já é aviso
+    sections = [ln[3:].strip() for ln in text.splitlines() if ln.startswith("## ")]
+    expected = tables[0].get("markdownSection")
+    if not sections or sections[-1] != expected:
+        return [f"{name}: a seção '{expected}' deve ser a última do modelo "
+                f"{loader.resolve_name(contract['template'])} (última atual: "
+                f"'{sections[-1] if sections else '—'}')"]
+    return []
 
 
 def _templateless_usage(name, contract, contracts, mvp_config):
@@ -173,6 +207,12 @@ def table_placeholders(table):
         return {"related_component", "related_type"}
     if builder == "related_folders":
         return {"folder", "purpose"}
+    if builder == "access_rows":
+        from salesforce_docs.parsing.access_builders import ACCESS_PLACEHOLDERS
+        return set(ACCESS_PLACEHOLDERS)
+    if builder == "object_sharing_rows":
+        from salesforce_docs.parsing.access_builders import SHARING_PLACEHOLDERS
+        return set(SHARING_PLACEHOLDERS)
     if builder == "list_values":
         return {args.get("valuePlaceholder", "value")}
     if builder in ("child_properties", "internal_record_properties"):

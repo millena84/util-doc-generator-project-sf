@@ -224,5 +224,54 @@
       "fullName": "PedidoService",
       "path": "classes/PedidoService.cls-meta.xml"
     }
+  ],
+  "Profile:Admin": [
+    {
+      "type": "Profile",
+      "fullName": "Admin",
+      "path": "profiles/Admin.profile-meta.xml"
+    }
+  ],
+  "Profile:Vendas": [
+    {
+      "type": "Profile",
+      "fullName": "Vendas",
+      "path": "profiles/Vendas.profile-meta.xml"
+    }
+  ],
+  "PermissionSet:Integracao_API": [
+    {
+      "type": "PermissionSet",
+      "fullName": "Integracao_API",
+      "path": "permissionsets/Integracao_API.permissionset-meta.xml"
+    }
+  ],
+  "PermissionSet:Leitura_Pedidos": [
+    {
+      "type": "PermissionSet",
+      "fullName": "Leitura_Pedidos",
+      "path": "permissionsets/Leitura_Pedidos.permissionset-meta.xml"
+    }
+  ],
+  "PermissionSetGroup:PSG_Integracao": [
+    {
+      "type": "PermissionSetGroup",
+      "fullName": "PSG_Integracao",
+      "path": "permissionsetgroups/PSG_Integracao.permissionsetgroup-meta.xml"
+    }
+  ],
+  "Queue:Fila_Pedidos": [
+    {
+      "type": "Queue",
+      "fullName": "Fila_Pedidos",
+      "path": "queues/Fila_Pedidos.queue-meta.xml"
+    }
+  ],
+  "SharingRules:Pedido__c": [
+    {
+      "type": "SharingRules",
+      "fullName": "Pedido__c",
+      "path": "sharingRules/Pedido__c.sharingRules-meta.xml"
+    }
   ]
 }
