@@ -143,6 +143,16 @@
         "valuePlaceholder": "internal_value"
       },
       "emptyValue": "Não informado"
+    },
+    {
+      "markdownSection": "Acesso e configuração",
+      "builder": "access_rows",
+      "source": "XML",
+      "args": {
+        "accessKey": "ApexClass"
+      },
+      "emptyValue": "Não informado",
+      "notes": "Onde o componente está configurado: perfis, permission sets e permission set groups (via) que concedem acesso, a partir do XML (accessSources, passo 6b). Sem índice de acesso: 'Não informado'."
     }
   ],
   "internalData": {

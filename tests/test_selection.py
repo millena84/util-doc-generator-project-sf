@@ -90,8 +90,9 @@ class SelectionLoadTest(P3Base):
 
 class SelectedEcaOptionBTest(P3Base):
     def retrieved(self):
+        # O retrieve das fontes de acesso (passo 6b) é verificado em tests/test_acesso.py.
         return sorted(l.split("--metadata ")[1].split(" ")[0] for l in self.calls().splitlines()
-                      if l.startswith("project retrieve start"))
+                      if l.startswith("project retrieve start") and "--metadata Profile" not in l)
 
     def test_selected_eca_does_not_retrieve_candidates(self):
         self.config(selection=sel(("ExternalClientApplication", ["*"])))

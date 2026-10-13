@@ -1,0 +1,225 @@
+{
+  "metadataType": "PermissionSet",
+  "apiVersion": "67.0",
+  "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+  "xmlFilePattern": "**/*.permissionset-meta.xml",
+  "template": "modelo-doc-permission-set-vapi-{apiMajor}.md",
+  "titlePath": "@fullName",
+  "classification": "Documento de cada permission set. O XML vem do retrieve de acesso (passo 6b), recuperado junto com os componentes documentados, para conter as permissões desses componentes.",
+  "properties": [
+    {
+      "name": "Name",
+      "placeholder": "ps_name",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Label",
+      "placeholder": "label",
+      "path": "label",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Description",
+      "placeholder": "description",
+      "path": "description",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "License",
+      "placeholder": "license",
+      "path": "license",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "HasActivationRequired",
+      "placeholder": "has_activation_required",
+      "path": "hasActivationRequired",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    }
+  ],
+  "tables": [
+    {
+      "markdownSection": "Objetos",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "objectPermissions",
+        "columns": {
+          "object": "object",
+          "allow_read": "allowRead",
+          "allow_create": "allowCreate",
+          "allow_edit": "allowEdit",
+          "allow_delete": "allowDelete",
+          "view_all": "viewAllRecords",
+          "modify_all": "modifyAllRecords"
+        }
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "objectPermissions (a confirmar no piloto)."
+    },
+    {
+      "markdownSection": "Campos",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "fieldPermissions",
+        "columns": {
+          "field": "field",
+          "readable": "readable",
+          "editable": "editable"
+        }
+      },
+      "emptyValue": "Não aplicável"
+    },
+    {
+      "markdownSection": "Classes Apex",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "classAccesses",
+        "columns": {
+          "apex_class": "apexClass"
+        },
+        "where": [
+          {
+            "path": "enabled",
+            "equals": "true"
+          }
+        ]
+      },
+      "emptyValue": "Não aplicável"
+    },
+    {
+      "markdownSection": "Flows",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "flowAccesses",
+        "columns": {
+          "flow": "flow"
+        },
+        "where": [
+          {
+            "path": "enabled",
+            "equals": "true"
+          }
+        ]
+      },
+      "emptyValue": "Não aplicável"
+    },
+    {
+      "markdownSection": "Custom Metadata Types",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "customMetadataTypeAccesses",
+        "columns": {
+          "cmdt": "name"
+        },
+        "where": [
+          {
+            "path": "enabled",
+            "equals": "true"
+          }
+        ]
+      },
+      "emptyValue": "Não aplicável"
+    },
+    {
+      "markdownSection": "Record types",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "recordTypeVisibilities",
+        "columns": {
+          "record_type": "recordType",
+          "visible": "visible"
+        }
+      },
+      "emptyValue": "Não aplicável"
+    },
+    {
+      "markdownSection": "Principals de External Credential",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "externalCredentialPrincipalAccesses",
+        "columns": {
+          "principal_name": "externalCredentialPrincipal"
+        },
+        "where": [
+          {
+            "path": "enabled",
+            "equals": "true"
+          }
+        ]
+      },
+      "emptyValue": "Não aplicável"
+    },
+    {
+      "markdownSection": "Permissões de sistema",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "userPermissions",
+        "columns": {
+          "user_permission": "name"
+        },
+        "where": [
+          {
+            "path": "enabled",
+            "equals": "true"
+          }
+        ]
+      },
+      "emptyValue": "Não aplicável"
+    },
+    {
+      "markdownSection": "Dados internos",
+      "builder": "internal_record_properties",
+      "source": "Objeto interno",
+      "args": {
+        "keyPlaceholder": "internal_property",
+        "valuePlaceholder": "internal_value"
+      },
+      "emptyValue": "Não informado"
+    },
+    {
+      "markdownSection": "Acesso e configuração",
+      "builder": "access_rows",
+      "source": "XML",
+      "args": {
+        "accessKey": "PermissionSet"
+      },
+      "emptyValue": "Não informado",
+      "notes": "Permission set groups que incluem este permission set (PermissionSetGroup.permissionSets). Usuários atribuídos não são listados."
+    }
+  ],
+  "internalData": {
+    "enabled": true,
+    "source": "Objeto interno",
+    "object": "PermissionSet",
+    "useToolingApi": false,
+    "query": "SELECT Id, Name, Label, IsOwnedByProfile, CreatedDate, LastModifiedDate FROM PermissionSet WHERE Name = '{developerName}'",
+    "expectSingleRecord": true,
+    "blocking": false,
+    "validationPending": "Objeto PermissionSet (SOAP/REST API): confirmar campos no piloto."
+  },
+  "evidence": [
+    "Metadata API PermissionSet: classAccesses (API 23+), customMetadataTypeAccesses (47+), externalCredentialPrincipalAccesses (59+), flowAccesses (47+) — developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_permissionset.htm"
+  ],
+  "pendingVerification": [
+    "objectPermissions, recordTypeVisibilities e license em PermissionSet; se o retrieve isolado de PermissionSet já traz todas as permissões"
+  ]
+}

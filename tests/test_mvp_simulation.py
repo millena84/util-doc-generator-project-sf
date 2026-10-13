@@ -11,7 +11,7 @@ from salesforce_docs import status as st
 
 API = "inventory/org-dev/api-v67"
 
-# Documento -> modelo esperado (os 17 modelos de documentation/models/api-v67).
+# Documento -> modelo esperado (os 18 modelos de documentation/models/api-v67).
 EXPECTED_DOCS = {
     "doc-meu-flow-flow.md": "modelo-doc-flow-vapi-67.md",
     "doc-tela-cadastro-flow.md": "modelo-doc-flow-vapi-67.md",
@@ -42,6 +42,9 @@ EXPECTED_DOCS = {
     "doc-integrationasynchelper-processordersasync-apex-future.md": "modelo-doc-apex-future-vapi-67.md",
     "doc-integrationasynchelper-recalc-apex-future.md": "modelo-doc-apex-future-vapi-67.md",
     "doc-pedidoservice-apex-class.md": "modelo-doc-apex-class-vapi-67.md",
+    # Permission Set (XML do retrieve de acesso)
+    "doc-integracao-api-permission-set.md": "modelo-doc-permission-set-vapi-67.md",
+    "doc-leitura-pedidos-permission-set.md": "modelo-doc-permission-set-vapi-67.md",
 }
 
 # Componentes relacionados que precisam aparecer no documento do principal.
@@ -73,8 +76,10 @@ LISTED_TYPES = {
     "ExternalCredential": "external-credentials", "ConnectedApp": "connected-apps",
     "CustomObject": "custom-objects", "CustomMetadata": "custom-metadata",
     "NamedCredential": "named-credentials", "RemoteSiteSetting": "remote-site-settings",
-    "Certificate": "certificates", "ApexClass": "apex-classes",
+    "Certificate": "certificates", "ApexClass": "apex-classes", "PermissionSet": "permission-sets",
 }
+# Tipos documentados cujo XML vem do retrieve das fontes de acesso (passo 6b).
+PREFETCHED_TYPES = {"PermissionSet"}
 # Tipos que só chegam pelo retrieve do CustomObject (passo 7).
 CHILD_TYPES = ["CustomField", "RecordType", "ValidationRule", "WebLink"]
 
@@ -110,6 +115,9 @@ class MvpCompleteSimulationTest(PipelineTestBase):
             for f in ("inventory.raw.json", "inventory.index.json"):
                 self.assertTrue((self.root / API / folder / f).is_file(), f"{folder}/{f}")
             self.assertTrue(list((self.root / API / folder / "normalized").glob("*.json")), folder)
+            if t in PREFETCHED_TYPES:  # XML do retrieve único de acesso (passo 6b)
+                self.assertTrue((self.root / API / "access" / "retrieve.raw.json").is_file(), folder)
+                continue
             self.assertTrue(list((self.root / API / folder / "retrieve").glob("*.raw.json")), folder)
         excluded = [t for t in self.state.data["metadataTypes"]
                     if t["metadataType"] == "ExtlClntAppGlobalOauthSettings"]

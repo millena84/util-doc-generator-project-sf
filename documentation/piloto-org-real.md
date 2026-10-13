@@ -84,7 +84,20 @@ bin/sf-docs.sh run --group ApexClass --component <Classe> --non-interactive
 - **`INVALID_FIELD` em `IsValid` ou `LengthWithoutComments`:** relate; o campo sai do contrato `apex-class.schema.json`.
 - **Classe com papel assíncrono:** confira se o subdocumento esperado (`-apex-batch`, `-apex-queueable`, `-apex-scheduler`, `-apex-future`) foi gerado. Classe com papel não detectado: relate a declaração da classe (só a linha `class ... implements ...`, sem o corpo).
 
-## 6. Execução completa
+## 6. Acesso e configuração
+
+O ponto mais importante: confirmar se o XML de Profile/PermissionSet traz as permissões **só** dos componentes recuperados no mesmo pedido. O utilitário já recupera tudo junto (passo 6b), mas o resultado precisa ser conferido:
+
+```bash
+bin/sf-docs.sh run --group ApexClass --component <Classe> --non-interactive
+```
+
+- **Esperado:** `inventory/org-<alias>/api-v<N>/access/components/profiles/*.profile-meta.xml` com `<classAccesses>` da classe; o documento da classe termina com "Acesso e configuração" listando os perfis/permission sets que a liberam no Setup.
+- **Compare com o Setup** (perfil → Acesso a classes Apex): perfil que libera a classe e não aparece no documento = falha; relate o perfil e o trecho `<classAccesses>` do XML.
+- **Confirmar elementos** (relate se algum vier vazio quando deveria ter valor): `objectPermissions` (objeto), `recordTypeVisibilities`, `PermissionSetGroup.permissionSets`, `SharingRules` (`sharedTo`) e o formato de `externalCredentialPrincipal` (`<ExternalCredential>-<Principal>`).
+- **Volume:** anote o tempo do passo 6b e o tamanho de `access/` numa org grande; se ficar inviável, o retrieve pode ser dividido por tipo.
+
+## 7. Execução completa
 
 Depois dos itens acima:
 

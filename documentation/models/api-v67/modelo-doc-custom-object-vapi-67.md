@@ -39,3 +39,15 @@
 | Propriedade | Valor | Fonte |
 |---|---|---|
 | {{ internal_property }} | {{ internal_value }} | Tooling API |
+
+## Compartilhamento e filas
+
+| Tipo | Nome | Compartilhado com | Nível de acesso | Fonte |
+|---|---|---|---|---|
+| {{ sharing_kind }} | {{ sharing_name }} | {{ shared_to }} | {{ sharing_access_level }} | XML |
+
+## Acesso e configuração
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| {{ origin_type }} | {{ origin_name }} | {{ access_granted }} | {{ access_via }} | XML |

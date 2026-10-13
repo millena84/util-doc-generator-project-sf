@@ -99,6 +99,16 @@
       },
       "emptyValue": "Não informado",
       "notes": "Versões do Flow (Tooling API, objeto Flow), do internalData do Flow."
+    },
+    {
+      "markdownSection": "Acesso e configuração",
+      "builder": "access_rows",
+      "source": "XML",
+      "args": {
+        "accessKey": "Flow"
+      },
+      "emptyValue": "Não informado",
+      "notes": "Onde o componente está configurado: perfis, permission sets e permission set groups (via) que concedem acesso, a partir do XML (accessSources, passo 6b). Sem índice de acesso: 'Não informado'."
     }
   ],
   "relatedMetadataTypes": [

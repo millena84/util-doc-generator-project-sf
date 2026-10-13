@@ -27,3 +27,9 @@
 | Versão | Status | Id | Fonte |
 |---|---|---|---|
 | {{ internal_version }} | {{ internal_status }} | {{ internal_id }} | Tooling API |
+
+## Acesso e configuração
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| {{ origin_type }} | {{ origin_name }} | {{ access_granted }} | {{ access_via }} | XML |

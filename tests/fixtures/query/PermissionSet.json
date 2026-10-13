@@ -1,0 +1,28 @@
+{
+  "done": true,
+  "totalSize": 2,
+  "records": [
+    {
+      "attributes": {
+        "type": "PermissionSet"
+      },
+      "Id": "0PS000000000000AAA",
+      "Name": "Integracao_API",
+      "Label": "Integra\u00e7\u00e3o API",
+      "IsOwnedByProfile": false,
+      "CreatedDate": "2026-01-01T00:00:00.000+0000",
+      "LastModifiedDate": "2026-10-01T00:00:00.000+0000"
+    },
+    {
+      "attributes": {
+        "type": "PermissionSet"
+      },
+      "Id": "0PS000000000001AAA",
+      "Name": "Leitura_Pedidos",
+      "Label": "Leitura de Pedidos",
+      "IsOwnedByProfile": false,
+      "CreatedDate": "2026-01-01T00:00:00.000+0000",
+      "LastModifiedDate": "2026-10-01T00:00:00.000+0000"
+    }
+  ]
+}

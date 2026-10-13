@@ -89,6 +89,10 @@ class MetadataTypesConfig:
         self.sensitive_elements = set(data.get("sensitiveXmlElements") or [])
         # Não são segredos, mas exigem decisão de segurança: nunca vão para o Markdown.
         self.omit_from_documentation = set(data.get("omitFromDocumentation") or [])
+        # Onde cada componente está configurado (perfis, permission sets, filas...): ver accessSources.
+        self.access_sources = data.get("accessSources") or {}
+        if self.access_sources and not isinstance(self.access_sources.get("retrieveTypes"), list):
+            raise ConfigError("metadata-types-mvp.json: accessSources.retrieveTypes deve ser uma lista")
         groups = data.get("metadataTypeGroups")
         if not isinstance(groups, list) or not groups:
             raise ConfigError("metadata-types-mvp.json sem metadataTypeGroups")

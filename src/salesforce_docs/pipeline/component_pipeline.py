@@ -11,7 +11,7 @@ from pathlib import Path
 
 from salesforce_docs import status as st
 from salesforce_docs.extraction.schema_extractor import load_schema
-from salesforce_docs.extraction.xml_retriever import retrieve_component
+from salesforce_docs.extraction.xml_retriever import find_main_file, retrieve_component
 from salesforce_docs.parsing.xml_parser import local_name, normalize_component, schema_field_names
 from salesforce_docs.parsing.source_parsers import SOURCE_PARSERS, source_file
 from salesforce_docs.utils import kebab, rel, sha256_file, slugify, write_json
@@ -56,13 +56,23 @@ class ComponentProcessor:
                                  files=[], children=[], warnings=[], error=None,
                                  folderType=folder_type,
                                  namespacePrefix=inventory_item.get("namespacePrefix") or None)
-        outcome = retrieve_component(
-            self.p.runner, self.p.session, metadata_type, full_name,
-            components_dir=type_dir / "components",
-            raw_path=type_dir / "retrieve" / f"{slug}.raw.json",
-            errors_raw_path=self.p.errors_dir / f"retrieve-{self.p.mvp.folder(folder_type)}-{slug}.raw.json",
-            project_root=self.p.root,
-        )
+        prefetched = (getattr(self.p, "prefetched", None) or {}).get((metadata_type, full_name))
+        if prefetched:
+            # Já recuperado no retrieve de acesso (passo 6b), junto com os componentes documentados:
+            # o XML vem completo (ex.: PermissionSet com todas as permissões). Não recupera de novo.
+            main = find_main_file(prefetched, metadata_type, full_name)
+            outcome = {"status": st.SUCCESS if main else st.MISMATCH, "files": prefetched,
+                       "xml": main["path"] if main else None, "error": None if main else
+                       f"arquivo principal de {metadata_type}:{full_name} ausente no retrieve de acesso",
+                       "retrieveRaw": getattr(self.p, "prefetched_raw", None)}
+        else:
+            outcome = retrieve_component(
+                self.p.runner, self.p.session, metadata_type, full_name,
+                components_dir=type_dir / "components",
+                raw_path=type_dir / "retrieve" / f"{slug}.raw.json",
+                errors_raw_path=self.p.errors_dir / f"retrieve-{self.p.mvp.folder(folder_type)}-{slug}.raw.json",
+                project_root=self.p.root,
+            )
         record.update(retrieveRaw=outcome.get("retrieveRaw"), files=outcome.get("files", []))
         if outcome["status"] != st.SUCCESS:
             record.update(status=outcome["status"], error=outcome.get("error"))

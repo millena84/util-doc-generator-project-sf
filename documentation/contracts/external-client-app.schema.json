@@ -79,6 +79,22 @@
       },
       "emptyValue": "Não aplicável",
       "notes": "Nenhum objeto consultável por SOQL para ExternalClientApplication foi confirmado na documentação oficial. Seção 'Não aplicável' até confirmação."
+    },
+    {
+      "markdownSection": "Acesso e configuração",
+      "builder": "access_rows",
+      "source": "XML",
+      "args": {
+        "relatedFields": {
+          "metadataType": "ExtlClntAppOauthConfigurablePolicies",
+          "fields": {
+            "commaSeparatedProfile": "Perfil",
+            "commaSeparatedPermissionSet": "Permission Set"
+          }
+        }
+      },
+      "emptyValue": "Não informado",
+      "notes": "Onde o componente está configurado: perfis, permission sets e permission set groups (via) que concedem acesso, a partir do XML (accessSources, passo 6b). Sem índice de acesso: 'Não informado'."
     }
   ],
   "relatedMetadataTypes": [

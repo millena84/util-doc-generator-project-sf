@@ -1,0 +1,20 @@
+[
+  {
+    "fullName": "Integracao_API",
+    "type": "PermissionSet",
+    "fileName": "permissionsets/Integracao_API.permissionset",
+    "id": "0PS000000000000AAA",
+    "namespacePrefix": "",
+    "manageableState": "unmanaged",
+    "lastModifiedDate": "2026-10-01T00:00:00.000Z"
+  },
+  {
+    "fullName": "Leitura_Pedidos",
+    "type": "PermissionSet",
+    "fileName": "permissionsets/Leitura_Pedidos.permissionset",
+    "id": "0PS000000000000AAA",
+    "namespacePrefix": "",
+    "manageableState": "unmanaged",
+    "lastModifiedDate": "2026-10-01T00:00:00.000Z"
+  }
+]
