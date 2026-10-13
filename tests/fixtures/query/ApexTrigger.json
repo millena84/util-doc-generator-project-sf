@@ -1,0 +1,46 @@
+{
+  "done": true,
+  "totalSize": 2,
+  "records": [
+    {
+      "attributes": {
+        "type": "ApexTrigger"
+      },
+      "Id": "01q000000000000AAA",
+      "Name": "PedidoAuditoriaTrigger",
+      "TableEnumOrId": "01I000000000000AAA",
+      "ApiVersion": 66.0,
+      "Status": "Inactive",
+      "IsValid": true,
+      "UsageBeforeInsert": false,
+      "UsageAfterInsert": false,
+      "UsageBeforeUpdate": true,
+      "UsageAfterUpdate": false,
+      "UsageBeforeDelete": false,
+      "UsageAfterDelete": true,
+      "UsageAfterUndelete": false,
+      "CreatedDate": "2026-01-01T00:00:00.000+0000",
+      "LastModifiedDate": "2026-10-01T00:00:00.000+0000"
+    },
+    {
+      "attributes": {
+        "type": "ApexTrigger"
+      },
+      "Id": "01q000000000001AAA",
+      "Name": "PedidoTrigger",
+      "TableEnumOrId": "01I000000000000AAA",
+      "ApiVersion": 67.0,
+      "Status": "Active",
+      "IsValid": true,
+      "UsageBeforeInsert": true,
+      "UsageAfterInsert": true,
+      "UsageBeforeUpdate": true,
+      "UsageAfterUpdate": true,
+      "UsageBeforeDelete": false,
+      "UsageAfterDelete": false,
+      "UsageAfterUndelete": false,
+      "CreatedDate": "2026-01-01T00:00:00.000+0000",
+      "LastModifiedDate": "2026-10-01T00:00:00.000+0000"
+    }
+  ]
+}

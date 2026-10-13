@@ -24,6 +24,7 @@ def validate_project(app_config, mvp_config, contracts, strict=False) -> list:
             used.add(sub.get("contract"))
             if contracts.get_file(sub.get("contract")) is None:
                 warnings.append(f"Grupo {group.name}: contrato de subdocumento {sub.get('contract')} ausente")
+    errors.extend(validate_automation_index(mvp_config.automation_index))
     for name, contract in contracts.all().items():
         for prop in contract.get("properties", []):
             if prop.get("source") not in st.ALLOWED_SOURCES:
@@ -197,10 +198,36 @@ def validate_template(contract_name, contract, app_config):
     return errors, warnings
 
 
+def validate_automation_index(cfg):
+    """automationIndex: fases únicas e toda fonte apontando para fases declaradas."""
+    if not cfg:
+        return []
+    errors = []
+    keys = [p.get("key") for p in cfg.get("phases") or []]
+    if len(keys) != len(set(keys)) or None in keys:
+        errors.append("automationIndex.phases: chaves ausentes ou duplicadas")
+    for src in cfg.get("sources") or []:
+        where = f"automationIndex.sources[{src.get('metadataType')}]"
+        targets = ([src["phase"]] if src.get("phase") else []) + \
+            list(((src.get("phaseByPath") or {}).get("map") or {}).values()) + \
+            list(((src.get("phaseByEvent") or {}).get("map") or {}).values())
+        if not targets:
+            errors.append(f"{where}: declare phase, phaseByPath ou phaseByEvent")
+        for t in targets:
+            if t not in keys:
+                errors.append(f"{where}: fase '{t}' não declarada em automationIndex.phases")
+    return errors
+
+
 def table_placeholders(table):
     """Placeholders que o builder da tabela preenche (None = desconhecido)."""
     args = table.get("args") or {}
     builder = table.get("builder")
+    if builder == "code_fact_rows":
+        return set(args.get("columns") or {}) | {args.get("locationPlaceholder", "fact_location")}
+    if builder in ("automation_rows", "referenced_class_rows"):
+        from salesforce_docs.parsing.trigger_builders import BUILDER_PLACEHOLDERS
+        return set(BUILDER_PLACEHOLDERS[builder])
     if "columns" in args:
         return set(args["columns"])
     if builder == "related_components":

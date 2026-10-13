@@ -35,6 +35,8 @@ class RenderContext:
         self.unresolved_related = set()
         # Índice "onde o componente está configurado" (passo 6b); None = indisponível.
         self.access_index = None
+        # Índice da execução (automações no objeto, classes processadas); None = indisponível.
+        self.run_index = None
 
     def omit(self, name):
         self.omitted.add(f"{self.metadata_type}:{self.full_name}:{name}")
@@ -47,6 +49,7 @@ class RenderContext:
                              omitted=self.omitted)
         ctx.unresolved_related = self.unresolved_related
         ctx.access_index = self.access_index
+        ctx.run_index = self.run_index
         return ctx
 
     def root(self):
