@@ -311,6 +311,30 @@
         "metaFile": false,
         "suffix": "opportunitySplitType",
         "xmlName": "OpportunitySplitType"
+      },
+      {
+        "childXmlNames": [],
+        "directoryName": "networks",
+        "inFolder": false,
+        "metaFile": false,
+        "suffix": "network",
+        "xmlName": "Network"
+      },
+      {
+        "childXmlNames": [],
+        "directoryName": "sites",
+        "inFolder": false,
+        "metaFile": false,
+        "suffix": "site",
+        "xmlName": "CustomSite"
+      },
+      {
+        "childXmlNames": [],
+        "directoryName": "experiences",
+        "inFolder": false,
+        "metaFile": false,
+        "suffix": "site",
+        "xmlName": "ExperienceBundle"
       }
     ],
     "organizationNamespace": "",

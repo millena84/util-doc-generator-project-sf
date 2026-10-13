@@ -1,0 +1,182 @@
+{
+  "metadataType": "Network",
+  "apiVersion": "67.0",
+  "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+  "xmlFilePattern": "**/networks/*.network-meta.xml",
+  "template": "modelo-doc-network-vapi-{apiMajor}.md",
+  "titlePath": "@fullName",
+  "referenceDoc": "_sf_utilities/ajudAI/contexto-doc-experience-cloud.md",
+  "classification": "Documento de todo site do Experience Cloud (Network).",
+  "properties": [
+    {
+      "name": "Name",
+      "placeholder": "network_name",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Label",
+      "placeholder": "network_label",
+      "path": "label",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação",
+      "notes": "Elemento a confirmar (presente no exemplo do ajudAI)."
+    },
+    {
+      "name": "Description",
+      "placeholder": "description",
+      "path": "description",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Status",
+      "placeholder": "network_status",
+      "path": "status",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação",
+      "notes": "Valores a confirmar (ex.: Live, UnderConstruction)."
+    },
+    {
+      "name": "Site (CustomSite)",
+      "placeholder": "network_site",
+      "path": "network.site",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação",
+      "notes": "Elemento <site> (a confirmar)."
+    },
+    {
+      "name": "URL path prefix",
+      "placeholder": "url_path_prefix",
+      "path": "urlPathPrefix",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Autorregistro",
+      "placeholder": "self_registration",
+      "path": "selfRegistration",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Perfil de autorregistro",
+      "placeholder": "self_reg_profile",
+      "path": "network.selfRegProfile",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Remetente de e-mail",
+      "placeholder": "email_sender",
+      "path": "network.emailSender",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação",
+      "notes": "Endereço e nome do remetente nunca são documentados: só se estão configurados."
+    }
+  ],
+  "tables": [
+    {
+      "markdownSection": "Configurações",
+      "builder": "leaf_properties",
+      "source": "XML",
+      "args": {
+        "keyPlaceholder": "leaf_key",
+        "valuePlaceholder": "leaf_value",
+        "exclude": [
+          "label",
+          "description",
+          "status",
+          "site",
+          "urlPathPrefix",
+          "selfRegistration",
+          "selfRegProfile",
+          "welcomeTemplate",
+          "forgotPasswordTemplate",
+          "changePasswordTemplate"
+        ]
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Folhas do XML como estão (nomes de elemento não confirmados nesta adaptação)."
+    },
+    {
+      "markdownSection": "Templates de e-mail",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "network.emailTemplates",
+        "columns": {
+          "template_element": "element",
+          "template_name": "template"
+        }
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Folhas *Template do XML (ex.: welcomeTemplate, forgotPasswordTemplate)."
+    },
+    {
+      "markdownSection": "Site (CustomSite)",
+      "builder": "related_rows",
+      "source": "XML",
+      "args": {
+        "metadataType": "CustomSite",
+        "columns": {
+          "site_name": "@fullName",
+          "site_active": "active",
+          "site_prefix": "urlPathPrefix",
+          "site_guest_profile": "guestProfile",
+          "site_type": "siteType"
+        }
+      },
+      "emptyValue": "Não informado",
+      "notes": "CustomSite cujo nome é o valor de <site> (PRIMARY_FIELD_REFERENCES)."
+    },
+    {
+      "markdownSection": "Dados internos",
+      "builder": "internal_record_properties",
+      "source": "Objeto interno",
+      "args": {
+        "keyPlaceholder": "internal_property",
+        "valuePlaceholder": "internal_value"
+      },
+      "emptyValue": "Não informado"
+    },
+    {
+      "markdownSection": "Acesso e configuração",
+      "builder": "access_rows",
+      "source": "XML",
+      "args": {
+        "memberRows": {
+          "path": "network.members",
+          "access": "Membro do site"
+        },
+        "noneText": "Nenhum membro declarado no XML"
+      },
+      "emptyValue": "Não informado",
+      "notes": "networkMemberGroups (profile, permissionSet) e selfRegProfile do XML da Network."
+    }
+  ],
+  "internalData": {
+    "enabled": true,
+    "source": "Objeto interno",
+    "object": "Network",
+    "useToolingApi": false,
+    "query": "SELECT Id, Name, Status, UrlPathPrefix FROM Network WHERE Name = '{fullName}'",
+    "expectSingleRecord": true,
+    "blocking": false,
+    "validationPending": "Objeto Network: confirmar campos e se Name é o nome de API (fullName) no piloto."
+  },
+  "evidence": [
+    "Metadata API Network — developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_network.htm",
+    "Object Reference Network — developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_network.htm"
+  ]
+}

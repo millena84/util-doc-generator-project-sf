@@ -1,0 +1,17 @@
+{
+  "done": true,
+  "totalSize": 1,
+  "records": [
+    {
+      "attributes": {
+        "type": "Site"
+      },
+      "Id": "0DM000000000001AAA",
+      "Name": "Portal_Clientes",
+      "MasterLabel": "Portal de Clientes",
+      "Status": "Active",
+      "SiteType": "ChatterNetwork",
+      "UrlPathPrefix": "clientes"
+    }
+  ]
+}

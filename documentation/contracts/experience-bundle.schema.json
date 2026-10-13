@@ -1,0 +1,159 @@
+{
+  "metadataType": "ExperienceBundle",
+  "apiVersion": "67.0",
+  "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+  "xmlFilePattern": "**/experiences/*.site-meta.xml",
+  "template": "modelo-doc-experience-bundle-vapi-{apiMajor}.md",
+  "titlePath": "@fullName",
+  "referenceDoc": "_sf_utilities/ajudAI/contexto-doc-experience-cloud.md",
+  "classification": "Documento de todo ExperienceBundle (páginas, rotas e componentes do Experience Builder).",
+  "properties": [
+    {
+      "name": "Name",
+      "placeholder": "experience_name",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Label",
+      "placeholder": "experience_label",
+      "path": "label",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Tipo",
+      "placeholder": "experience_type",
+      "path": "type",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação",
+      "notes": "Elemento <type> do .site-meta.xml (a confirmar)."
+    }
+  ],
+  "tables": [
+    {
+      "markdownSection": "Configurações",
+      "builder": "leaf_properties",
+      "source": "XML",
+      "args": {
+        "keyPlaceholder": "leaf_key",
+        "valuePlaceholder": "leaf_value",
+        "exclude": [
+          "label",
+          "type"
+        ]
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Folhas do XML como estão (nomes de elemento não confirmados nesta adaptação)."
+    },
+    {
+      "markdownSection": "Pastas do bundle",
+      "builder": "path_rows",
+      "source": "JSON do ExperienceBundle",
+      "args": {
+        "path": "experience.folders",
+        "columns": {
+          "bundle_folder": "folder",
+          "bundle_files": "files"
+        }
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Contagem de arquivos .json por subpasta (config, views, routes, themes...)."
+    },
+    {
+      "markdownSection": "Páginas (views)",
+      "builder": "path_rows",
+      "source": "JSON do ExperienceBundle",
+      "args": {
+        "path": "experience.views",
+        "columns": {
+          "view_id": "view",
+          "view_label": "label",
+          "view_layout": "layout",
+          "view_components": "components",
+          "view_file": "file"
+        }
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "views/*.json: id, label, componentName (layout) e componentes das regiões."
+    },
+    {
+      "markdownSection": "Rotas e acesso às páginas",
+      "builder": "path_rows",
+      "source": "JSON do ExperienceBundle",
+      "args": {
+        "path": "experience.routes",
+        "columns": {
+          "route_id": "route",
+          "route_prefix": "urlPrefix",
+          "route_access": "pageAccess",
+          "route_view": "activeViewId",
+          "route_type": "routeType",
+          "route_file": "file"
+        }
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "routes/*.json: urlPrefix, pageAccess, activeViewId e routeType (nomes a confirmar)."
+    },
+    {
+      "markdownSection": "Componentes por página",
+      "builder": "path_rows",
+      "source": "JSON do ExperienceBundle",
+      "args": {
+        "path": "experience.components",
+        "columns": {
+          "cmp_view": "view",
+          "cmp_region": "region",
+          "cmp_name": "componentName",
+          "cmp_id": "identifier"
+        }
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Componentes (type component) nas regiões de cada view. c:<nome> é LWC/Aura do projeto."
+    },
+    {
+      "markdownSection": "Público-alvo e visibilidade",
+      "builder": "path_rows",
+      "source": "JSON do ExperienceBundle",
+      "args": {
+        "path": "experience.targeting",
+        "columns": {
+          "tg_view": "view",
+          "tg_component": "component",
+          "tg_key": "key",
+          "tg_value": "value"
+        }
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Chaves com audience/visibility nos componentes das views, como estão no JSON."
+    },
+    {
+      "markdownSection": "Acesso e configuração",
+      "builder": "access_rows",
+      "source": "XML",
+      "args": {
+        "byPath": [
+          {
+            "path": "experience.customComponents",
+            "through": "lwcApex",
+            "accessKey": "ApexClass",
+            "via": "Classe Apex {name} (LWC {source})"
+          }
+        ],
+        "noneText": "Nenhuma classe Apex de LWC do site com acesso concedido"
+      },
+      "emptyValue": "Não informado",
+      "notes": "classAccesses (passo 6b) das classes Apex importadas pelos LWC c:* das views (índice da execução)."
+    }
+  ],
+  "internalData": {
+    "enabled": false
+  },
+  "evidence": [
+    "Metadata API ExperienceBundle — developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_experiencebundle.htm"
+  ]
+}

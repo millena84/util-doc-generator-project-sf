@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SIMULADO para testes. Remetente de e-mail sentinela: nunca pode aparecer nos documentos. -->
+<Network xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Portal de autoatendimento de clientes</description>
+    <emailSenderAddress>sentinela.remetente@example.invalid</emailSenderAddress>
+    <emailSenderName>Sentinela Remetente</emailSenderName>
+    <enableGuestChatter>false</enableGuestChatter>
+    <enableKnowledgeable>true</enableKnowledgeable>
+    <enableNicknameDisplay>true</enableNicknameDisplay>
+    <forgotPasswordTemplate>unfiled$public/CommunityForgotPasswordEmail</forgotPasswordTemplate>
+    <networkMemberGroups>
+        <permissionSet>Leitura_Pedidos</permissionSet>
+        <profile>Vendas</profile>
+    </networkMemberGroups>
+    <selfRegProfile>Customer Community User</selfRegProfile>
+    <selfRegistration>true</selfRegistration>
+    <site>Portal_Clientes</site>
+    <status>Live</status>
+    <urlPathPrefix>clientes</urlPathPrefix>
+    <welcomeTemplate>unfiled$public/CommunityWelcomeEmail</welcomeTemplate>
+</Network>

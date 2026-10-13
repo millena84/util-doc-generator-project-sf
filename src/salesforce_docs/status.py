@@ -36,6 +36,7 @@ ALLOWED_SOURCES = (
     "Derivado",
     "Código Apex",
     "Código LWC",
+    "JSON do ExperienceBundle",
 )
 
 # Valores permitidos para dado ausente (prompt, seção 6.2).

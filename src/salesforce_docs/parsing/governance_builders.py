@@ -72,7 +72,9 @@ def role_hierarchy_rows(ctx, args):
 def page_usage_rows(ctx, args):
     """Páginas Lightning (FlexiPage) processadas na execução que usam o componente.
 
-    args: keyPrefix — "c:" (LWC/Aura do projeto: c:<nome>) ou "flow:" (Flow em flowruntime:interview).
+    args: keyPrefix — "c:" (LWC/Aura do projeto: c:<nome>) ou "flow:" (Flow em flowruntime:interview);
+      indexKey — "pageUsage" (FlexiPage, padrão) ou "experienceUsage" (views do ExperienceBundle);
+      noneText — texto quando nenhuma página processada usa o componente.
     """
     index = _index(ctx)
     if index is None:
@@ -80,9 +82,10 @@ def page_usage_rows(ctx, args):
     key = f"{args.get('keyPrefix', 'c:')}{ctx.root().full_name}".lower()
     rows = [{"usage_page": u["page"], "usage_page_type": u.get("pageType"), "usage_region": u.get("region") or DASH,
              "usage_identifier": u.get("identifier") or DASH, "usage_visibility": u.get("hasVisibility") or DASH}
-            for u in (index.get("pageUsage") or {}).get(key, [])]
+            for u in (index.get(args.get("indexKey", "pageUsage")) or {}).get(key, [])]
     if not rows:
-        return [{"usage_page": "Nenhuma página processada nesta execução usa o componente", "usage_page_type": DASH,
+        return [{"usage_page": args.get("noneText", "Nenhuma página processada nesta execução usa o componente"),
+                 "usage_page_type": DASH,
                  "usage_region": DASH, "usage_identifier": DASH, "usage_visibility": DASH}]
     return rows
 

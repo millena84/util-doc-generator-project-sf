@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SIMULADO para testes. Usuários sentinela: nunca podem aparecer nos documentos. -->
+<CustomSite xmlns="http://soap.sforce.com/2006/04/metadata">
+    <active>true</active>
+    <allowHomePage>false</allowHomePage>
+    <browserXssProtection>true</browserXssProtection>
+    <clickjackProtectionLevel>SameOriginOnly</clickjackProtectionLevel>
+    <guestProfile>Portal Clientes Profile</guestProfile>
+    <masterLabel>Portal de Clientes</masterLabel>
+    <siteAdmin>sentinela.admin@example.invalid</siteAdmin>
+    <siteGuestRecordDefaultOwner>sentinela.dono@example.invalid</siteGuestRecordDefaultOwner>
+    <siteType>ChatterNetwork</siteType>
+    <urlPathPrefix>clientes</urlPathPrefix>
+</CustomSite>

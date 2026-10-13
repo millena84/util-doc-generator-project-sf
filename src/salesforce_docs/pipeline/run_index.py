@@ -92,6 +92,7 @@ def build_run_index(records, cfg, class_inventory=None, class_type="ApexClass", 
     rules_cfg = (record_fields or {}).get("rules") or {}
     record_fields = (record_fields or {}).get("fields") or {}
     index = {"automations": {}, "classes": {}, "records": {}, "pageUsage": {}, "pageOrgDefaults": {}, "eventRefs": {}, "ruleTargets": {},
+             "experienceUsage": {}, "lwcApex": {},
              "classInventory": sorted(class_inventory, key=str.lower) if class_inventory is not None else None,
              "phases": cfg.get("phases") or [], "reference": cfg.get("officialReference")}
     seen = set()
@@ -103,6 +104,7 @@ def build_run_index(records, cfg, class_inventory=None, class_type="ApexClass", 
         data = rec["data"]
         _page_entries(index, page_cfg, key[0], key[1], data)
         _event_entries(index, event_cfg, key[0], key[1], data)
+        _experience_entries(index, page_cfg.get("experience") or {}, key[0], key[1], data)
         rules = data.get(rules_cfg.get("parsedKey", "rules")) if rules_cfg else None
         if isinstance(rules, dict) and key[0] in (rules_cfg.get("types") or []):
             for t in rules.get("targets") or []:
@@ -152,6 +154,26 @@ def _page_entries(index, cfg, metadata_type, full_name, data):
                 if page:
                     index["pageOrgDefaults"].setdefault(page, []).append(
                         {"object": full_name, **{k: item.get(k) for k in od.get("fields") or []}})
+
+
+def _experience_entries(index, cfg, metadata_type, full_name, data):
+    """Componentes nas páginas (views) do Experience Cloud e classes Apex importadas por cada LWC."""
+    if not cfg:
+        return
+    if metadata_type == cfg.get("metadataType"):
+        bundle = data.get(cfg.get("parsedKey", "experience")) or {}
+        targeted = {(t.get("view"), t.get("component")) for t in bundle.get("targeting") or []}
+        for c in bundle.get("components") or []:
+            if c.get("componentName"):
+                index["experienceUsage"].setdefault(c["componentName"].lower(), []).append(
+                    {"page": f"{full_name}/{c.get('view')}", "region": c.get("region"),
+                     "identifier": c.get("identifier"), "pageType": cfg.get("pageType", "Experience Cloud"),
+                     "hasVisibility": "Sim" if (c.get("view"), c["componentName"]) in targeted else "Não"})
+    lwc_cfg = cfg.get("lwc") or {}
+    if metadata_type == lwc_cfg.get("metadataType"):
+        code = data.get(lwc_cfg.get("parsedKey", "lwc")) or {}
+        if code.get("parsed"):
+            index["lwcApex"][full_name.lower()] = list(code.get(lwc_cfg.get("classesKey", "apexClasses")) or [])
 
 
 def _is_event(name, cfg):

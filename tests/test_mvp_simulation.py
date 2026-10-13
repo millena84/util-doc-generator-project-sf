@@ -11,7 +11,7 @@ from salesforce_docs import status as st
 
 API = "inventory/org-dev/api-v67"
 
-# Documento -> modelo esperado (os 39 modelos de documentation/models/api-v67).
+# Documento -> modelo esperado (os 42 modelos de documentation/models/api-v67).
 EXPECTED_DOCS = {
     "doc-meu-flow-flow.md": "modelo-doc-flow-vapi-67.md",
     "doc-tela-cadastro-flow.md": "modelo-doc-flow-vapi-67.md",
@@ -58,6 +58,11 @@ EXPECTED_DOCS = {
     "doc-leadconvertsettings-lead-convert.md": "modelo-doc-lead-convert-settings-vapi-67.md",
     "doc-modelo-vendas-territory-model.md": "modelo-doc-territory2-model-vapi-67.md",
     "doc-receita-principal-opportunity-split-type.md": "modelo-doc-opportunity-split-type-vapi-67.md",
+    # Experience Cloud (Onda 09)
+    "doc-portal-clientes-network.md": "modelo-doc-network-vapi-67.md",
+    "doc-portal-clientes-site.md": "modelo-doc-custom-site-vapi-67.md",
+    "doc-portal-clientes1-experience.md": "modelo-doc-experience-bundle-vapi-67.md",
+    "doc-portal-clientes-profile-profile.md": "modelo-doc-profile-vapi-67.md",
     # Service Cloud (Onda 07)
     "doc-case-assignment-rules.md": "modelo-doc-assignment-rules-vapi-67.md",
     "doc-case-auto-response-rules.md": "modelo-doc-auto-response-rules-vapi-67.md",
@@ -128,6 +133,7 @@ LISTED_TYPES = {
     "BusinessProcess": "business-processes",
     "Territory2Model": "territory2-models", "Territory2": "territory2-models", "Territory2Rule": "territory2-models",
     "OpportunitySplitType": "opportunity-split-types",
+    "Network": "networks", "CustomSite": "sites", "ExperienceBundle": "experiences",
 }
 # Tipos documentados cujo XML vem do retrieve das fontes de acesso (passo 6b).
 PREFETCHED_TYPES = {"PermissionSet", "Profile", "PermissionSetGroup", "SharingRules", "Queue"}

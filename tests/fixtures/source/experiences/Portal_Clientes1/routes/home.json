@@ -1,0 +1,9 @@
+{
+  "activeViewId" : "home",
+  "id" : "home",
+  "label" : "Home",
+  "pageAccess" : "RequiresLogin",
+  "routeType" : "home",
+  "type" : "route",
+  "urlPrefix" : ""
+}

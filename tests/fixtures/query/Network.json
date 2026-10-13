@@ -1,0 +1,15 @@
+{
+  "done": true,
+  "totalSize": 1,
+  "records": [
+    {
+      "attributes": {
+        "type": "Network"
+      },
+      "Id": "0DB000000000001AAA",
+      "Name": "Portal_Clientes",
+      "Status": "Live",
+      "UrlPathPrefix": "clientes"
+    }
+  ]
+}

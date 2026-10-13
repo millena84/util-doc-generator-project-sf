@@ -1,0 +1,16 @@
+{
+  "componentName" : "siteforce:sldsOneColLayout",
+  "id" : "login",
+  "label" : "Login",
+  "regions" : [ {
+    "components" : [ {
+      "componentName" : "salesforceIdentity:loginForm2",
+      "id" : "login_cmp",
+      "type" : "component"
+    } ],
+    "name" : "content",
+    "type" : "region"
+  } ],
+  "type" : "view",
+  "viewType" : "login-main"
+}

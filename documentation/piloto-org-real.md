@@ -171,6 +171,19 @@ sf project retrieve start --metadata LeadConvertSettings --target-org dev --json
 - **Permissões:** nomes de API `ConvertLeads`, `ManageTerritories`, `ManageOpportunitySplits` nos XMLs de perfil.
 - **Split type:** elemento real do "total deve somar 100%" (`isTotalValidated`?).
 
+## 5i. Experience Cloud (Onda 09)
+
+```bash
+bin/sf-docs.sh run --group Network --group CustomSite --group ExperienceBundle --group LightningComponentBundle --non-interactive
+sf project retrieve start --metadata "ExperienceBundle:<site>" --target-org dev --json | python3 -c "import json,sys; print(sorted(f['filePath'].split('experiences/',1)[-1] for f in json.load(sys.stdin)['result'].get('files', [])))"
+```
+
+- **Network:** os membros vêm em `networkMemberGroups/profile` e `permissionSet`? O site é o elemento `<site>`? Existe `<label>`? Nome dos elementos de remetente (`emailSenderAddress`?). **Não cole e-mails** no relato.
+- **CustomSite:** existe `<guestProfile>`? Nome do perfil de convidado bate com o Setup? **Não cole usuários** (`siteAdmin`, `siteGuestRecordDefaultOwner`).
+- **Regras para convidado:** `sharingGuestRules` com `sharedTo/guestUser` — qual é o valor (nome do site)? O documento do site lista a regra?
+- **ExperienceBundle:** estrutura de pastas (`config`, `views`, `routes`, `themes`, `brandingSets`...); campos `pageAccess`, `urlPrefix`, `activeViewId` das rotas; como a audiência aparece nos componentes das views (chaves com `audience`/`visibility`?). Relate se o site é LWR aprimorado (`DigitalExperienceBundle`), que não é coberto.
+- **Objetos internos:** `Network` (Name é o nome de API?) e `Site` (campos `SiteType`, `UrlPathPrefix`).
+
 ## 6. Acesso e configuração
 
 O ponto mais importante: confirmar se o XML de Profile/PermissionSet traz as permissões **só** dos componentes recuperados no mesmo pedido. O utilitário já recupera tudo junto (passo 6b), mas o resultado precisa ser conferido:

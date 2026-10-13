@@ -579,5 +579,63 @@
       "fullName": "Receita_Principal",
       "path": "opportunitySplitTypes/Receita_Principal.opportunitySplitType-meta.xml"
     }
+  ],
+  "Network:Portal_Clientes": [
+    {
+      "type": "Network",
+      "fullName": "Portal_Clientes",
+      "path": "networks/Portal_Clientes.network-meta.xml"
+    }
+  ],
+  "CustomSite:Portal_Clientes": [
+    {
+      "type": "CustomSite",
+      "fullName": "Portal_Clientes",
+      "path": "sites/Portal_Clientes.site-meta.xml"
+    }
+  ],
+  "ExperienceBundle:Portal_Clientes1": [
+    {
+      "type": "ExperienceBundle",
+      "fullName": "Portal_Clientes1",
+      "path": "experiences/Portal_Clientes1.site-meta.xml"
+    },
+    {
+      "type": "ExperienceBundle",
+      "fullName": "Portal_Clientes1",
+      "path": "experiences/Portal_Clientes1/config/portal_clientes1.json"
+    },
+    {
+      "type": "ExperienceBundle",
+      "fullName": "Portal_Clientes1",
+      "path": "experiences/Portal_Clientes1/routes/home.json"
+    },
+    {
+      "type": "ExperienceBundle",
+      "fullName": "Portal_Clientes1",
+      "path": "experiences/Portal_Clientes1/routes/login.json"
+    },
+    {
+      "type": "ExperienceBundle",
+      "fullName": "Portal_Clientes1",
+      "path": "experiences/Portal_Clientes1/themes/tema.json"
+    },
+    {
+      "type": "ExperienceBundle",
+      "fullName": "Portal_Clientes1",
+      "path": "experiences/Portal_Clientes1/views/home.json"
+    },
+    {
+      "type": "ExperienceBundle",
+      "fullName": "Portal_Clientes1",
+      "path": "experiences/Portal_Clientes1/views/login.json"
+    }
+  ],
+  "Profile:Portal Clientes Profile": [
+    {
+      "type": "Profile",
+      "fullName": "Portal Clientes Profile",
+      "path": "profiles/Portal Clientes Profile.profile-meta.xml"
+    }
   ]
 }

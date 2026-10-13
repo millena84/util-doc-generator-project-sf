@@ -86,6 +86,14 @@ Páginas Lightning (FlexiPage) processadas nesta execução que incluem o compon
 |---|---|---|---|---|---|
 | {{ usage_page }} | {{ usage_page_type }} | {{ usage_region }} | {{ usage_identifier }} | {{ usage_visibility }} | XML |
 
+## Onde é usado (Experience Cloud)
+
+Páginas (views) de sites do Experience Cloud (ExperienceBundle) processadas nesta execução que incluem o componente. Página = `<bundle>/<view>`; visibilidade = há chave de público ou visibilidade no componente.
+
+| Página | Tipo da página | Região | Identificador | Visibilidade condicional | Fonte |
+|---|---|---|---|---|---|
+| {{ usage_page }} | {{ usage_page_type }} | {{ usage_region }} | {{ usage_identifier }} | {{ usage_visibility }} | JSON do ExperienceBundle |
+
 ## Dados internos
 
 | Propriedade | Valor | Fonte |

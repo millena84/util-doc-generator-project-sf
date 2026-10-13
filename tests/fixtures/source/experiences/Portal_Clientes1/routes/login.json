@@ -1,0 +1,9 @@
+{
+  "activeViewId" : "login",
+  "id" : "login",
+  "label" : "Login",
+  "pageAccess" : "Public",
+  "routeType" : "login-main",
+  "type" : "route",
+  "urlPrefix" : "login"
+}

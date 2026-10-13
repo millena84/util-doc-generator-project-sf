@@ -12,6 +12,7 @@ from salesforce_docs.rendering.context import resolve
 
 ACCESS_PLACEHOLDERS = ("origin_type", "origin_name", "access_granted", "access_via")
 SHARING_PLACEHOLDERS = ("sharing_kind", "sharing_name", "shared_to", "sharing_access_level")
+ORIGIN_GRANT_PLACEHOLDERS = ("grant_name", "grant_access", "grant_review")
 DASH = "—"
 
 
@@ -47,8 +48,10 @@ def access_rows(ctx, args):
       ownFields — {campo do XML do próprio componente: tipo de origem} (ex.: ConnectedApp);
       relatedFields — {metadataType, fields} em componente relacionado (ex.: políticas da ECA);
       relatedAccess — {metadataType, accessKey, prefixMatch}: acesso via relacionado (ex.: NC → EC);
-      byPath — [{path | names, itemField?, accessKey, via}]: acesso a componentes que o próprio
-        componente referencia (ex.: trigger -> objeto e classes chamadas);
+      byPath — [{path | names, itemField?, accessKey, via, through?}]: acesso a componentes que o
+        próprio componente referencia (ex.: trigger -> objeto e classes chamadas). `through`: chave
+        do índice da execução que leva cada nome a outros (ex.: lwcApex: LWC -> classes Apex; `{source}`
+        no `via` é o nome de origem); nome fora do índice vira linha "Não verificado";
       noneText — texto quando não há concessão (índice disponível);
       pageActivation — FlexiPage: padrão da org (objeto) e ativação por app / app + perfil;
       sharedTo — tipos de destinatário (ex.: role, roleAndSubordinates): regras de
@@ -124,9 +127,17 @@ def access_rows(ctx, args):
             value, _ = resolve(root, bp["path"])
             names = [v.get(bp["itemField"]) if isinstance(v, dict) else v
                      for v in as_list(value)] if bp.get("itemField") else _split(value)
-        for name in dict.fromkeys(n for n in names if n):
+        pairs = [(n, None) for n in names]
+        if bp.get("through"):
+            mapping = (getattr(root, "run_index", None) or {}).get(bp["through"]) or {}
+            pairs = []
+            for n in dict.fromkeys(n for n in names if n):
+                if str(n).lower() not in mapping:
+                    rows.append(_row("Não verificado", f"{n} não processado nesta execução", None, None))
+                pairs.extend((target, n) for target in mapping.get(str(n).lower(), []))
+        for name, source in dict.fromkeys((n, s) for n, s in pairs if n):
             for _gname, r in _lookup(root.access_index, bp["accessKey"], name):
-                via = bp.get("via", "{name}").format(name=name)
+                via = bp.get("via", "{name}").format(name=name, source=source)
                 if r.get("via"):
                     via += f"; {r['via']}"
                 rows.append(_row(r["originType"], r["origin"], r["access"], via))
@@ -169,5 +180,34 @@ def object_sharing_rows(ctx, args):
             for i in items]
 
 
-TABLE_BUILDERS = {"access_rows": access_rows, "object_sharing_rows": object_sharing_rows}
+def origin_grants_rows(ctx, args):
+    """O que um perfil/permission set referenciado pelo componente concede (ex.: perfil de convidado
+    do site -> permissões de objeto). Leitura reversa do índice de acesso (XML do passo 6b).
+
+    args: originPath (nome do perfil no componente), originType ("Perfil"), accessKey ("CustomObject"),
+      review — acessos que pedem revisão (coluna "Revisar": Sim/Não), noneText.
+    Colunas: grant_name, grant_access, grant_review.
+    """
+    root = ctx.root()
+    origin, _ = resolve(root, args["originPath"])
+    if not origin or root.access_index is None:
+        return []
+    review = set(args.get("review") or [])
+    rows = []
+    grants = ((root.access_index.get("grants") or {}).get(args["accessKey"]) or {})
+    for name, items in sorted(grants.items()):
+        for r in items:
+            if r.get("origin") != origin or r.get("originType") != args.get("originType", "Perfil") or r.get("via"):
+                continue
+            granted = {a.strip() for a in str(r.get("access") or "").split(",")}
+            rows.append({"grant_name": name, "grant_access": r.get("access") or DASH,
+                         "grant_review": "Sim" if granted & review else "Não"})
+    if not rows:
+        return [{"grant_name": args.get("noneText", "Nenhuma concessão encontrada"), "grant_access": DASH,
+                 "grant_review": DASH}]
+    return rows
+
+
+TABLE_BUILDERS = {"access_rows": access_rows, "object_sharing_rows": object_sharing_rows,
+                  "origin_grants_rows": origin_grants_rows}
 BLOCK_BUILDERS = {}
