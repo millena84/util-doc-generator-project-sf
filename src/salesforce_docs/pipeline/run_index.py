@@ -88,8 +88,9 @@ def build_run_index(records, cfg, class_inventory=None, class_type="ApexClass", 
     """
     cfg = cfg or {}
     page_cfg = (record_fields or {}).get("pages") or {}
+    event_cfg = (record_fields or {}).get("events") or {}
     record_fields = (record_fields or {}).get("fields") or {}
-    index = {"automations": {}, "classes": {}, "records": {}, "pageUsage": {}, "pageOrgDefaults": {},
+    index = {"automations": {}, "classes": {}, "records": {}, "pageUsage": {}, "pageOrgDefaults": {}, "eventRefs": {},
              "classInventory": sorted(class_inventory, key=str.lower) if class_inventory is not None else None,
              "phases": cfg.get("phases") or [], "reference": cfg.get("officialReference")}
     seen = set()
@@ -100,6 +101,7 @@ def build_run_index(records, cfg, class_inventory=None, class_type="ApexClass", 
         seen.add(key)
         data = rec["data"]
         _page_entries(index, page_cfg, key[0], key[1], data)
+        _event_entries(index, event_cfg, key[0], key[1], data)
         if key[0] in record_fields:
             index["records"].setdefault(key[0], {})[key[1]] = {
                 f: _text(_get(data, f, key[1])) for f in record_fields[key[0]]}
@@ -143,6 +145,42 @@ def _page_entries(index, cfg, metadata_type, full_name, data):
                 if page:
                     index["pageOrgDefaults"].setdefault(page, []).append(
                         {"object": full_name, **{k: item.get(k) for k in od.get("fields") or []}})
+
+
+def _is_event(name, cfg):
+    return bool(name) and any(str(name).endswith(sfx) for sfx in cfg.get("suffixes") or [])
+
+
+def _event_entries(index, cfg, metadata_type, full_name, data):
+    """Quem publica e quem assina cada evento (platform event `__e` ou change event)."""
+    if not cfg:
+        return
+
+    def add(event, role, kind, detail):
+        index["eventRefs"].setdefault(str(event).lower(), []).append(
+            {"role": role, "kind": kind, "component": full_name, "detail": detail})
+
+    code = data.get("apex") if isinstance(data.get("apex"), dict) else {}
+    pe = code.get("platformEvents") or {}
+    if pe.get("publishCall"):
+        kind = "Apex Trigger" if metadata_type == "ApexTrigger" else "Classe Apex"
+        for ev in pe.get("eventTypes") or []:
+            add(ev, "Publica", kind, "EventBus.publish (tipo instanciado no mesmo arquivo)")
+    if metadata_type == "ApexTrigger" and _is_event(code.get("sObject"), cfg):
+        add(code["sObject"], "Assina", "Apex Trigger",
+            ", ".join(code.get("events") or []) + (f"; status {data.get('status')}" if data.get("status") else ""))
+    if metadata_type == "Flow":
+        start = data.get("start") if isinstance(data.get("start"), dict) else {}
+        if start.get("triggerType") == cfg.get("flowTriggerType") and start.get("object"):
+            add(start["object"], "Assina", "Flow", f"start.triggerType {start['triggerType']}; status {data.get('status')}")
+        creates = data.get(cfg.get("flowCreateElement", "recordCreates")) or []
+        for item in creates if isinstance(creates, list) else [creates]:
+            obj = item.get("object") if isinstance(item, dict) else None
+            if _is_event(obj, cfg):
+                add(obj, "Publica", "Flow", f"Create Records ({item.get('name')})")
+    lwc = data.get("lwc") if isinstance(data.get("lwc"), dict) else {}
+    for channel in lwc.get("streamingChannels") or []:
+        add(channel.rsplit("/", 1)[-1], "Assina", "LWC (lightning/empApi)", channel)
 
 
 def records_of(record):

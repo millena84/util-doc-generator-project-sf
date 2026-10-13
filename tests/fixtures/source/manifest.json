@@ -433,5 +433,74 @@
       "fullName": "Vendas",
       "path": "applications/Vendas.app-meta.xml"
     }
+  ],
+  "CustomObject:Pedido_Evento__e": [
+    {
+      "type": "CustomObject",
+      "fullName": "Pedido_Evento__e",
+      "path": "objects/Pedido_Evento__e/Pedido_Evento__e.object-meta.xml"
+    },
+    {
+      "type": "CustomField",
+      "fullName": "Pedido_Evento__e.Numero_Pedido__c",
+      "path": "objects/Pedido_Evento__e/fields/Numero_Pedido__c.field-meta.xml"
+    },
+    {
+      "type": "CustomField",
+      "fullName": "Pedido_Evento__e.Payload__c",
+      "path": "objects/Pedido_Evento__e/fields/Payload__c.field-meta.xml"
+    }
+  ],
+  "ApexTrigger:PedidoEventoTrigger": [
+    {
+      "type": "ApexTrigger",
+      "fullName": "PedidoEventoTrigger",
+      "path": "triggers/PedidoEventoTrigger.trigger"
+    },
+    {
+      "type": "ApexTrigger",
+      "fullName": "PedidoEventoTrigger",
+      "path": "triggers/PedidoEventoTrigger.trigger-meta.xml"
+    }
+  ],
+  "ApexTrigger:PedidoChangeTrigger": [
+    {
+      "type": "ApexTrigger",
+      "fullName": "PedidoChangeTrigger",
+      "path": "triggers/PedidoChangeTrigger.trigger"
+    },
+    {
+      "type": "ApexTrigger",
+      "fullName": "PedidoChangeTrigger",
+      "path": "triggers/PedidoChangeTrigger.trigger-meta.xml"
+    }
+  ],
+  "Flow:Pedido_Evento_Flow": [
+    {
+      "type": "Flow",
+      "fullName": "Pedido_Evento_Flow",
+      "path": "flows/Pedido_Evento_Flow.flow-meta.xml"
+    }
+  ],
+  "PlatformEventChannelMember:ChangeEvents_Pedido_ChangeEvent": [
+    {
+      "type": "PlatformEventChannelMember",
+      "fullName": "ChangeEvents_Pedido_ChangeEvent",
+      "path": "platformEventChannelMembers/ChangeEvents_Pedido_ChangeEvent.platformEventChannelMember-meta.xml"
+    }
+  ],
+  "PlatformEventChannelMember:Canal_Pedido_Pedido_ChangeEvent": [
+    {
+      "type": "PlatformEventChannelMember",
+      "fullName": "Canal_Pedido_Pedido_ChangeEvent",
+      "path": "platformEventChannelMembers/Canal_Pedido_Pedido_ChangeEvent.platformEventChannelMember-meta.xml"
+    }
+  ],
+  "PlatformEventSubscriberConfig:PedidoEventoTriggerConfig": [
+    {
+      "type": "PlatformEventSubscriberConfig",
+      "fullName": "PedidoEventoTriggerConfig",
+      "path": "platformEventSubscriberConfigs/PedidoEventoTriggerConfig.platformEventSubscriberConfig-meta.xml"
+    }
   ]
 }

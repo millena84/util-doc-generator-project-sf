@@ -19,4 +19,5 @@
     <userLicense>Salesforce</userLicense>
     <tabVisibilities><tab>Pedido__c</tab><visibility>DefaultOn</visibility></tabVisibilities>
     <userPermissions><enabled>true</enabled><name>ModifyAllData</name></userPermissions>
+    <userPermissions><enabled>true</enabled><name>ViewAllData</name></userPermissions>
 </Profile>

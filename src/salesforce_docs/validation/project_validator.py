@@ -225,7 +225,7 @@ def table_placeholders(table):
     builder = table.get("builder")
     if builder == "index_record_rows":
         return set(args.get("columns") or {}) | {args.get("namePlaceholder", "record_name")}
-    if builder in ("role_hierarchy_rows", "page_usage_rows"):
+    if builder in ("role_hierarchy_rows", "page_usage_rows", "event_reference_rows"):
         from salesforce_docs.parsing.governance_builders import BUILDER_PLACEHOLDERS as GB
         return set(GB[builder])
     if builder == "code_fact_rows":

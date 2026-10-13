@@ -9,6 +9,24 @@
     "lastModifiedDate": "2026-10-01T00:00:00.000Z"
   },
   {
+    "fullName": "PedidoChangeTrigger",
+    "type": "ApexTrigger",
+    "fileName": "x/PedidoChangeTrigger",
+    "id": "0PS000000000000AAA",
+    "namespacePrefix": "",
+    "manageableState": "unmanaged",
+    "lastModifiedDate": "2026-10-01T00:00:00.000Z"
+  },
+  {
+    "fullName": "PedidoEventoTrigger",
+    "type": "ApexTrigger",
+    "fileName": "x/PedidoEventoTrigger",
+    "id": "0PS000000000000AAA",
+    "namespacePrefix": "",
+    "manageableState": "unmanaged",
+    "lastModifiedDate": "2026-10-01T00:00:00.000Z"
+  },
+  {
     "fullName": "PedidoTrigger",
     "type": "ApexTrigger",
     "fileName": "triggers/PedidoTrigger.trigger",

@@ -382,6 +382,20 @@ SECURITY_PATTERNS = (
 )
 
 
+EVENT_NEW_RE = re.compile(rf"\bnew\s+({IDENT}__e)\s*\(", re.I)
+EVENTBUS_PUBLISH_RE = re.compile(r"\bEventBus\s*\.\s*publish\s*\(", re.I)
+
+
+def platform_event_refs(code: str):
+    """Platform events (`X__e`) instanciados no código e se há `EventBus.publish(`.
+
+    Publicação só é afirmada quando o código chama EventBus.publish; o tipo publicado é o
+    `__e` instanciado no mesmo arquivo (não se rastreia a variável até a chamada).
+    """
+    types = sorted({m.group(1) for m in EVENT_NEW_RE.finditer(code)}, key=str.lower)
+    return {"publishCall": bool(EVENTBUS_PUBLISH_RE.search(code)), "eventTypes": types}
+
+
 def security_patterns(code: str):
     """Controles explícitos de modo de acesso/CRUD/FLS encontrados no código (com contagem)."""
     out = []
@@ -409,7 +423,8 @@ def parse_apex_source(text: str) -> dict:
                 "className": other.group(2), "implements": [], "implementsDeclared": [],
                 "methods": [], "futureMethods": [], "asyncInvocations": [],
                 "batch": None, "queueable": None, "schedulable": None,
-                "configReads": [], "securityPatterns": []}
+                "configReads": [], "securityPatterns": [],
+                "platformEvents": {"publishCall": False, "eventTypes": []}}
     if not m:
         return {"parser": PARSER_ID, "parsed": False, "error": "declaração de classe não encontrada"}
     head_start = max(code.rfind(";", 0, m.start()), code.rfind("}", 0, m.start())) + 1
@@ -477,6 +492,7 @@ def parse_apex_source(text: str) -> dict:
         "schedulable": None,
         "configReads": config_reads(body, literals),
         "securityPatterns": security_patterns(body),
+        "platformEvents": platform_event_refs(body),
     }
     for info in methods:
         fut = next((a for a in info["annotations"] if a["name"].lower() == "future"), None)

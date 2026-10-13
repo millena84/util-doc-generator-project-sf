@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from salesforce_docs.parsing.apex_parser import parse_apex_source
 from salesforce_docs.parsing.apex_trigger_parser import parse_apex_trigger
+from salesforce_docs.parsing.event_channel_parser import parse_event_channel_member
 from salesforce_docs.parsing.flexipage_parser import parse_flexipage
 from salesforce_docs.parsing.lwc_parser import parse_lwc_bundle
 
@@ -19,6 +20,8 @@ SOURCE_PARSERS = {
     "lwc": parse_lwc_bundle,
     # lê o próprio XML (FlexiPage) e achata regiões/componentes/visibilidade
     "flexipage": parse_flexipage,
+    # lê o próprio XML do membro de canal (CDC) e deriva o objeto de origem
+    "event-channel-member": parse_event_channel_member,
 }
 
 

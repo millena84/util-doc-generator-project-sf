@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PlatformEventChannelMember xmlns="http://soap.sforce.com/2006/04/metadata">
+    <enrichedFields>
+        <name>Status__c</name>
+    </enrichedFields>
+    <enrichedFields>
+        <name>Valor__c</name>
+    </enrichedFields>
+    <eventChannel>Canal_Pedido__chn</eventChannel>
+    <filterExpression>Valor__c &gt; 1000</filterExpression>
+    <selectedEntity>Pedido__ChangeEvent</selectedEntity>
+</PlatformEventChannelMember>

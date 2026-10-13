@@ -9,10 +9,10 @@
     "lastModifiedDate": "2026-10-01T00:00:00.000Z"
   },
   {
-    "fullName": "Tela_Cadastro",
+    "fullName": "Pedido_Evento_Flow",
     "type": "Flow",
-    "fileName": "x/Tela_Cadastro",
-    "id": "000000000000000AAA",
+    "fileName": "x/Pedido_Evento_Flow",
+    "id": "0PS000000000000AAA",
     "namespacePrefix": "",
     "manageableState": "unmanaged",
     "lastModifiedDate": "2026-10-01T00:00:00.000Z"
@@ -21,6 +21,15 @@
     "fullName": "Processa_Pedido",
     "type": "Flow",
     "fileName": "x/Processa_Pedido",
+    "id": "000000000000000AAA",
+    "namespacePrefix": "",
+    "manageableState": "unmanaged",
+    "lastModifiedDate": "2026-10-01T00:00:00.000Z"
+  },
+  {
+    "fullName": "Tela_Cadastro",
+    "type": "Flow",
+    "fileName": "x/Tela_Cadastro",
     "id": "000000000000000AAA",
     "namespacePrefix": "",
     "manageableState": "unmanaged",

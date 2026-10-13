@@ -1,0 +1,134 @@
+{
+  "metadataType": "CustomObject",
+  "apiVersion": "67.0",
+  "documentStrategy": "SINGLE_DOCUMENT_PER_OBJECT_WITH_RELATED_COMPONENTS",
+  "xmlFilePattern": "**/objects/*__e/*.object-meta.xml",
+  "template": "modelo-doc-platform-event-vapi-{apiMajor}.md",
+  "titlePath": "@fullName",
+  "referenceDoc": "_sf_utilities/ajudAI/contexto-platform-objects.md",
+  "classification": "Documento de todo platform event (CustomObject __e) com seus campos.",
+  "properties": [
+    {
+      "name": "Name",
+      "placeholder": "event_name",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação",
+      "notes": "Sufixo __e."
+    },
+    {
+      "name": "Label",
+      "placeholder": "label",
+      "path": "label",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "PluralLabel",
+      "placeholder": "plural_label",
+      "path": "pluralLabel",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Description",
+      "placeholder": "description",
+      "path": "description",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "EventType",
+      "placeholder": "event_type",
+      "path": "eventType",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "PublishBehavior",
+      "placeholder": "publish_behavior",
+      "path": "publishBehavior",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação",
+      "notes": "PublishImmediately publica fora da transação: não é desfeito em rollback (confirmado). PublishAfterCommit: a confirmar."
+    },
+    {
+      "name": "DeploymentStatus",
+      "placeholder": "deployment_status",
+      "path": "deploymentStatus",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    }
+  ],
+  "tables": [
+    {
+      "markdownSection": "Campos do evento",
+      "builder": "related_rows",
+      "source": "XML",
+      "args": {
+        "metadataType": "CustomField",
+        "columns": {
+          "field": "fullName",
+          "label": "label",
+          "type": "type",
+          "length": "length",
+          "required": "required"
+        }
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Campos do retrieve do objeto __e. Tipos permitidos em platform event: a confirmar (o documento mostra o que está no XML)."
+    },
+    {
+      "markdownSection": "Publicadores e assinantes",
+      "builder": "event_reference_rows",
+      "source": "Derivado",
+      "args": {
+        "path": "@fullName"
+      },
+      "emptyValue": "Não informado",
+      "notes": "Componentes processados na execução: Apex com EventBus.publish e new X__e, triggers no evento, Flows disparados pelo evento ou que criam o evento, LWC com lightning/empApi."
+    },
+    {
+      "markdownSection": "Dados internos",
+      "builder": "internal_record_properties",
+      "source": "Objeto interno",
+      "args": {
+        "keyPlaceholder": "internal_property",
+        "valuePlaceholder": "internal_value"
+      },
+      "emptyValue": "Não informado"
+    },
+    {
+      "markdownSection": "Acesso e configuração",
+      "builder": "access_rows",
+      "source": "XML",
+      "args": {
+        "accessKey": "CustomObject"
+      },
+      "emptyValue": "Não informado",
+      "notes": "objectPermissions do evento (perfis, permission sets e grupos). Relação Criar = publicar / Ler = assinar: a confirmar."
+    }
+  ],
+  "internalData": {
+    "enabled": true,
+    "source": "Tooling API",
+    "object": "EntityDefinition",
+    "useToolingApi": true,
+    "query": "SELECT QualifiedApiName, Label, PluralLabel, KeyPrefix, LastModifiedDate FROM EntityDefinition WHERE QualifiedApiName = '{fullName}'",
+    "expectSingleRecord": true,
+    "blocking": false,
+    "validationPending": "EntityDefinition para objeto __e: confirmar no piloto."
+  },
+  "evidence": [
+    "Decoupled Publishing and Subscription (Publish Immediately fora da transação) — developer.salesforce.com/docs/atlas.en-us.platform_events.meta/platform_events/platform_events_considerations_decoupled_processes.htm",
+    "PlatformEventSubscriberConfig: padrão Automated Process e lote 2.000; API 51+ — developer.salesforce.com/docs/atlas.en-us.platform_events.meta/platform_events/platform_events_trigger_config.htm",
+    "EventBus.publish — developer.salesforce.com/docs/atlas.en-us.apexref.meta/apexref/apex_class_System_eventbus.htm"
+  ]
+}

@@ -18,7 +18,7 @@ from __future__ import annotations
 import re
 
 from salesforce_docs.parsing.apex_parser import (IDENT, QUALIFIED, _apexdoc, config_reads, neutralize,
-                                                 security_patterns)
+                                                 platform_event_refs, security_patterns)
 
 PARSER_ID = "apex-trigger-lexical/v1"
 
@@ -128,4 +128,5 @@ def parse_apex_trigger(text: str) -> dict:
         "referencedClasses": _referenced_classes(body, sobject),
         "configReads": config_reads(body, literals),
         "securityPatterns": security_patterns(body),
+        "platformEvents": platform_event_refs(body),
     }
