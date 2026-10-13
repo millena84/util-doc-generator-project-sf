@@ -74,6 +74,18 @@
       "folder": "queues", "contract": "queue.schema.json", "documentSlug": "queue",
       "sourceParser": { "name": "queue", "suffix": ".queue-meta.xml", "key": "queue" }
     },
+    "BusinessProcess": {
+      "folder": "business-processes", "contract": "business-process.schema.json", "documentSlug": "business-process",
+      "sourceParser": { "name": "business-process", "suffix": ".businessProcess-meta.xml", "key": "process" }
+    },
+    "LeadConvertSettings": {
+      "folder": "lead-convert-settings", "contract": "lead-convert-settings.schema.json", "documentSlug": "lead-convert",
+      "sourceParser": { "name": "lead-convert", "suffix": "-meta.xml", "key": "leadConvert" }
+    },
+    "Territory2Model": { "folder": "territory2-models", "contract": "territory2-model.schema.json", "documentSlug": "territory-model" },
+    "Territory2": { "folder": "territory2-models" },
+    "Territory2Rule": { "folder": "territory2-models" },
+    "OpportunitySplitType": { "folder": "opportunity-split-types", "contract": "opportunity-split-type.schema.json", "documentSlug": "opportunity-split-type" },
     "CustomField": { "retrievedWith": "CustomObject" },
     "RecordType": { "retrievedWith": "CustomObject" },
     "ValidationRule": { "retrievedWith": "CustomObject" },
@@ -454,6 +466,44 @@
       "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
       "usesRunIndex": true,
       "notes": "XML reaproveitado do retrieve de acesso (passo 6b). Membros usuários só como contagem; e-mail da fila não é documentado. Regras que direcionam para a fila vêm das AssignmentRules/EscalationRules processadas."
+    },
+    {
+      "group": "BusinessProcess",
+      "primaryMetadataType": "BusinessProcess",
+      "relatedMetadataTypes": ["RecordType"],
+      "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+      "referenceDoc": "_sf_utilities/ajudAI/contexto-doc-sales-cloud.md",
+      "lookupInventories": ["RecordType"],
+      "relations": [ { "metadataType": "RecordType", "match": "FIELD_EQUALS_PRIMARY_NAME", "field": "businessProcess" } ],
+      "notes": "Processo de negócio (vendas em Opportunity; também lead, suporte, solução). Record types do mesmo objeto cujo <businessProcess> é o processo são recuperados e lidos; o inventário de RecordType é listado só para isso (lookupInventories)."
+    },
+    {
+      "group": "LeadConvertSettings",
+      "primaryMetadataType": "LeadConvertSettings",
+      "relatedMetadataTypes": [],
+      "documentStrategy": "ONE_DOCUMENT_PER_ORG",
+      "referenceDoc": "_sf_utilities/ajudAI/contexto-doc-sales-cloud.md",
+      "fixedComponents": [ { "fullName": "LeadConvertSettings", "retrieveType": "LeadConvertSettings" } ],
+      "notes": "Mapeamento de campos da conversão de Lead (documento único da org). fullName do componente a confirmar no piloto."
+    },
+    {
+      "group": "Territory2Model",
+      "primaryMetadataType": "Territory2Model",
+      "relatedMetadataTypes": ["Territory2", "Territory2Rule"],
+      "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+      "referenceDoc": "_sf_utilities/ajudAI/contexto-doc-sales-cloud.md",
+      "relations": [
+        { "metadataType": "Territory2", "match": "NAME_PREFIX" },
+        { "metadataType": "Territory2Rule", "match": "NAME_PREFIX" }
+      ],
+      "notes": "Territórios e regras do modelo (fullName Modelo.Nome, a confirmar). Usuários dos territórios nunca são documentados."
+    },
+    {
+      "group": "OpportunitySplitType",
+      "primaryMetadataType": "OpportunitySplitType",
+      "relatedMetadataTypes": [],
+      "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+      "referenceDoc": "_sf_utilities/ajudAI/contexto-doc-sales-cloud.md"
     },
     {
       "group": "PermissionSet",

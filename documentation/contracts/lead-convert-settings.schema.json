@@ -1,0 +1,100 @@
+{
+  "metadataType": "LeadConvertSettings",
+  "apiVersion": "67.0",
+  "documentStrategy": "ONE_DOCUMENT_PER_ORG",
+  "xmlFilePattern": "**/*LeadConvertSetting*-meta.xml",
+  "template": "modelo-doc-lead-convert-settings-vapi-{apiMajor}.md",
+  "titlePath": "@fullName",
+  "referenceDoc": "_sf_utilities/ajudAI/contexto-doc-sales-cloud.md",
+  "classification": "Documento único da org com o mapeamento de conversão de Lead.",
+  "properties": [
+    {
+      "name": "Componente",
+      "placeholder": "settings_name",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação"
+    }
+  ],
+  "tables": [
+    {
+      "markdownSection": "Configurações gerais",
+      "builder": "leaf_properties",
+      "source": "XML",
+      "args": {
+        "keyPlaceholder": "leaf_key",
+        "valuePlaceholder": "leaf_value",
+        "exclude": []
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Folhas do XML como estão (nomes de elemento não confirmados nesta adaptação)."
+    },
+    {
+      "markdownSection": "Mapeamentos de objeto",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "leadConvert.objectMappings",
+        "columns": {
+          "map_element": "element",
+          "map_input": "inputObject",
+          "map_output": "outputObject",
+          "map_details": "details"
+        }
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Grupos repetidos do XML com objeto de entrada/saída."
+    },
+    {
+      "markdownSection": "Mapeamento de campos (de-para)",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "leadConvert.fieldMappings",
+        "columns": {
+          "fm_source_object": "sourceObject",
+          "fm_source_field": "sourceField",
+          "fm_target_object": "targetObject",
+          "fm_target_field": "targetField"
+        }
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Pares input*/output* dentro de cada mapeamento de objeto."
+    },
+    {
+      "markdownSection": "Acesso e configuração",
+      "builder": "access_rows",
+      "source": "XML",
+      "args": {
+        "byPath": [
+          {
+            "names": [
+              "ConvertLeads"
+            ],
+            "accessKey": "UserPermission",
+            "via": "Permissão de sistema {name}"
+          },
+          {
+            "path": "leadConvert.sourceFieldNames",
+            "accessKey": "CustomField",
+            "via": "Campo de origem {name}"
+          },
+          {
+            "path": "leadConvert.targetFieldNames",
+            "accessKey": "CustomField",
+            "via": "Campo de destino {name}"
+          }
+        ]
+      },
+      "emptyValue": "Não informado",
+      "notes": "Permissão ConvertLeads (nome de API a confirmar) e FLS dos campos mapeados (fieldPermissions, passo 6b)."
+    }
+  ],
+  "internalData": {
+    "enabled": false
+  },
+  "evidence": [
+    "LeadConvertSettings (Metadata API): mapeamentos de campos customizados do Lead para Account, Contact e Opportunity e opções de criação de oportunidade — developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_leadconvertsettings.htm"
+  ]
+}

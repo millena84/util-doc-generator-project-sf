@@ -145,6 +145,10 @@ Registro da auditoria de segurança de 2026-10-11 (10 riscos: 1 crítico, 2 alto
 | ChangeDataCapture (`PlatformEventChannelMember`) | `ONE_DOCUMENT_PER_COMPONENT` | — (XML lido pelo parser `event-channel-member`; objeto de origem pela convenção de nomes) |
 | AssignmentRules, AutoResponseRules, EscalationRules | `ONE_DOCUMENT_PER_COMPONENT` | — (um documento por objeto; XML lido pelo parser `service-rules`, que mascara usuários e e-mails) |
 | Queue | `ONE_DOCUMENT_PER_COMPONENT` | — (XML do retrieve de acesso, passo 6b; parser `queue`; regras que direcionam para a fila via `recordIndex.rules`) |
+| BusinessProcess | `ONE_DOCUMENT_PER_COMPONENT` | RecordType do mesmo objeto cujo `businessProcess` é o processo (`FIELD_EQUALS_PRIMARY_NAME`; inventário de RecordType via `lookupInventories`) |
+| LeadConvertSettings | `ONE_DOCUMENT_PER_ORG` | — (componente fixo `LeadConvertSettings:LeadConvertSettings`; parser `lead-convert`) |
+| Territory2Model | `ONE_DOCUMENT_PER_COMPONENT` | Territory2 e Territory2Rule com nome `<modelo>.*` (`NAME_PREFIX`) |
+| OpportunitySplitType | `ONE_DOCUMENT_PER_COMPONENT` | — (folhas do XML como estão, `leaf_properties`) |
 
 Cada componente (principal ou relacionado) é extraído e normalizado de forma independente; a agregação acontece apenas no documento.
 
@@ -257,6 +261,20 @@ Adaptação de `_sf_utilities/ajudAI/contexto-flexipage.md` (ver a matriz em `do
 - **Onde é usado**: o documento do LWC ganhou a seção "Onde é usado (páginas Lightning)" (`recordIndex.pages`).
 - **Conteúdo genérico** (templates, hierarquia de ativação, regras de visibilidade): [`documentation/referencia-flexipage.md`](documentation/referencia-flexipage.md).
 
+## Sales Cloud — Onda 08
+
+Adaptação de `_sf_utilities/ajudAI/contexto-doc-sales-cloud.md` (ver a matriz em `documentation/refatoracao-1-matriz-ajudai.md`).
+
+- **Processo de negócio** (`modelo-doc-business-process`): valores (em Opportunity, as etapas) e valor padrão, **record types que usam o processo** e, na seção de acesso, os perfis e permission sets que enxergam esses record types — a cadeia Processo → Record Type → Perfil.
+- **Conversão de Lead** (`modelo-doc-lead-convert-settings`, documento único da org): configurações gerais, mapeamentos de objeto e de campos (de-para), quem tem `ConvertLeads` e o FLS dos campos mapeados.
+- **Modelo de territórios** (`modelo-doc-territory2-model`): territórios (tipo, pai, níveis de acesso, regras associadas) e regras de atribuição (objeto, critérios). Usuários dos territórios nunca são documentados.
+- **Tipo de divisão de oportunidade** (`modelo-doc-opportunity-split-type`): configuração como está no XML.
+- **Novidades genéricas:**
+  - relações `FIELD_EQUALS_PRIMARY_NAME` (campo do relacionado = nome do principal sem o objeto) e `NAME_PREFIX` (relacionados `<principal>.*`);
+  - builder `leaf_properties` (folhas do XML como estão, para tipos com elementos não confirmados);
+  - placeholders `{shortName}`/`{objectName}` nas consultas de dados internos.
+- **Conteúdo genérico e o que não foi confirmado:** [`documentation/referencia-sales-cloud.md`](documentation/referencia-sales-cloud.md).
+
 ## Service Cloud — Onda 07
 
 Sem `contexto-*.md` no `ajudAI` para esta onda: referência nos prompts de `_sf_utilities/tools/templates/exemplos-prompts/` (detalhados para AssignmentRules e EscalationRules).
@@ -335,11 +353,11 @@ Os testes usam uma Salesforce CLI **simulada** (`tests/fixtures/bin/sf`) e respo
 ### Simulação de todas as documentações do MVP
 
 ```bash
-python3 -m unittest tests.test_mvp_simulation        # verifica os 35 modelos e os 33 metadata types
+python3 -m unittest tests.test_mvp_simulation        # verifica os 39 modelos e os 39 metadata types
 python3 -m tests.simulate_mvp --out /tmp/sim-mvp     # executa e gera o relatório passo a passo
 ```
 
-O cenário `mvp_complete` da CLI simulada sobrepõe `tests/fixtures/mvp-complete/` às fixtures base, de modo que todo metadata type do MVP tenha ao menos um componente. O relatório versionado em `documentation/simulacao/relatorio-simulacao-mvp.md` mostra, para essa simulação, a saída no terminal, os comandos por passo, a situação de cada tipo, a árvore de arquivos e o conteúdo dos 61 documentos gerados.
+O cenário `mvp_complete` da CLI simulada sobrepõe `tests/fixtures/mvp-complete/` às fixtures base, de modo que todo metadata type do MVP tenha ao menos um componente. O relatório versionado em `documentation/simulacao/relatorio-simulacao-mvp.md` mostra, para essa simulação, a saída no terminal, os comandos por passo, a situação de cada tipo, a árvore de arquivos e o conteúdo dos 65 documentos gerados.
 
 | Grupo | Documento(s) / modelo | Tipos que aparecem dentro do documento |
 |---|---|---|
@@ -367,6 +385,10 @@ O cenário `mvp_complete` da CLI simulada sobrepõe `tests/fixtures/mvp-complete
 | ChangeDataCapture | `modelo-doc-change-data-capture` | assinantes processados |
 | AssignmentRules / AutoResponseRules / EscalationRules | `modelo-doc-assignment-rules`, `-auto-response-rules`, `-escalation-rules` | — |
 | Queue | `modelo-doc-queue` | regras que direcionam para a fila |
+| BusinessProcess | `modelo-doc-business-process` | RecordType que usam o processo |
+| LeadConvertSettings | `modelo-doc-lead-convert-settings` | — |
+| Territory2Model | `modelo-doc-territory2-model` | Territory2, Territory2Rule |
+| OpportunitySplitType | `modelo-doc-opportunity-split-type` | — |
 
 ## Estrutura
 

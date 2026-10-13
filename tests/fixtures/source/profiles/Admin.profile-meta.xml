@@ -5,12 +5,14 @@
     <classAccesses><apexClass>PedidoService</apexClass><enabled>true</enabled></classAccesses>
     <custom>false</custom>
     <customMetadataTypeAccesses><enabled>true</enabled><name>Config__mdt</name></customMetadataTypeAccesses>
+    <fieldPermissions><editable>true</editable><field>Account.CNPJ__c</field><readable>true</readable></fieldPermissions>
     <fieldPermissions><editable>true</editable><field>Pedido__c.Valor__c</field><readable>true</readable></fieldPermissions>
     <flowAccesses><enabled>true</enabled><flow>Meu_Flow</flow></flowAccesses>
     <objectPermissions>
         <allowCreate>true</allowCreate><allowDelete>true</allowDelete><allowEdit>true</allowEdit><allowRead>true</allowRead>
         <modifyAllRecords>true</modifyAllRecords><object>Pedido__c</object><viewAllRecords>true</viewAllRecords>
     </objectPermissions>
+    <recordTypeVisibilities><default>true</default><recordType>Opportunity.Enterprise</recordType><visible>true</visible></recordTypeVisibilities>
     <recordTypeVisibilities><default>true</default><recordType>Pedido__c.Padrao</recordType><visible>true</visible></recordTypeVisibilities>
     <layoutAssignments><layout>Pedido__c-Pedido Layout</layout></layoutAssignments>
     <layoutAssignments><layout>Pedido__c-Pedido Layout Venda</layout><recordType>Pedido__c.Padrao</recordType></layoutAssignments>
@@ -20,4 +22,5 @@
     <tabVisibilities><tab>Pedido__c</tab><visibility>DefaultOn</visibility></tabVisibilities>
     <userPermissions><enabled>true</enabled><name>ModifyAllData</name></userPermissions>
     <userPermissions><enabled>true</enabled><name>ViewAllData</name></userPermissions>
+    <userPermissions><enabled>true</enabled><name>ManageTerritories</name></userPermissions>
 </Profile>

@@ -14,10 +14,14 @@ def developer_name(full_name: str, namespace_prefix=None) -> str:
 
 
 def build_query(template: str, full_name: str, namespace_prefix=None) -> str:
+    obj, _, short = full_name.partition(".")
     return template.format(
         fullName=soql_literal(full_name),
         developerName=soql_literal(developer_name(full_name, namespace_prefix)),
         namespacePrefix=soql_literal(namespace_prefix or ""),
+        # Componentes `Objeto.Nome` (ex.: BusinessProcess Opportunity.Venda).
+        objectName=soql_literal(obj if short else ""),
+        shortName=soql_literal(short or full_name),
     )
 
 

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpportunitySplitType xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Divisão do valor total (simulado)</description>
+    <isActive>true</isActive>
+    <isTotalValidated>true</isTotalValidated>
+    <masterLabel>Divisão de Receita</masterLabel>
+    <splitDataStatus>Completed</splitDataStatus>
+    <splitEntity>Opportunity</splitEntity>
+    <splitField>Amount</splitField>
+    <splitLabel>Receita</splitLabel>
+</OpportunitySplitType>

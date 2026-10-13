@@ -1,0 +1,14 @@
+{
+  "done": true,
+  "totalSize": 1,
+  "records": [
+    {
+      "attributes": {
+        "type": "OpportunitySplitType"
+      },
+      "Id": "149000000000000AAA",
+      "DeveloperName": "Receita_Principal",
+      "MasterLabel": "Divisão de Receita"
+    }
+  ]
+}

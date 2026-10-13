@@ -1,0 +1,29 @@
+[
+  {
+    "fullName": "Opportunity.Enterprise",
+    "type": "RecordType",
+    "fileName": "x/Opportunity.Enterprise",
+    "id": "0PS000000000000AAA",
+    "namespacePrefix": "",
+    "manageableState": "unmanaged",
+    "lastModifiedDate": "2026-10-01T00:00:00.000Z"
+  },
+  {
+    "fullName": "Opportunity.Varejo",
+    "type": "RecordType",
+    "fileName": "x/Opportunity.Varejo",
+    "id": "0PS000000000000AAA",
+    "namespacePrefix": "",
+    "manageableState": "unmanaged",
+    "lastModifiedDate": "2026-10-01T00:00:00.000Z"
+  },
+  {
+    "fullName": "Pedido__c.Padrao",
+    "type": "RecordType",
+    "fileName": "x/Pedido__c.Padrao",
+    "id": "0PS000000000000AAA",
+    "namespacePrefix": "",
+    "manageableState": "unmanaged",
+    "lastModifiedDate": "2026-10-01T00:00:00.000Z"
+  }
+]

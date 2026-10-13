@@ -209,6 +209,32 @@ def list_values(ctx, args):
     return rows
 
 
+def leaf_properties(ctx, args):
+    """Folhas (valores simples) do XML como propriedade/valor, para tipos cujos nomes de elemento
+    não foram confirmados: nada é inventado, o documento mostra o que está no XML.
+
+    args: path (opcional; raiz do XML), keyPlaceholder, valuePlaceholder, exclude (nomes já
+    mostrados em outra seção). Listas e elementos com filhos ficam de fora; elementos bloqueados
+    (sensitive/omitFromDocumentation) são omitidos e registrados.
+    """
+    if args.get("path"):
+        value, _ = resolve(ctx, args["path"])
+    else:
+        value = ctx.data
+    key_ph = args.get("keyPlaceholder", "property")
+    val_ph = args.get("valuePlaceholder", "value")
+    exclude = set(args.get("exclude") or [])
+    rows = []
+    for k, v in (value or {}).items() if isinstance(value, dict) else []:
+        if k in exclude or isinstance(v, (dict, list)) or v in (None, ""):
+            continue
+        if k in ctx.sensitive:
+            ctx.omit(k)
+            continue
+        rows.append({key_ph: k, val_ph: format_value(v, None, ctx.sensitive)})
+    return rows
+
+
 def naming_convention(ctx, args, _render_props=None):
     """Bloco: o nome do componente segue a convenção do projeto (`args.pattern`, regex)?
 
@@ -226,6 +252,7 @@ def naming_convention(ctx, args, _render_props=None):
 
 
 TABLE_BUILDERS = {
+    "leaf_properties": leaf_properties,
     "list_values": list_values,
     "related_components": related_components,
     "related_rows": related_rows,

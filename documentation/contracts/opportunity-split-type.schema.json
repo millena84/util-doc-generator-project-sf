@@ -1,0 +1,76 @@
+{
+  "metadataType": "OpportunitySplitType",
+  "apiVersion": "67.0",
+  "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+  "xmlFilePattern": "**/opportunitySplitTypes/*.opportunitySplitType-meta.xml",
+  "template": "modelo-doc-opportunity-split-type-vapi-{apiMajor}.md",
+  "titlePath": "@fullName",
+  "referenceDoc": "_sf_utilities/ajudAI/contexto-doc-sales-cloud.md",
+  "classification": "Documento de todo tipo de divisão de oportunidade.",
+  "properties": [
+    {
+      "name": "Name",
+      "placeholder": "split_type_name",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação"
+    }
+  ],
+  "tables": [
+    {
+      "markdownSection": "Configuração",
+      "builder": "leaf_properties",
+      "source": "XML",
+      "args": {
+        "keyPlaceholder": "leaf_key",
+        "valuePlaceholder": "leaf_value",
+        "exclude": []
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Folhas do XML como estão (nomes de elemento não confirmados nesta adaptação)."
+    },
+    {
+      "markdownSection": "Dados internos",
+      "builder": "internal_record_properties",
+      "source": "Objeto interno",
+      "args": {
+        "keyPlaceholder": "internal_property",
+        "valuePlaceholder": "internal_value"
+      },
+      "emptyValue": "Não informado"
+    },
+    {
+      "markdownSection": "Acesso e configuração",
+      "builder": "access_rows",
+      "source": "XML",
+      "args": {
+        "byPath": [
+          {
+            "names": [
+              "ManageOpportunitySplits"
+            ],
+            "accessKey": "UserPermission",
+            "via": "Permissão de sistema {name}"
+          }
+        ]
+      },
+      "emptyValue": "Não informado",
+      "notes": "Permissão de gestão de divisões (nome de API a confirmar)."
+    }
+  ],
+  "internalData": {
+    "enabled": true,
+    "source": "Objeto interno",
+    "object": "OpportunitySplitType",
+    "useToolingApi": false,
+    "query": "SELECT Id, DeveloperName, MasterLabel FROM OpportunitySplitType WHERE DeveloperName = '{developerName}'",
+    "expectSingleRecord": true,
+    "blocking": false,
+    "validationPending": "Objeto OpportunitySplitType (API 37+): confirmar campos no piloto."
+  },
+  "evidence": [
+    "OpportunitySplitType: rótulos e comportamento de cada tipo de divisão (Tooling API 37+) — developer.salesforce.com/docs/atlas.en-us.api_tooling.meta/api_tooling/tooling_api_objects_opportunitysplittype.htm",
+    "OpportunitySplit: credita membros da equipe da oportunidade com parte do valor — developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_opportunitysplit.htm"
+  ]
+}
