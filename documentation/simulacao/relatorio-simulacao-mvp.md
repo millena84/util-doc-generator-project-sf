@@ -2,248 +2,248 @@
 
 > **SIMULADO.** CLI `sf` simulada (`tests/fixtures/bin/sf`, cenário `mvp_complete`) e Metadata API simulada. Nenhum dado veio de uma org real. Gerado por `python3 -m tests.simulate_mvp`.
 
-- Execução: `run-20261013-151653` — status **SUCCESS** — código de saída `0`
+- Execução: `run-20261013-203232` — status **SUCCESS** — código de saída `0`
 - Org: `dev` — API `67.0`
 - Cobertura: **COMPLETE** — 60 documentada(s) de 60 no escopo; lacunas: 0 (nenhuma)
 
 ## 1. Saída no terminal
 
 ```
-[15:16:53] INFO  Seleção ALL: {'ApexClass': ['ALL'], 'ApexTrigger': ['ALL'], 'AssignmentRules': ['ALL'], 'AutoResponseRules': ['ALL'], 'BusinessProcess': ['ALL'], 'Certificate': ['ALL'], 'ChangeDataCapture': ['ALL'], 'ConnectedApp': ['ALL'], 'CustomMetadata': ['ALL'], 'CustomObject': ['ALL'], 'CustomSite': ['ALL'], 'EscalationRules': ['ALL'], 'ExperienceBundle': ['ALL'], 'ExternalClientApp': ['ALL'], 'ExternalCredential': ['ALL'], 'FlexiPage': ['ALL'], 'Flow': ['ALL'], 'LeadConvertSettings': ['ALL'], 'LightningComponentBundle': ['ALL'], 'NamedCredential': ['ALL'], 'Network': ['ALL'], 'OmniDataTransform': ['ALL'], 'OmniIntegrationProcedure': ['ALL'], 'OmniScript': ['ALL'], 'OmniUiCard': ['ALL'], 'OpportunitySplitType': ['ALL'], 'OrgSecurity': ['ALL'], 'PermissionSet': ['ALL'], 'PermissionSetGroup': ['ALL'], 'PlatformEvent': ['ALL'], 'Profile': ['ALL'], 'PublicGroup': ['ALL'], 'Queue': ['ALL'], 'RemoteSiteSetting': ['ALL'], 'Role': ['ALL'], 'SharingRules': ['ALL'], 'Territory2Model': ['ALL']}
-[15:16:53] WARN  Verificação de Git indisponível (fora de repositório Git): proteção de versionamento não verificada
-[15:16:54] INFO  Passo 1: Salesforce CLI 2.60.0 (mínima 2.0.0)
-[15:16:54] INFO  Passo 2: alias 'dev' autenticado
-[15:16:54] INFO  Passo 3: `sf org display` exibiu credenciais; gravado só o envelope sanitizado
-[15:16:54] INFO  Passo 3: usuario.simulado@example.com conectado; API 67.0 (detectada 67.0, fonte: sf org display)
-[15:16:54] INFO  Passo 3b: org 00D000000000000AAA aprovada (approvedOrgs)
-[15:16:54] INFO  Passo 3c: token de acesso obtido via `sf org display` (não persistido)
-[15:16:54] INFO  Passo 4: grupos habilitados: Flow, ExternalClientApp, ExternalCredential, ConnectedApp, CustomObject, CustomMetadata, NamedCredential, RemoteSiteSetting, Certificate, ApexClass, ApexTrigger, LightningComponentBundle, FlexiPage, PlatformEvent, ChangeDataCapture, AssignmentRules, AutoResponseRules, EscalationRules, Queue, BusinessProcess, LeadConvertSettings, Territory2Model, OpportunitySplitType, Network, CustomSite, ExperienceBundle, OmniDataTransform, OmniIntegrationProcedure, OmniScript, OmniUiCard, PermissionSet, Profile, PermissionSetGroup, SharingRules, Role, PublicGroup, OrgSecurity
-[15:16:54] INFO  Passo 6: Flow -> 4 componente(s)
-[15:16:54] INFO  Passo 6: FlowDefinition -> 1 componente(s)
-[15:16:54] INFO  Passo 6: ExternalClientApplication -> 1 componente(s)
-[15:16:54] INFO  Passo 6: ExtlClntAppOauthSettings -> 2 componente(s)
-[15:16:54] INFO  Passo 6: ExtlClntAppConfigurablePolicies -> 1 componente(s)
-[15:16:54] INFO  Passo 6: ExtlClntAppOauthConfigurablePolicies -> 1 componente(s)
-[15:16:54] INFO  Passo 6: ExternalCredential -> 1 componente(s)
-[15:16:55] INFO  Passo 6: ConnectedApp -> 1 componente(s)
-[15:16:55] INFO  Passo 6: CustomObject -> 4 componente(s)
-[15:16:55] INFO  Passo 6: CustomMetadata -> 2 componente(s)
-[15:16:55] INFO  Passo 6: NamedCredential -> 2 componente(s)
-[15:16:55] INFO  Passo 6: RemoteSiteSetting -> 1 componente(s)
-[15:16:55] INFO  Passo 6: Certificate -> 1 componente(s)
-[15:16:55] INFO  Passo 6: ApexClass -> 9 componente(s)
-[15:16:55] INFO  Passo 6: ApexTrigger -> 4 componente(s)
-[15:16:55] INFO  Passo 6: LightningComponentBundle -> 4 componente(s)
-[15:16:55] INFO  Passo 6: FlexiPage -> 2 componente(s)
-[15:16:55] INFO  Passo 6: PlatformEventChannelMember -> 2 componente(s)
-[15:16:55] INFO  Passo 6: AssignmentRules -> 1 componente(s)
-[15:16:55] INFO  Passo 6: AutoResponseRules -> 1 componente(s)
-[15:16:55] INFO  Passo 6: EscalationRules -> 1 componente(s)
-[15:16:55] INFO  Passo 6: Queue -> 1 componente(s)
-[15:16:55] INFO  Passo 6: BusinessProcess -> 1 componente(s)
-[15:16:55] INFO  Passo 6: Territory2Model -> 1 componente(s)
-[15:16:55] INFO  Passo 6: Territory2 -> 2 componente(s)
-[15:16:56] INFO  Passo 6: Territory2Rule -> 1 componente(s)
-[15:16:56] INFO  Passo 6: OpportunitySplitType -> 1 componente(s)
-[15:16:56] INFO  Passo 6: Network -> 1 componente(s)
-[15:16:56] INFO  Passo 6: CustomSite -> 1 componente(s)
-[15:16:56] INFO  Passo 6: ExperienceBundle -> 1 componente(s)
-[15:16:56] INFO  Passo 6: OmniDataTransform -> 1 componente(s)
-[15:16:56] INFO  Passo 6: OmniIntegrationProcedure -> 1 componente(s)
-[15:16:56] INFO  Passo 6: OmniScript -> 1 componente(s)
-[15:16:56] INFO  Passo 6: OmniUiCard -> 1 componente(s)
-[15:16:56] INFO  Passo 6: PermissionSet -> 2 componente(s)
-[15:16:56] INFO  Passo 6: Profile -> 3 componente(s)
-[15:16:56] INFO  Passo 6: PermissionSetGroup -> 1 componente(s)
-[15:16:56] INFO  Passo 6: SharingRules -> 1 componente(s)
-[15:16:56] INFO  Passo 6: Role -> 3 componente(s)
-[15:16:56] INFO  Passo 6: Group -> 1 componente(s)
-[15:16:57] INFO  Passo 6: RecordType (conferência) -> 3 componente(s)
-[15:16:57] INFO  Passo 6b: 10 fonte(s) de acesso; índice em inventory/org-dev/api-v67/access/access-index.json
-[15:16:57] INFO  [1/60] Flow:Flow:Meu_Flow
-[15:16:57] INFO  Flow:Flow:Meu_Flow: processando
-[15:16:57] INFO  Flow:Flow:Meu_Flow: SUCCESS -> saida/docs/doc-dev-101326/doc-meu-flow-flow.md
-[15:16:57] INFO  [2/60] Flow:Flow:Pedido_Evento_Flow
-[15:16:57] INFO  Flow:Flow:Pedido_Evento_Flow: processando
-[15:16:57] INFO  Flow:Flow:Pedido_Evento_Flow: SUCCESS -> saida/docs/doc-dev-101326/doc-pedido-evento-flow-flow.md
-[15:16:57] INFO  [3/60] Flow:Flow:Processa_Pedido
-[15:16:57] INFO  Flow:Flow:Processa_Pedido: processando
-[15:16:57] INFO  Flow:Flow:Processa_Pedido: SUCCESS -> saida/docs/doc-dev-101326/doc-processa-pedido-flow.md
-[15:16:57] INFO  [4/60] Flow:Flow:Tela_Cadastro
-[15:16:57] INFO  Flow:Flow:Tela_Cadastro: processando
-[15:16:57] INFO  Flow:Flow:Tela_Cadastro: SUCCESS -> saida/docs/doc-dev-101326/doc-tela-cadastro-flow.md
-[15:16:57] INFO  [5/60] ExternalClientApp:ExternalClientApplication:Minha_ECA
-[15:16:57] INFO  ExternalClientApp:ExternalClientApplication:Minha_ECA: processando
-[15:16:58] INFO  ExternalClientApp:ExternalClientApplication:Minha_ECA: SUCCESS -> saida/docs/doc-dev-101326/doc-minha-eca-external-client-app.md
-[15:16:58] INFO  [6/60] ExternalCredential:ExternalCredential:Minha_EC
-[15:16:58] INFO  ExternalCredential:ExternalCredential:Minha_EC: processando
-[15:16:58] INFO  ExternalCredential:ExternalCredential:Minha_EC: SUCCESS -> saida/docs/doc-dev-101326/doc-minha-ec-external-credential.md
-[15:16:58] INFO  [7/60] ConnectedApp:ConnectedApp:Meu_App
-[15:16:58] INFO  ConnectedApp:ConnectedApp:Meu_App: processando
-[15:16:58] INFO  ConnectedApp:ConnectedApp:Meu_App: SUCCESS -> saida/docs/doc-dev-101326/doc-meu-app-connected-app.md
-[15:16:58] INFO  [8/60] CustomObject:CustomObject:Pedido__c
-[15:16:58] INFO  CustomObject:CustomObject:Pedido__c: processando
-[15:16:58] INFO  CustomObject:CustomObject:Pedido__c: SUCCESS -> saida/docs/doc-dev-101326/doc-pedido-c-custom-object.md
-[15:16:58] INFO  [9/60] CustomMetadata:CustomMetadata:Config__mdt
-[15:16:58] INFO  CustomMetadata:CustomMetadata:Config__mdt: processando
-[15:16:58] INFO  CustomMetadata:CustomMetadata:Config__mdt: SUCCESS -> saida/docs/doc-dev-101326/doc-config-mdt-custom-metadata.md
-[15:16:58] INFO  [10/60] NamedCredential:NamedCredential:Minha_NC
-[15:16:58] INFO  NamedCredential:NamedCredential:Minha_NC: processando
-[15:16:59] INFO  NamedCredential:NamedCredential:Minha_NC: SUCCESS -> saida/docs/doc-dev-101326/doc-minha-nc-named-credential.md
-[15:16:59] INFO  [11/60] NamedCredential:NamedCredential:NC_Legada
-[15:16:59] INFO  NamedCredential:NamedCredential:NC_Legada: processando
-[15:16:59] INFO  NamedCredential:NamedCredential:NC_Legada: SUCCESS -> saida/docs/doc-dev-101326/doc-nc-legada-named-credential.md
-[15:16:59] INFO  [12/60] RemoteSiteSetting:RemoteSiteSetting:Meu_Site
-[15:16:59] INFO  RemoteSiteSetting:RemoteSiteSetting:Meu_Site: processando
-[15:16:59] INFO  RemoteSiteSetting:RemoteSiteSetting:Meu_Site: SUCCESS -> saida/docs/doc-dev-101326/doc-meu-site-remote-site-setting.md
-[15:16:59] INFO  [13/60] Certificate:Certificate:Meu_Certificado
-[15:16:59] INFO  Certificate:Certificate:Meu_Certificado: processando
-[15:16:59] INFO  Certificate:Certificate:Meu_Certificado: SUCCESS -> saida/docs/doc-dev-101326/doc-meu-certificado-certificate.md
-[15:16:59] INFO  [14/60] ApexClass:ApexClass:AccountSyncQueueable
-[15:16:59] INFO  ApexClass:ApexClass:AccountSyncQueueable: processando
-[15:16:59] INFO  ApexClass:ApexClass:AccountSyncQueueable: SUCCESS -> saida/docs/doc-dev-101326/doc-accountsyncqueueable-apex-class.md
-[15:16:59] INFO  [15/60] ApexClass:ApexClass:DailyOrderCleanupScheduler
-[15:16:59] INFO  ApexClass:ApexClass:DailyOrderCleanupScheduler: processando
-[15:16:59] INFO  ApexClass:ApexClass:DailyOrderCleanupScheduler: SUCCESS -> saida/docs/doc-dev-101326/doc-dailyordercleanupscheduler-apex-class.md
-[15:16:59] INFO  [16/60] ApexClass:ApexClass:IntegrationAsyncHelper
-[15:16:59] INFO  ApexClass:ApexClass:IntegrationAsyncHelper: processando
-[15:16:59] INFO  ApexClass:ApexClass:IntegrationAsyncHelper: SUCCESS -> saida/docs/doc-dev-101326/doc-integrationasynchelper-apex-class.md
-[15:16:59] INFO  [17/60] ApexClass:ApexClass:MultiRoleJob
-[15:16:59] INFO  ApexClass:ApexClass:MultiRoleJob: processando
-[15:17:00] INFO  ApexClass:ApexClass:MultiRoleJob: SUCCESS -> saida/docs/doc-dev-101326/doc-multirolejob-apex-class.md
-[15:17:00] INFO  [18/60] ApexClass:ApexClass:OrderCleanupBatch
-[15:17:00] INFO  ApexClass:ApexClass:OrderCleanupBatch: processando
-[15:17:00] INFO  ApexClass:ApexClass:OrderCleanupBatch: SUCCESS -> saida/docs/doc-dev-101326/doc-ordercleanupbatch-apex-class.md
-[15:17:00] INFO  [19/60] ApexClass:ApexClass:PedidoController
-[15:17:00] INFO  ApexClass:ApexClass:PedidoController: processando
-[15:17:00] INFO  ApexClass:ApexClass:PedidoController: SUCCESS -> saida/docs/doc-dev-101326/doc-pedidocontroller-apex-class.md
-[15:17:00] INFO  [20/60] ApexClass:ApexClass:PedidoService
-[15:17:00] INFO  ApexClass:ApexClass:PedidoService: processando
-[15:17:00] INFO  ApexClass:ApexClass:PedidoService: SUCCESS -> saida/docs/doc-dev-101326/doc-pedidoservice-apex-class.md
-[15:17:00] INFO  [21/60] ApexClass:ApexClass:PedidoTriggerHandler
-[15:17:00] INFO  ApexClass:ApexClass:PedidoTriggerHandler: processando
-[15:17:00] INFO  ApexClass:ApexClass:PedidoTriggerHandler: SUCCESS -> saida/docs/doc-dev-101326/doc-pedidotriggerhandler-apex-class.md
-[15:17:00] INFO  [22/60] AssignmentRules:AssignmentRules:Case
-[15:17:00] INFO  AssignmentRules:AssignmentRules:Case: processando
-[15:17:00] INFO  AssignmentRules:AssignmentRules:Case: SUCCESS -> saida/docs/doc-dev-101326/doc-case-assignment-rules.md
-[15:17:00] INFO  [23/60] AutoResponseRules:AutoResponseRules:Case
-[15:17:00] INFO  AutoResponseRules:AutoResponseRules:Case: processando
-[15:17:01] INFO  AutoResponseRules:AutoResponseRules:Case: SUCCESS -> saida/docs/doc-dev-101326/doc-case-auto-response-rules.md
-[15:17:01] INFO  [24/60] EscalationRules:EscalationRules:Case
-[15:17:01] INFO  EscalationRules:EscalationRules:Case: processando
-[15:17:01] INFO  EscalationRules:EscalationRules:Case: SUCCESS -> saida/docs/doc-dev-101326/doc-case-escalation-rules.md
-[15:17:01] INFO  [25/60] BusinessProcess:BusinessProcess:Opportunity.Venda_Enterprise
-[15:17:01] INFO  BusinessProcess:BusinessProcess:Opportunity.Venda_Enterprise: processando
-[15:17:01] INFO  BusinessProcess:BusinessProcess:Opportunity.Venda_Enterprise: SUCCESS -> saida/docs/doc-dev-101326/doc-opportunity-venda-enterprise-business-process.md
-[15:17:01] INFO  [26/60] LeadConvertSettings:LeadConvertSettings:LeadConvertSettings
-[15:17:01] INFO  LeadConvertSettings:LeadConvertSettings:LeadConvertSettings: processando
-[15:17:01] INFO  LeadConvertSettings:LeadConvertSettings:LeadConvertSettings: SUCCESS -> saida/docs/doc-dev-101326/doc-leadconvertsettings-lead-convert.md
-[15:17:01] INFO  [27/60] Territory2Model:Territory2Model:Modelo_Vendas
-[15:17:01] INFO  Territory2Model:Territory2Model:Modelo_Vendas: processando
-[15:17:01] INFO  Territory2Model:Territory2Model:Modelo_Vendas: SUCCESS -> saida/docs/doc-dev-101326/doc-modelo-vendas-territory-model.md
-[15:17:02] INFO  [28/60] OpportunitySplitType:OpportunitySplitType:Receita_Principal
-[15:17:02] INFO  OpportunitySplitType:OpportunitySplitType:Receita_Principal: processando
-[15:17:02] INFO  OpportunitySplitType:OpportunitySplitType:Receita_Principal: SUCCESS -> saida/docs/doc-dev-101326/doc-receita-principal-opportunity-split-type.md
-[15:17:02] INFO  [29/60] Network:Network:Portal_Clientes
-[15:17:02] INFO  Network:Network:Portal_Clientes: processando
-[15:17:02] INFO  Network:Network:Portal_Clientes: SUCCESS -> saida/docs/doc-dev-101326/doc-portal-clientes-network.md
-[15:17:02] INFO  [30/60] CustomSite:CustomSite:Portal_Clientes
-[15:17:02] INFO  CustomSite:CustomSite:Portal_Clientes: processando
-[15:17:02] INFO  CustomSite:CustomSite:Portal_Clientes: SUCCESS -> saida/docs/doc-dev-101326/doc-portal-clientes-site.md
-[15:17:02] INFO  [31/60] PermissionSet:PermissionSet:Integracao_API
-[15:17:02] INFO  PermissionSet:PermissionSet:Integracao_API: processando
-[15:17:02] INFO  PermissionSet:PermissionSet:Integracao_API: SUCCESS -> saida/docs/doc-dev-101326/doc-integracao-api-permission-set.md
-[15:17:02] INFO  [32/60] PermissionSet:PermissionSet:Leitura_Pedidos
-[15:17:02] INFO  PermissionSet:PermissionSet:Leitura_Pedidos: processando
-[15:17:02] INFO  PermissionSet:PermissionSet:Leitura_Pedidos: SUCCESS -> saida/docs/doc-dev-101326/doc-leitura-pedidos-permission-set.md
-[15:17:02] INFO  [33/60] Profile:Profile:Admin
-[15:17:02] INFO  Profile:Profile:Admin: processando
-[15:17:02] INFO  Profile:Profile:Admin: SUCCESS -> saida/docs/doc-dev-101326/doc-admin-profile.md
-[15:17:02] INFO  [34/60] Profile:Profile:Portal Clientes Profile
-[15:17:02] INFO  Profile:Profile:Portal Clientes Profile: processando
-[15:17:02] INFO  Profile:Profile:Portal Clientes Profile: SUCCESS -> saida/docs/doc-dev-101326/doc-portal-clientes-profile-profile.md
-[15:17:02] INFO  [35/60] Profile:Profile:Vendas
-[15:17:02] INFO  Profile:Profile:Vendas: processando
-[15:17:03] INFO  Profile:Profile:Vendas: SUCCESS -> saida/docs/doc-dev-101326/doc-vendas-profile.md
-[15:17:03] INFO  [36/60] PermissionSetGroup:PermissionSetGroup:PSG_Integracao
-[15:17:03] INFO  PermissionSetGroup:PermissionSetGroup:PSG_Integracao: processando
-[15:17:03] INFO  PermissionSetGroup:PermissionSetGroup:PSG_Integracao: SUCCESS -> saida/docs/doc-dev-101326/doc-psg-integracao-permission-set-group.md
-[15:17:03] INFO  [37/60] PublicGroup:Group:Grupo_Suporte
-[15:17:03] INFO  PublicGroup:Group:Grupo_Suporte: processando
-[15:17:03] INFO  PublicGroup:Group:Grupo_Suporte: SUCCESS -> saida/docs/doc-dev-101326/doc-grupo-suporte-public-group.md
-[15:17:04] INFO  [38/60] ApexTrigger:ApexTrigger:PedidoAuditoriaTrigger
-[15:17:04] INFO  ApexTrigger:ApexTrigger:PedidoAuditoriaTrigger: processando
-[15:17:04] INFO  ApexTrigger:ApexTrigger:PedidoAuditoriaTrigger: SUCCESS -> saida/docs/doc-dev-101326/doc-pedidoauditoriatrigger-apex-trigger.md
-[15:17:04] INFO  [39/60] ApexTrigger:ApexTrigger:PedidoChangeTrigger
-[15:17:04] INFO  ApexTrigger:ApexTrigger:PedidoChangeTrigger: processando
-[15:17:04] INFO  ApexTrigger:ApexTrigger:PedidoChangeTrigger: SUCCESS -> saida/docs/doc-dev-101326/doc-pedidochangetrigger-apex-trigger.md
-[15:17:04] INFO  [40/60] ApexTrigger:ApexTrigger:PedidoEventoTrigger
-[15:17:04] INFO  ApexTrigger:ApexTrigger:PedidoEventoTrigger: processando
-[15:17:05] INFO  ApexTrigger:ApexTrigger:PedidoEventoTrigger: SUCCESS -> saida/docs/doc-dev-101326/doc-pedidoeventotrigger-apex-trigger.md
-[15:17:05] INFO  [41/60] ApexTrigger:ApexTrigger:PedidoTrigger
-[15:17:05] INFO  ApexTrigger:ApexTrigger:PedidoTrigger: processando
-[15:17:05] INFO  ApexTrigger:ApexTrigger:PedidoTrigger: SUCCESS -> saida/docs/doc-dev-101326/doc-pedidotrigger-apex-trigger.md
-[15:17:05] INFO  [42/60] LightningComponentBundle:LightningComponentBundle:pedidoAcaoRapida
-[15:17:05] INFO  LightningComponentBundle:LightningComponentBundle:pedidoAcaoRapida: processando
-[15:17:05] INFO  LightningComponentBundle:LightningComponentBundle:pedidoAcaoRapida: SUCCESS -> saida/docs/doc-dev-101326/doc-pedidoacaorapida-lwc.md
-[15:17:05] INFO  [43/60] LightningComponentBundle:LightningComponentBundle:pedidoPainel
-[15:17:05] INFO  LightningComponentBundle:LightningComponentBundle:pedidoPainel: processando
-[15:17:05] INFO  LightningComponentBundle:LightningComponentBundle:pedidoPainel: SUCCESS -> saida/docs/doc-dev-101326/doc-pedidopainel-lwc.md
-[15:17:05] INFO  [44/60] LightningComponentBundle:LightningComponentBundle:pedidoTelaFlow
-[15:17:05] INFO  LightningComponentBundle:LightningComponentBundle:pedidoTelaFlow: processando
-[15:17:05] INFO  LightningComponentBundle:LightningComponentBundle:pedidoTelaFlow: SUCCESS -> saida/docs/doc-dev-101326/doc-pedidotelaflow-lwc.md
-[15:17:05] INFO  [45/60] FlexiPage:FlexiPage:Pedido_Record_Page
-[15:17:05] INFO  FlexiPage:FlexiPage:Pedido_Record_Page: processando
-[15:17:05] INFO  FlexiPage:FlexiPage:Pedido_Record_Page: SUCCESS -> saida/docs/doc-dev-101326/doc-pedido-record-page-flexipage.md
-[15:17:05] INFO  [46/60] FlexiPage:FlexiPage:Pedidos_App_Page
-[15:17:05] INFO  FlexiPage:FlexiPage:Pedidos_App_Page: processando
-[15:17:05] INFO  FlexiPage:FlexiPage:Pedidos_App_Page: SUCCESS -> saida/docs/doc-dev-101326/doc-pedidos-app-page-flexipage.md
-[15:17:05] INFO  [47/60] PlatformEvent:CustomObject:Pedido_Evento__e
-[15:17:05] INFO  PlatformEvent:CustomObject:Pedido_Evento__e: processando
-[15:17:05] INFO  PlatformEvent:CustomObject:Pedido_Evento__e: SUCCESS -> saida/docs/doc-dev-101326/doc-pedido-evento-e-platform-event.md
-[15:17:05] INFO  [48/60] ChangeDataCapture:PlatformEventChannelMember:Canal_Pedido_Pedido_ChangeEvent
-[15:17:05] INFO  ChangeDataCapture:PlatformEventChannelMember:Canal_Pedido_Pedido_ChangeEvent: processando
-[15:17:05] INFO  ChangeDataCapture:PlatformEventChannelMember:Canal_Pedido_Pedido_ChangeEvent: SUCCESS -> saida/docs/doc-dev-101326/doc-canal-pedido-pedido-changeevent-change-data-capture.md
-[15:17:06] INFO  [49/60] ChangeDataCapture:PlatformEventChannelMember:ChangeEvents_Pedido_ChangeEvent
-[15:17:06] INFO  ChangeDataCapture:PlatformEventChannelMember:ChangeEvents_Pedido_ChangeEvent: processando
-[15:17:06] INFO  ChangeDataCapture:PlatformEventChannelMember:ChangeEvents_Pedido_ChangeEvent: SUCCESS -> saida/docs/doc-dev-101326/doc-changeevents-pedido-changeevent-change-data-capture.md
-[15:17:06] INFO  [50/60] Queue:Queue:Fila_Pedidos
-[15:17:06] INFO  Queue:Queue:Fila_Pedidos: processando
-[15:17:06] INFO  Queue:Queue:Fila_Pedidos: SUCCESS -> saida/docs/doc-dev-101326/doc-fila-pedidos-queue.md
-[15:17:06] INFO  [51/60] ExperienceBundle:ExperienceBundle:Portal_Clientes1
-[15:17:06] INFO  ExperienceBundle:ExperienceBundle:Portal_Clientes1: processando
-[15:17:06] INFO  ExperienceBundle:ExperienceBundle:Portal_Clientes1: SUCCESS -> saida/docs/doc-dev-101326/doc-portal-clientes1-experience.md
-[15:17:06] INFO  [52/60] OmniDataTransform:OmniDataTransform:ExtrairPedido
-[15:17:06] INFO  OmniDataTransform:OmniDataTransform:ExtrairPedido: processando
-[15:17:06] INFO  OmniDataTransform:OmniDataTransform:ExtrairPedido: SUCCESS -> saida/docs/doc-dev-101326/doc-extrairpedido-dataraptor.md
-[15:17:06] INFO  [53/60] OmniIntegrationProcedure:OmniIntegrationProcedure:Pedido_EnviarERP_Procedure_1
-[15:17:06] INFO  OmniIntegrationProcedure:OmniIntegrationProcedure:Pedido_EnviarERP_Procedure_1: processando
-[15:17:06] INFO  OmniIntegrationProcedure:OmniIntegrationProcedure:Pedido_EnviarERP_Procedure_1: SUCCESS -> saida/docs/doc-dev-101326/doc-pedido-enviarerp-procedure-1-integration-procedure.md
-[15:17:06] INFO  [54/60] OmniScript:OmniScript:Vendas_CriarPedido_Portuguese_1
-[15:17:06] INFO  OmniScript:OmniScript:Vendas_CriarPedido_Portuguese_1: processando
-[15:17:06] INFO  OmniScript:OmniScript:Vendas_CriarPedido_Portuguese_1: SUCCESS -> saida/docs/doc-dev-101326/doc-vendas-criarpedido-portuguese-1-omniscript.md
-[15:17:06] INFO  [55/60] OmniUiCard:OmniUiCard:CartaoPedido_1
-[15:17:06] INFO  OmniUiCard:OmniUiCard:CartaoPedido_1: processando
-[15:17:06] INFO  OmniUiCard:OmniUiCard:CartaoPedido_1: SUCCESS -> saida/docs/doc-dev-101326/doc-cartaopedido-1-flexcard.md
-[15:17:06] INFO  [56/60] SharingRules:SharingRules:Pedido__c
-[15:17:06] INFO  SharingRules:SharingRules:Pedido__c: processando
-[15:17:06] INFO  SharingRules:SharingRules:Pedido__c: SUCCESS -> saida/docs/doc-dev-101326/doc-pedido-c-sharing-rules.md
-[15:17:06] INFO  [57/60] Role:Role:Diretoria
-[15:17:06] INFO  Role:Role:Diretoria: processando
-[15:17:06] INFO  Role:Role:Diretoria: SUCCESS -> saida/docs/doc-dev-101326/doc-diretoria-role.md
-[15:17:06] INFO  [58/60] Role:Role:Gerente_Vendas
-[15:17:06] INFO  Role:Role:Gerente_Vendas: processando
-[15:17:06] INFO  Role:Role:Gerente_Vendas: SUCCESS -> saida/docs/doc-dev-101326/doc-gerente-vendas-role.md
-[15:17:06] INFO  [59/60] Role:Role:Vendas
-[15:17:06] INFO  Role:Role:Vendas: processando
-[15:17:07] INFO  Role:Role:Vendas: SUCCESS -> saida/docs/doc-dev-101326/doc-vendas-role.md
-[15:17:07] INFO  [60/60] OrgSecurity:SecuritySettings:Security
-[15:17:07] INFO  OrgSecurity:SecuritySettings:Security: processando
-[15:17:07] INFO  OrgSecurity:SecuritySettings:Security: SUCCESS -> saida/docs/doc-dev-101326/doc-security-org-security.md
-[15:17:07] INFO  Execução run-20261013-151653 finalizada: SUCCESS {'SUCCESS': 60}
-[15:17:07] INFO  Cobertura: COMPLETE — 60 documentada(s) de 60 no escopo; lacunas bloqueantes: 0; avisos: 0
-[15:17:07] INFO  Tipos: configurados 46, processados 46, documentados 36, sem modelo 0, fora do escopo 0, não habilitados 0, descobertos e não configurados 5
-[15:17:07] INFO  Log: runs/run-20261013-151653.json
+[20:32:32] INFO  Seleção ALL: {'ApexClass': ['ALL'], 'ApexTrigger': ['ALL'], 'AssignmentRules': ['ALL'], 'AutoResponseRules': ['ALL'], 'BusinessProcess': ['ALL'], 'Certificate': ['ALL'], 'ChangeDataCapture': ['ALL'], 'ConnectedApp': ['ALL'], 'CustomMetadata': ['ALL'], 'CustomObject': ['ALL'], 'CustomSite': ['ALL'], 'EscalationRules': ['ALL'], 'ExperienceBundle': ['ALL'], 'ExternalClientApp': ['ALL'], 'ExternalCredential': ['ALL'], 'FlexiPage': ['ALL'], 'Flow': ['ALL'], 'LeadConvertSettings': ['ALL'], 'LightningComponentBundle': ['ALL'], 'NamedCredential': ['ALL'], 'Network': ['ALL'], 'OmniDataTransform': ['ALL'], 'OmniIntegrationProcedure': ['ALL'], 'OmniScript': ['ALL'], 'OmniUiCard': ['ALL'], 'OpportunitySplitType': ['ALL'], 'OrgSecurity': ['ALL'], 'PermissionSet': ['ALL'], 'PermissionSetGroup': ['ALL'], 'PlatformEvent': ['ALL'], 'Profile': ['ALL'], 'PublicGroup': ['ALL'], 'Queue': ['ALL'], 'RemoteSiteSetting': ['ALL'], 'Role': ['ALL'], 'SharingRules': ['ALL'], 'Territory2Model': ['ALL']}
+[20:32:32] WARN  Verificação de Git indisponível (fora de repositório Git): proteção de versionamento não verificada
+[20:32:32] INFO  Passo 1: Salesforce CLI 2.60.0 (mínima 2.0.0)
+[20:32:32] INFO  Passo 2: alias 'dev' autenticado
+[20:32:32] INFO  Passo 3: `sf org display` exibiu credenciais; gravado só o envelope sanitizado
+[20:32:32] INFO  Passo 3: usuario.simulado@example.com conectado; API 67.0 (detectada 67.0, fonte: sf org display)
+[20:32:32] INFO  Passo 3b: org 00D000000000000AAA aprovada (approvedOrgs)
+[20:32:32] INFO  Passo 3c: token de acesso obtido via `sf org display` (não persistido)
+[20:32:32] INFO  Passo 4: grupos habilitados: Flow, ExternalClientApp, ExternalCredential, ConnectedApp, CustomObject, CustomMetadata, NamedCredential, RemoteSiteSetting, Certificate, ApexClass, ApexTrigger, LightningComponentBundle, FlexiPage, PlatformEvent, ChangeDataCapture, AssignmentRules, AutoResponseRules, EscalationRules, Queue, BusinessProcess, LeadConvertSettings, Territory2Model, OpportunitySplitType, Network, CustomSite, ExperienceBundle, OmniDataTransform, OmniIntegrationProcedure, OmniScript, OmniUiCard, PermissionSet, Profile, PermissionSetGroup, SharingRules, Role, PublicGroup, OrgSecurity
+[20:32:32] INFO  Passo 6: Flow -> 4 componente(s)
+[20:32:32] INFO  Passo 6: FlowDefinition -> 1 componente(s)
+[20:32:32] INFO  Passo 6: ExternalClientApplication -> 1 componente(s)
+[20:32:32] INFO  Passo 6: ExtlClntAppOauthSettings -> 2 componente(s)
+[20:32:32] INFO  Passo 6: ExtlClntAppConfigurablePolicies -> 1 componente(s)
+[20:32:32] INFO  Passo 6: ExtlClntAppOauthConfigurablePolicies -> 1 componente(s)
+[20:32:32] INFO  Passo 6: ExternalCredential -> 1 componente(s)
+[20:32:32] INFO  Passo 6: ConnectedApp -> 1 componente(s)
+[20:32:32] INFO  Passo 6: CustomObject -> 4 componente(s)
+[20:32:32] INFO  Passo 6: CustomMetadata -> 2 componente(s)
+[20:32:32] INFO  Passo 6: NamedCredential -> 2 componente(s)
+[20:32:32] INFO  Passo 6: RemoteSiteSetting -> 1 componente(s)
+[20:32:33] INFO  Passo 6: Certificate -> 1 componente(s)
+[20:32:33] INFO  Passo 6: ApexClass -> 9 componente(s)
+[20:32:33] INFO  Passo 6: ApexTrigger -> 4 componente(s)
+[20:32:33] INFO  Passo 6: LightningComponentBundle -> 4 componente(s)
+[20:32:33] INFO  Passo 6: FlexiPage -> 2 componente(s)
+[20:32:33] INFO  Passo 6: PlatformEventChannelMember -> 2 componente(s)
+[20:32:33] INFO  Passo 6: AssignmentRules -> 1 componente(s)
+[20:32:33] INFO  Passo 6: AutoResponseRules -> 1 componente(s)
+[20:32:33] INFO  Passo 6: EscalationRules -> 1 componente(s)
+[20:32:33] INFO  Passo 6: Queue -> 1 componente(s)
+[20:32:33] INFO  Passo 6: BusinessProcess -> 1 componente(s)
+[20:32:33] INFO  Passo 6: Territory2Model -> 1 componente(s)
+[20:32:33] INFO  Passo 6: Territory2 -> 2 componente(s)
+[20:32:33] INFO  Passo 6: Territory2Rule -> 1 componente(s)
+[20:32:33] INFO  Passo 6: OpportunitySplitType -> 1 componente(s)
+[20:32:33] INFO  Passo 6: Network -> 1 componente(s)
+[20:32:33] INFO  Passo 6: CustomSite -> 1 componente(s)
+[20:32:33] INFO  Passo 6: ExperienceBundle -> 1 componente(s)
+[20:32:33] INFO  Passo 6: OmniDataTransform -> 1 componente(s)
+[20:32:33] INFO  Passo 6: OmniIntegrationProcedure -> 1 componente(s)
+[20:32:33] INFO  Passo 6: OmniScript -> 1 componente(s)
+[20:32:33] INFO  Passo 6: OmniUiCard -> 1 componente(s)
+[20:32:33] INFO  Passo 6: PermissionSet -> 2 componente(s)
+[20:32:33] INFO  Passo 6: Profile -> 3 componente(s)
+[20:32:33] INFO  Passo 6: PermissionSetGroup -> 1 componente(s)
+[20:32:33] INFO  Passo 6: SharingRules -> 1 componente(s)
+[20:32:34] INFO  Passo 6: Role -> 3 componente(s)
+[20:32:34] INFO  Passo 6: Group -> 1 componente(s)
+[20:32:34] INFO  Passo 6: RecordType (conferência) -> 3 componente(s)
+[20:32:34] INFO  Passo 6b: 10 fonte(s) de acesso; índice em inventory/org-dev/api-v67/access/access-index.json
+[20:32:34] INFO  [1/60] Flow:Flow:Meu_Flow
+[20:32:34] INFO  Flow:Flow:Meu_Flow: processando
+[20:32:34] INFO  Flow:Flow:Meu_Flow: SUCCESS -> saida/docs/doc-dev-101326/doc-meu-flow-flow.md
+[20:32:34] INFO  [2/60] Flow:Flow:Pedido_Evento_Flow
+[20:32:34] INFO  Flow:Flow:Pedido_Evento_Flow: processando
+[20:32:34] INFO  Flow:Flow:Pedido_Evento_Flow: SUCCESS -> saida/docs/doc-dev-101326/doc-pedido-evento-flow-flow.md
+[20:32:34] INFO  [3/60] Flow:Flow:Processa_Pedido
+[20:32:34] INFO  Flow:Flow:Processa_Pedido: processando
+[20:32:34] INFO  Flow:Flow:Processa_Pedido: SUCCESS -> saida/docs/doc-dev-101326/doc-processa-pedido-flow.md
+[20:32:34] INFO  [4/60] Flow:Flow:Tela_Cadastro
+[20:32:34] INFO  Flow:Flow:Tela_Cadastro: processando
+[20:32:34] INFO  Flow:Flow:Tela_Cadastro: SUCCESS -> saida/docs/doc-dev-101326/doc-tela-cadastro-flow.md
+[20:32:34] INFO  [5/60] ExternalClientApp:ExternalClientApplication:Minha_ECA
+[20:32:34] INFO  ExternalClientApp:ExternalClientApplication:Minha_ECA: processando
+[20:32:34] INFO  ExternalClientApp:ExternalClientApplication:Minha_ECA: SUCCESS -> saida/docs/doc-dev-101326/doc-minha-eca-external-client-app.md
+[20:32:34] INFO  [6/60] ExternalCredential:ExternalCredential:Minha_EC
+[20:32:34] INFO  ExternalCredential:ExternalCredential:Minha_EC: processando
+[20:32:35] INFO  ExternalCredential:ExternalCredential:Minha_EC: SUCCESS -> saida/docs/doc-dev-101326/doc-minha-ec-external-credential.md
+[20:32:35] INFO  [7/60] ConnectedApp:ConnectedApp:Meu_App
+[20:32:35] INFO  ConnectedApp:ConnectedApp:Meu_App: processando
+[20:32:35] INFO  ConnectedApp:ConnectedApp:Meu_App: SUCCESS -> saida/docs/doc-dev-101326/doc-meu-app-connected-app.md
+[20:32:35] INFO  [8/60] CustomObject:CustomObject:Pedido__c
+[20:32:35] INFO  CustomObject:CustomObject:Pedido__c: processando
+[20:32:35] INFO  CustomObject:CustomObject:Pedido__c: SUCCESS -> saida/docs/doc-dev-101326/doc-pedido-c-custom-object.md
+[20:32:35] INFO  [9/60] CustomMetadata:CustomMetadata:Config__mdt
+[20:32:35] INFO  CustomMetadata:CustomMetadata:Config__mdt: processando
+[20:32:35] INFO  CustomMetadata:CustomMetadata:Config__mdt: SUCCESS -> saida/docs/doc-dev-101326/doc-config-mdt-custom-metadata.md
+[20:32:35] INFO  [10/60] NamedCredential:NamedCredential:Minha_NC
+[20:32:35] INFO  NamedCredential:NamedCredential:Minha_NC: processando
+[20:32:35] INFO  NamedCredential:NamedCredential:Minha_NC: SUCCESS -> saida/docs/doc-dev-101326/doc-minha-nc-named-credential.md
+[20:32:35] INFO  [11/60] NamedCredential:NamedCredential:NC_Legada
+[20:32:35] INFO  NamedCredential:NamedCredential:NC_Legada: processando
+[20:32:35] INFO  NamedCredential:NamedCredential:NC_Legada: SUCCESS -> saida/docs/doc-dev-101326/doc-nc-legada-named-credential.md
+[20:32:35] INFO  [12/60] RemoteSiteSetting:RemoteSiteSetting:Meu_Site
+[20:32:35] INFO  RemoteSiteSetting:RemoteSiteSetting:Meu_Site: processando
+[20:32:35] INFO  RemoteSiteSetting:RemoteSiteSetting:Meu_Site: SUCCESS -> saida/docs/doc-dev-101326/doc-meu-site-remote-site-setting.md
+[20:32:35] INFO  [13/60] Certificate:Certificate:Meu_Certificado
+[20:32:35] INFO  Certificate:Certificate:Meu_Certificado: processando
+[20:32:35] INFO  Certificate:Certificate:Meu_Certificado: SUCCESS -> saida/docs/doc-dev-101326/doc-meu-certificado-certificate.md
+[20:32:35] INFO  [14/60] ApexClass:ApexClass:AccountSyncQueueable
+[20:32:35] INFO  ApexClass:ApexClass:AccountSyncQueueable: processando
+[20:32:35] INFO  ApexClass:ApexClass:AccountSyncQueueable: SUCCESS -> saida/docs/doc-dev-101326/doc-accountsyncqueueable-apex-class.md
+[20:32:35] INFO  [15/60] ApexClass:ApexClass:DailyOrderCleanupScheduler
+[20:32:35] INFO  ApexClass:ApexClass:DailyOrderCleanupScheduler: processando
+[20:32:36] INFO  ApexClass:ApexClass:DailyOrderCleanupScheduler: SUCCESS -> saida/docs/doc-dev-101326/doc-dailyordercleanupscheduler-apex-class.md
+[20:32:36] INFO  [16/60] ApexClass:ApexClass:IntegrationAsyncHelper
+[20:32:36] INFO  ApexClass:ApexClass:IntegrationAsyncHelper: processando
+[20:32:36] INFO  ApexClass:ApexClass:IntegrationAsyncHelper: SUCCESS -> saida/docs/doc-dev-101326/doc-integrationasynchelper-apex-class.md
+[20:32:36] INFO  [17/60] ApexClass:ApexClass:MultiRoleJob
+[20:32:36] INFO  ApexClass:ApexClass:MultiRoleJob: processando
+[20:32:36] INFO  ApexClass:ApexClass:MultiRoleJob: SUCCESS -> saida/docs/doc-dev-101326/doc-multirolejob-apex-class.md
+[20:32:36] INFO  [18/60] ApexClass:ApexClass:OrderCleanupBatch
+[20:32:36] INFO  ApexClass:ApexClass:OrderCleanupBatch: processando
+[20:32:36] INFO  ApexClass:ApexClass:OrderCleanupBatch: SUCCESS -> saida/docs/doc-dev-101326/doc-ordercleanupbatch-apex-class.md
+[20:32:36] INFO  [19/60] ApexClass:ApexClass:PedidoController
+[20:32:36] INFO  ApexClass:ApexClass:PedidoController: processando
+[20:32:36] INFO  ApexClass:ApexClass:PedidoController: SUCCESS -> saida/docs/doc-dev-101326/doc-pedidocontroller-apex-class.md
+[20:32:36] INFO  [20/60] ApexClass:ApexClass:PedidoService
+[20:32:36] INFO  ApexClass:ApexClass:PedidoService: processando
+[20:32:36] INFO  ApexClass:ApexClass:PedidoService: SUCCESS -> saida/docs/doc-dev-101326/doc-pedidoservice-apex-class.md
+[20:32:36] INFO  [21/60] ApexClass:ApexClass:PedidoTriggerHandler
+[20:32:36] INFO  ApexClass:ApexClass:PedidoTriggerHandler: processando
+[20:32:36] INFO  ApexClass:ApexClass:PedidoTriggerHandler: SUCCESS -> saida/docs/doc-dev-101326/doc-pedidotriggerhandler-apex-class.md
+[20:32:36] INFO  [22/60] AssignmentRules:AssignmentRules:Case
+[20:32:36] INFO  AssignmentRules:AssignmentRules:Case: processando
+[20:32:36] INFO  AssignmentRules:AssignmentRules:Case: SUCCESS -> saida/docs/doc-dev-101326/doc-case-assignment-rules.md
+[20:32:36] INFO  [23/60] AutoResponseRules:AutoResponseRules:Case
+[20:32:36] INFO  AutoResponseRules:AutoResponseRules:Case: processando
+[20:32:36] INFO  AutoResponseRules:AutoResponseRules:Case: SUCCESS -> saida/docs/doc-dev-101326/doc-case-auto-response-rules.md
+[20:32:36] INFO  [24/60] EscalationRules:EscalationRules:Case
+[20:32:36] INFO  EscalationRules:EscalationRules:Case: processando
+[20:32:36] INFO  EscalationRules:EscalationRules:Case: SUCCESS -> saida/docs/doc-dev-101326/doc-case-escalation-rules.md
+[20:32:37] INFO  [25/60] BusinessProcess:BusinessProcess:Opportunity.Venda_Enterprise
+[20:32:37] INFO  BusinessProcess:BusinessProcess:Opportunity.Venda_Enterprise: processando
+[20:32:37] INFO  BusinessProcess:BusinessProcess:Opportunity.Venda_Enterprise: SUCCESS -> saida/docs/doc-dev-101326/doc-opportunity-venda-enterprise-business-process.md
+[20:32:37] INFO  [26/60] LeadConvertSettings:LeadConvertSettings:LeadConvertSettings
+[20:32:37] INFO  LeadConvertSettings:LeadConvertSettings:LeadConvertSettings: processando
+[20:32:37] INFO  LeadConvertSettings:LeadConvertSettings:LeadConvertSettings: SUCCESS -> saida/docs/doc-dev-101326/doc-leadconvertsettings-lead-convert.md
+[20:32:37] INFO  [27/60] Territory2Model:Territory2Model:Modelo_Vendas
+[20:32:37] INFO  Territory2Model:Territory2Model:Modelo_Vendas: processando
+[20:32:37] INFO  Territory2Model:Territory2Model:Modelo_Vendas: SUCCESS -> saida/docs/doc-dev-101326/doc-modelo-vendas-territory-model.md
+[20:32:37] INFO  [28/60] OpportunitySplitType:OpportunitySplitType:Receita_Principal
+[20:32:37] INFO  OpportunitySplitType:OpportunitySplitType:Receita_Principal: processando
+[20:32:37] INFO  OpportunitySplitType:OpportunitySplitType:Receita_Principal: SUCCESS -> saida/docs/doc-dev-101326/doc-receita-principal-opportunity-split-type.md
+[20:32:37] INFO  [29/60] Network:Network:Portal_Clientes
+[20:32:37] INFO  Network:Network:Portal_Clientes: processando
+[20:32:37] INFO  Network:Network:Portal_Clientes: SUCCESS -> saida/docs/doc-dev-101326/doc-portal-clientes-network.md
+[20:32:37] INFO  [30/60] CustomSite:CustomSite:Portal_Clientes
+[20:32:37] INFO  CustomSite:CustomSite:Portal_Clientes: processando
+[20:32:37] INFO  CustomSite:CustomSite:Portal_Clientes: SUCCESS -> saida/docs/doc-dev-101326/doc-portal-clientes-site.md
+[20:32:37] INFO  [31/60] PermissionSet:PermissionSet:Integracao_API
+[20:32:37] INFO  PermissionSet:PermissionSet:Integracao_API: processando
+[20:32:37] INFO  PermissionSet:PermissionSet:Integracao_API: SUCCESS -> saida/docs/doc-dev-101326/doc-integracao-api-permission-set.md
+[20:32:37] INFO  [32/60] PermissionSet:PermissionSet:Leitura_Pedidos
+[20:32:37] INFO  PermissionSet:PermissionSet:Leitura_Pedidos: processando
+[20:32:37] INFO  PermissionSet:PermissionSet:Leitura_Pedidos: SUCCESS -> saida/docs/doc-dev-101326/doc-leitura-pedidos-permission-set.md
+[20:32:37] INFO  [33/60] Profile:Profile:Admin
+[20:32:37] INFO  Profile:Profile:Admin: processando
+[20:32:38] INFO  Profile:Profile:Admin: SUCCESS -> saida/docs/doc-dev-101326/doc-admin-profile.md
+[20:32:38] INFO  [34/60] Profile:Profile:Portal Clientes Profile
+[20:32:38] INFO  Profile:Profile:Portal Clientes Profile: processando
+[20:32:38] INFO  Profile:Profile:Portal Clientes Profile: SUCCESS -> saida/docs/doc-dev-101326/doc-portal-clientes-profile-profile.md
+[20:32:38] INFO  [35/60] Profile:Profile:Vendas
+[20:32:38] INFO  Profile:Profile:Vendas: processando
+[20:32:38] INFO  Profile:Profile:Vendas: SUCCESS -> saida/docs/doc-dev-101326/doc-vendas-profile.md
+[20:32:38] INFO  [36/60] PermissionSetGroup:PermissionSetGroup:PSG_Integracao
+[20:32:38] INFO  PermissionSetGroup:PermissionSetGroup:PSG_Integracao: processando
+[20:32:38] INFO  PermissionSetGroup:PermissionSetGroup:PSG_Integracao: SUCCESS -> saida/docs/doc-dev-101326/doc-psg-integracao-permission-set-group.md
+[20:32:38] INFO  [37/60] PublicGroup:Group:Grupo_Suporte
+[20:32:38] INFO  PublicGroup:Group:Grupo_Suporte: processando
+[20:32:38] INFO  PublicGroup:Group:Grupo_Suporte: SUCCESS -> saida/docs/doc-dev-101326/doc-grupo-suporte-public-group.md
+[20:32:39] INFO  [38/60] ApexTrigger:ApexTrigger:PedidoAuditoriaTrigger
+[20:32:39] INFO  ApexTrigger:ApexTrigger:PedidoAuditoriaTrigger: processando
+[20:32:39] INFO  ApexTrigger:ApexTrigger:PedidoAuditoriaTrigger: SUCCESS -> saida/docs/doc-dev-101326/doc-pedidoauditoriatrigger-apex-trigger.md
+[20:32:39] INFO  [39/60] ApexTrigger:ApexTrigger:PedidoChangeTrigger
+[20:32:39] INFO  ApexTrigger:ApexTrigger:PedidoChangeTrigger: processando
+[20:32:39] INFO  ApexTrigger:ApexTrigger:PedidoChangeTrigger: SUCCESS -> saida/docs/doc-dev-101326/doc-pedidochangetrigger-apex-trigger.md
+[20:32:39] INFO  [40/60] ApexTrigger:ApexTrigger:PedidoEventoTrigger
+[20:32:39] INFO  ApexTrigger:ApexTrigger:PedidoEventoTrigger: processando
+[20:32:39] INFO  ApexTrigger:ApexTrigger:PedidoEventoTrigger: SUCCESS -> saida/docs/doc-dev-101326/doc-pedidoeventotrigger-apex-trigger.md
+[20:32:39] INFO  [41/60] ApexTrigger:ApexTrigger:PedidoTrigger
+[20:32:39] INFO  ApexTrigger:ApexTrigger:PedidoTrigger: processando
+[20:32:39] INFO  ApexTrigger:ApexTrigger:PedidoTrigger: SUCCESS -> saida/docs/doc-dev-101326/doc-pedidotrigger-apex-trigger.md
+[20:32:39] INFO  [42/60] LightningComponentBundle:LightningComponentBundle:pedidoAcaoRapida
+[20:32:39] INFO  LightningComponentBundle:LightningComponentBundle:pedidoAcaoRapida: processando
+[20:32:39] INFO  LightningComponentBundle:LightningComponentBundle:pedidoAcaoRapida: SUCCESS -> saida/docs/doc-dev-101326/doc-pedidoacaorapida-lwc.md
+[20:32:39] INFO  [43/60] LightningComponentBundle:LightningComponentBundle:pedidoPainel
+[20:32:39] INFO  LightningComponentBundle:LightningComponentBundle:pedidoPainel: processando
+[20:32:39] INFO  LightningComponentBundle:LightningComponentBundle:pedidoPainel: SUCCESS -> saida/docs/doc-dev-101326/doc-pedidopainel-lwc.md
+[20:32:39] INFO  [44/60] LightningComponentBundle:LightningComponentBundle:pedidoTelaFlow
+[20:32:39] INFO  LightningComponentBundle:LightningComponentBundle:pedidoTelaFlow: processando
+[20:32:39] INFO  LightningComponentBundle:LightningComponentBundle:pedidoTelaFlow: SUCCESS -> saida/docs/doc-dev-101326/doc-pedidotelaflow-lwc.md
+[20:32:39] INFO  [45/60] FlexiPage:FlexiPage:Pedido_Record_Page
+[20:32:39] INFO  FlexiPage:FlexiPage:Pedido_Record_Page: processando
+[20:32:39] INFO  FlexiPage:FlexiPage:Pedido_Record_Page: SUCCESS -> saida/docs/doc-dev-101326/doc-pedido-record-page-flexipage.md
+[20:32:39] INFO  [46/60] FlexiPage:FlexiPage:Pedidos_App_Page
+[20:32:39] INFO  FlexiPage:FlexiPage:Pedidos_App_Page: processando
+[20:32:39] INFO  FlexiPage:FlexiPage:Pedidos_App_Page: SUCCESS -> saida/docs/doc-dev-101326/doc-pedidos-app-page-flexipage.md
+[20:32:39] INFO  [47/60] PlatformEvent:CustomObject:Pedido_Evento__e
+[20:32:39] INFO  PlatformEvent:CustomObject:Pedido_Evento__e: processando
+[20:32:39] INFO  PlatformEvent:CustomObject:Pedido_Evento__e: SUCCESS -> saida/docs/doc-dev-101326/doc-pedido-evento-e-platform-event.md
+[20:32:39] INFO  [48/60] ChangeDataCapture:PlatformEventChannelMember:Canal_Pedido_Pedido_ChangeEvent
+[20:32:39] INFO  ChangeDataCapture:PlatformEventChannelMember:Canal_Pedido_Pedido_ChangeEvent: processando
+[20:32:40] INFO  ChangeDataCapture:PlatformEventChannelMember:Canal_Pedido_Pedido_ChangeEvent: SUCCESS -> saida/docs/doc-dev-101326/doc-canal-pedido-pedido-changeevent-change-data-capture.md
+[20:32:40] INFO  [49/60] ChangeDataCapture:PlatformEventChannelMember:ChangeEvents_Pedido_ChangeEvent
+[20:32:40] INFO  ChangeDataCapture:PlatformEventChannelMember:ChangeEvents_Pedido_ChangeEvent: processando
+[20:32:40] INFO  ChangeDataCapture:PlatformEventChannelMember:ChangeEvents_Pedido_ChangeEvent: SUCCESS -> saida/docs/doc-dev-101326/doc-changeevents-pedido-changeevent-change-data-capture.md
+[20:32:40] INFO  [50/60] Queue:Queue:Fila_Pedidos
+[20:32:40] INFO  Queue:Queue:Fila_Pedidos: processando
+[20:32:40] INFO  Queue:Queue:Fila_Pedidos: SUCCESS -> saida/docs/doc-dev-101326/doc-fila-pedidos-queue.md
+[20:32:40] INFO  [51/60] ExperienceBundle:ExperienceBundle:Portal_Clientes1
+[20:32:40] INFO  ExperienceBundle:ExperienceBundle:Portal_Clientes1: processando
+[20:32:40] INFO  ExperienceBundle:ExperienceBundle:Portal_Clientes1: SUCCESS -> saida/docs/doc-dev-101326/doc-portal-clientes1-experience.md
+[20:32:40] INFO  [52/60] OmniDataTransform:OmniDataTransform:ExtrairPedido
+[20:32:40] INFO  OmniDataTransform:OmniDataTransform:ExtrairPedido: processando
+[20:32:40] INFO  OmniDataTransform:OmniDataTransform:ExtrairPedido: SUCCESS -> saida/docs/doc-dev-101326/doc-extrairpedido-dataraptor.md
+[20:32:40] INFO  [53/60] OmniIntegrationProcedure:OmniIntegrationProcedure:Pedido_EnviarERP_Procedure_1
+[20:32:40] INFO  OmniIntegrationProcedure:OmniIntegrationProcedure:Pedido_EnviarERP_Procedure_1: processando
+[20:32:40] INFO  OmniIntegrationProcedure:OmniIntegrationProcedure:Pedido_EnviarERP_Procedure_1: SUCCESS -> saida/docs/doc-dev-101326/doc-pedido-enviarerp-procedure-1-integration-procedure.md
+[20:32:40] INFO  [54/60] OmniScript:OmniScript:Vendas_CriarPedido_Portuguese_1
+[20:32:40] INFO  OmniScript:OmniScript:Vendas_CriarPedido_Portuguese_1: processando
+[20:32:40] INFO  OmniScript:OmniScript:Vendas_CriarPedido_Portuguese_1: SUCCESS -> saida/docs/doc-dev-101326/doc-vendas-criarpedido-portuguese-1-omniscript.md
+[20:32:40] INFO  [55/60] OmniUiCard:OmniUiCard:CartaoPedido_1
+[20:32:40] INFO  OmniUiCard:OmniUiCard:CartaoPedido_1: processando
+[20:32:40] INFO  OmniUiCard:OmniUiCard:CartaoPedido_1: SUCCESS -> saida/docs/doc-dev-101326/doc-cartaopedido-1-flexcard.md
+[20:32:40] INFO  [56/60] SharingRules:SharingRules:Pedido__c
+[20:32:40] INFO  SharingRules:SharingRules:Pedido__c: processando
+[20:32:40] INFO  SharingRules:SharingRules:Pedido__c: SUCCESS -> saida/docs/doc-dev-101326/doc-pedido-c-sharing-rules.md
+[20:32:40] INFO  [57/60] Role:Role:Diretoria
+[20:32:40] INFO  Role:Role:Diretoria: processando
+[20:32:40] INFO  Role:Role:Diretoria: SUCCESS -> saida/docs/doc-dev-101326/doc-diretoria-role.md
+[20:32:40] INFO  [58/60] Role:Role:Gerente_Vendas
+[20:32:40] INFO  Role:Role:Gerente_Vendas: processando
+[20:32:40] INFO  Role:Role:Gerente_Vendas: SUCCESS -> saida/docs/doc-dev-101326/doc-gerente-vendas-role.md
+[20:32:40] INFO  [59/60] Role:Role:Vendas
+[20:32:40] INFO  Role:Role:Vendas: processando
+[20:32:40] INFO  Role:Role:Vendas: SUCCESS -> saida/docs/doc-dev-101326/doc-vendas-role.md
+[20:32:40] INFO  [60/60] OrgSecurity:SecuritySettings:Security
+[20:32:40] INFO  OrgSecurity:SecuritySettings:Security: processando
+[20:32:40] INFO  OrgSecurity:SecuritySettings:Security: SUCCESS -> saida/docs/doc-dev-101326/doc-security-org-security.md
+[20:32:40] INFO  Execução run-20261013-203232 finalizada: SUCCESS {'SUCCESS': 60}
+[20:32:40] INFO  Cobertura: COMPLETE — 60 documentada(s) de 60 no escopo; lacunas bloqueantes: 0; avisos: 0
+[20:32:40] INFO  Tipos: configurados 46, processados 46, documentados 36, sem modelo 0, fora do escopo 0, não habilitados 0, descobertos e não configurados 5
+[20:32:40] INFO  Log: runs/run-20261013-203232.json
 ```
 
 ## 2. Comandos executados na CLI (por passo)
@@ -665,7 +665,7 @@ O passo 5 (`describeValueType`) é SOAP direto na Metadata API, fora da CLI; o p
         "fullName": "Meu_Flow",
         "type": "Flow",
         "state": "Created",
-        "filePath": "/tmp/sfdocs-retrieve-x4ihmjzk/force-app/main/default/flows/Meu_Flow.flow-meta.xml"
+        "filePath": "/tmp/sfdocs-retrieve-acq8ekri/force-app/main/default/flows/Meu_Flow.flow-meta.xml"
       }
     ]
   }
@@ -1365,8 +1365,8 @@ inventory/org-dev/api-v67/territory2-models/normalized/modelo-vendas.json
 inventory/org-dev/api-v67/territory2-models/retrieve/modelo-vendas-regra-sp.raw.json
 inventory/org-dev/api-v67/territory2-models/retrieve/modelo-vendas-sudeste.raw.json
 inventory/org-dev/api-v67/territory2-models/retrieve/modelo-vendas.raw.json
-runs/run-20261013-151653/resumo.md
-runs/run-20261013-151653.json
+runs/run-20261013-203232/resumo.md
+runs/run-20261013-203232.json
 saida/docs/doc-dev-101326/.manifest.json
 saida/docs/doc-dev-101326/.org.json
 saida/docs/doc-dev-101326/doc-accountsyncqueueable-apex-class.md

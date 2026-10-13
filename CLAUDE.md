@@ -39,6 +39,12 @@ Esses desvios devem ser declarados em `config/metadata-types-mvp.json`.
 5. https://help.salesforce.com/
 6. https://developer.salesforce.com/docs/platform/api-rest/
 
+## Restrição atual: produção sem login
+
+- Por ora não é permitido login em org produtiva. O MVP exige login (`run`): use só em org de desenvolvimento ou sandbox autorizada.
+- Cenário produtivo previsto: metadata do diretório de clone do repositório **Flosum** e dados de objetos internos exportados pelo **Salesforce Inspector** para um diretório. O plano de ação ainda está em definição pela responsável.
+- **Não implemente esse modo** (nem altere o pipeline para ele) sem aprovação explícita. Referência: `documentation/como-testar-o-mvp.md`, seção 3.
+
 ## AWS
 
 Não introduza serviços AWS sem solicitação explícita.

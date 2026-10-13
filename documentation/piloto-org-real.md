@@ -6,6 +6,8 @@ Os testes automatizados usam uma Salesforce CLI **simulada**: provam o pipeline,
 2. As premissas marcadas *a confirmar* (nomes de elemento, consultas, formatos da CLI) valem na org?
 3. Nada que não deveria (token, segredo, usuário, e-mail, dado de exemplo) aparece nos documentos?
 
+> ⚠️ **Somente org não produtiva.** Por ora **não é permitido login em produção**, e o MVP precisa de login em todos os passos de coleta. O cenário produtivo (projeto do clone do repositório Flosum mais dados internos exportados pelo Salesforce Inspector) **ainda não é suportado**; o plano está em [`como-testar-o-mvp.md`](como-testar-o-mvp.md), seção 3.
+
 > **Segurança:** use uma org de desenvolvimento ou sandbox com autorização do responsável. Nenhum comando abaixo imprime o access token. Ao relatar, **não cole** tokens, senhas, `consumerSecret`, o conteúdo de `inventory/**/components/`, usuários, e-mails, `propertySetConfig` nem dados de registros.
 
 Convenções: troque `dev` pelo alias da org e `<Nome>` pelo nome de API de um componente real. Os comandos rodam na raiz do utilitário. Os caminhos de saída usam `inventory/org-<alias>/api-v<N>/`; ajuste e defina uma vez por sessão:
@@ -42,6 +44,17 @@ Tipos da org sem grupo configurado **não** são documentados. O `resumo.md` lis
 - [ ] Usuário da org com *View Setup and Configuration* e permissão de retrieve (Modify Metadata ou equivalente aprovado). Registre o perfil usado.
 - [ ] Pasta de trabalho em armazenamento aprovado e com acesso restrito. `catalog/`, `inventory/`, `runs/` e `saida/` nunca vão para o Git nem para artifacts (ver `protecao-de-dados.md`).
 - [ ] Combinado quem revisa os documentos e quando os dados locais serão removidos (seção 10).
+- [ ] Componentes do piloto escolhidos por fase (nomes de API), anotados antes de começar.
+
+### Escopo de cada execução: `--component` sempre
+
+Durante todo o piloto, mantenha `selection.mode = "ALL"` (padrão) e **informe `--component` em todo `run`** das fases A a C:
+
+- Com `--component`, o retrieve de acesso (passo 6b) e o retrieve por componente pedem só `Tipo:Nome` dos componentes informados (minimização de dados; correção ADD-01). Sem `--component`, o `ALL` recupera o tipo inteiro (todo o código Apex, todos os Flows...).
+- `--component` vale para todos os `--group` do mesmo comando: um nome que não pertence a um grupo é ignorado nele. Componentes fixos também precisam ser informados: `Security` (OrgSecurity) e `LeadConvertSettings`.
+- **Confira na lista "Documentados" do `resumo.md`** se todos os componentes pedidos aparecem. No `ALL`, um nome digitado errado não gera aviso de "não encontrado".
+- Relações comprovadas lendo o XML de candidatos ainda recuperam esses candidatos: os record types do objeto (BusinessProcess), as Networks (CustomSite) e os candidatos da External Client App. O resultado aparece no documento.
+- **Não use `selection.mode = SELECTED` no piloto:** a seleção é feita por metadata type e `CustomObject` é o tipo principal de dois grupos (CustomObject e PlatformEvent). Com `SELECTED`, o grupo PlatformEvent (fase C6) não é selecionável (achado ADD-09, pendente).
 
 ## 1. Validação sem org
 
@@ -77,7 +90,7 @@ sf org auth show-access-token --target-org dev --json | python3 -c "import json,
 **2.3 Aprovar a org.** A primeira execução para em `ORG_NOT_APPROVED` antes de qualquer inventário ou retrieve, e mostra `orgId`, alias, usuário e instance URL:
 
 ```bash
-bin/sf-docs.sh run --group RemoteSiteSetting --non-interactive
+bin/sf-docs.sh run --group RemoteSiteSetting --component <Site> --non-interactive
 ```
 
 Confira se é a org pretendida e registre-a em `config/config.json`:
@@ -93,7 +106,7 @@ Confira se é a org pretendida e registre-a em `config/config.json`:
 Um grupo pequeno, sem relacionados nem dados internos, para provar o caminho principal (inventário, retrieve, normalização, retrieve de acesso, Markdown):
 
 ```bash
-bin/sf-docs.sh run --group RemoteSiteSetting --non-interactive
+bin/sf-docs.sh run --group RemoteSiteSetting --component <Site> --non-interactive
 ```
 
 Abra `runs/<runId>/resumo.md` (o `runId` aparece no fim do log) e confira:
@@ -123,13 +136,13 @@ bin/sf-docs.sh run --group ApexClass --component <Classe> --non-interactive
 - [ ] `$INV/access/components/profiles/*.profile-meta.xml` contém `<classAccesses>` da classe.
 - [ ] O documento da classe termina com "Acesso e configuração" listando os perfis e permission sets que liberam a classe no Setup. **Compare com o Setup** (perfil → Acesso a classes Apex). Perfil que libera e não aparece = falha. Relate o perfil e só o trecho `<classAccesses>`.
 - [ ] Elementos não vazios quando deveriam ter valor: `objectPermissions`, `fieldPermissions`, `recordTypeVisibilities`, `customPermissions` (`name`/`enabled`), `userPermissions`, `PermissionSetGroup.permissionSets`, `SharingRules.sharedTo` e o formato de `externalCredentialPrincipal` (`<ExternalCredential>-<Principal>`).
-- [ ] **Volume:** anote o tempo do passo 6b no log e o tamanho de `$INV/access/` (`du -sh`). O retrieve de acesso traz **todos** os Profile, PermissionSet, PermissionSetGroup, Queue, SharingRules, CustomApplication e PlatformEventSubscriberConfig da org a cada execução.
+- [ ] **Volume:** anote o tempo do passo 6b no log e o tamanho de `$INV/access/` (`du -sh`). O retrieve de acesso traz **todos** os Profile, PermissionSet, PermissionSetGroup, Queue, SharingRules, CustomApplication e PlatformEventSubscriberConfig da org a cada execução, mais só os componentes informados em `--component`. Confira na primeira linha `project retrieve start` do log que a classe aparece como `ApexClass:<Classe>`, e não como `ApexClass` (tipo inteiro).
 
 **Passa se:** as concessões batem com o Setup para a classe escolhida.
 
 ## 5. Fase C — confirmação por grupo
 
-Rode uma fase por vez, com **poucos componentes** (`--component`), e só avance quando a anterior passar. Em cada fase:
+Rode uma fase por vez, sempre com `--component` (seção 0), e só avance quando a anterior passar. Os comandos abaixo mostram os grupos da fase; troque os `<...>` pelos componentes escolhidos. Em cada fase:
 
 - **Rodar:** o comando indicado.
 - **Conferir:** o documento contra o Setup e o `resumo.md`: "Com falha", "Dados internos indisponíveis" e "Relacionados não verificados".
@@ -140,7 +153,7 @@ Rode uma fase por vez, com **poucos componentes** (`--component`), e só avance 
 
 ```bash
 bin/sf-docs.sh run --group Flow --group CustomObject --group CustomMetadata --component <Flow> --component <Objeto__c> --component <Tipo__mdt> --non-interactive
-bin/sf-docs.sh run --group ExternalClientApp --group ExternalCredential --group NamedCredential --group ConnectedApp --group RemoteSiteSetting --group Certificate --non-interactive
+bin/sf-docs.sh run --group ExternalClientApp --group ExternalCredential --group NamedCredential --group ConnectedApp --group Certificate --component <ECA> --component <EC> --component <NC> --component <App> --component <Certificado> --non-interactive
 ```
 
 - **Flow:** versões e status batem com o Setup; o `FlowDefinition` relacionado aparece.
@@ -162,9 +175,10 @@ bin/sf-docs.sh run --group ApexClass --component <Classe> --component <ClasseBat
 ### C2 — Apex Trigger (Onda 02)
 
 ```bash
-bin/sf-docs.sh run --group ApexTrigger --group Flow --group CustomObject --group ApexClass --non-interactive
+bin/sf-docs.sh run --group ApexTrigger --group Flow --group CustomObject --group ApexClass --component <Trigger> --component <Objeto__c> --component <FlowDoObjeto> --component <ClasseHandler> --non-interactive
 ```
 
+- **Escopo:** a coexistência só mostra o que foi processado. Informe a trigger, o objeto, os Flows record-triggered do objeto e as classes chamadas; Flow não informado não aparece (o documento avisa).
 - **Coexistência:** compare "Coexistência no objeto e ordem de execução" com o Object Manager (Triggers) e o Flow Trigger Explorer. Flow record-triggered ausente = falha (relate `start.triggerType` e `start.object`). `triggerOrder` vem no XML do Flow?
 - **Classes chamadas:** classe ausente, ou nome que não é classe e aparece = falha; relate só a linha da chamada.
 - **Consulta:** `TableEnumOrId`, `IsValid` e `Usage*` existem em `ApexTrigger`?
@@ -183,7 +197,7 @@ bin/sf-docs.sh run --group LightningComponentBundle --group ApexClass --componen
 ### C4 — Páginas Lightning (Onda 04)
 
 ```bash
-bin/sf-docs.sh run --group FlexiPage --group CustomObject --group LightningComponentBundle --non-interactive
+bin/sf-docs.sh run --group FlexiPage --group CustomObject --group LightningComponentBundle --component <Pagina> --component <Objeto__c> --component <componente> --non-interactive
 ```
 
 - Regiões e componentes iguais ao Lightning App Builder.
@@ -193,7 +207,7 @@ bin/sf-docs.sh run --group FlexiPage --group CustomObject --group LightningCompo
 ### C5 — Segurança e governança (Onda 05)
 
 ```bash
-bin/sf-docs.sh run --group OrgSecurity --group CustomObject --group Profile --group Role --group PublicGroup --group SharingRules --group PermissionSetGroup --non-interactive
+bin/sf-docs.sh run --group OrgSecurity --group CustomObject --group Profile --group Role --group PublicGroup --group SharingRules --group PermissionSetGroup --component Security --component <Objeto__c> --component <Perfil> --component <Papel> --component <Grupo> --component <PSG> --non-interactive
 ```
 
 - **Settings:** o raw `$INV/org-security/retrieve/*.raw.json` traz `type: Settings` e `fullName: Security`? Se vier outro tipo, ajuste `fixedComponents.retrieveType`. Se `SecuritySettings` não aparecer em `sf org list metadata-types` (só `Settings`), o grupo fica `NOT_ENABLED`: relate.
@@ -203,7 +217,7 @@ bin/sf-docs.sh run --group OrgSecurity --group CustomObject --group Profile --gr
 ### C6 — Objetos de evento (Onda 06)
 
 ```bash
-bin/sf-docs.sh run --group PlatformEvent --group ChangeDataCapture --group ApexTrigger --group ApexClass --group Flow --non-interactive
+bin/sf-docs.sh run --group PlatformEvent --group ChangeDataCapture --group ApexTrigger --group ApexClass --group Flow --component <Evento__e> --component <MembroDoCanal> --component <TriggerDoEvento> --component <ClassePublicadora> --component <FlowDoEvento> --non-interactive
 ```
 
 - **Platform event:** o retrieve de `CustomObject:<Evento>__e` traz os campos? `eventType` e `publishBehavior` batem com o Setup?
@@ -214,7 +228,7 @@ bin/sf-docs.sh run --group PlatformEvent --group ChangeDataCapture --group ApexT
 ### C7 — Service Cloud (Onda 07)
 
 ```bash
-bin/sf-docs.sh run --group AssignmentRules --group AutoResponseRules --group EscalationRules --group Queue --non-interactive
+bin/sf-docs.sh run --group AssignmentRules --group AutoResponseRules --group EscalationRules --group Queue --component Case --component <Fila> --non-interactive
 ```
 
 - Ordem das entradas, critérios e destinos iguais ao Setup. Elemento que só aparece em "Outras configurações" = nome real diferente do esperado; relate.
@@ -224,7 +238,7 @@ bin/sf-docs.sh run --group AssignmentRules --group AutoResponseRules --group Esc
 ### C8 — Sales Cloud (Onda 08)
 
 ```bash
-bin/sf-docs.sh run --group BusinessProcess --group LeadConvertSettings --group Territory2Model --group OpportunitySplitType --non-interactive
+bin/sf-docs.sh run --group BusinessProcess --group LeadConvertSettings --group Territory2Model --group OpportunitySplitType --component <Objeto.Processo> --component LeadConvertSettings --component <Modelo> --component <TipoDeDivisao> --non-interactive
 ```
 
 - **Processo de vendas:** o `<businessProcess>` do RecordType traz só o nome do processo (sem o objeto)? Os record types listados batem com o Setup?
@@ -236,7 +250,7 @@ bin/sf-docs.sh run --group BusinessProcess --group LeadConvertSettings --group T
 ### C9 — Experience Cloud (Onda 09)
 
 ```bash
-bin/sf-docs.sh run --group Network --group CustomSite --group ExperienceBundle --group LightningComponentBundle --group SharingRules --non-interactive
+bin/sf-docs.sh run --group Network --group CustomSite --group ExperienceBundle --group LightningComponentBundle --group SharingRules --component <Site> --component <Bundle> --component <lwcDoSite> --component <ObjetoComRegraGuest__c> --non-interactive
 ```
 
 - **Network:** membros em `networkMemberGroups/profile` e `permissionSet`? O site é o elemento `<site>`? Existe `<label>`? Nome dos elementos de remetente (`emailSenderAddress`?).
@@ -248,7 +262,7 @@ bin/sf-docs.sh run --group Network --group CustomSite --group ExperienceBundle -
 
 ```bash
 sf org list metadata-types --target-org dev --json | python3 -c "import json,sys; print(sorted(t['xmlName'] for t in json.load(sys.stdin)['result']['metadataObjects'] if t['xmlName'].startswith('Omni')))"
-bin/sf-docs.sh run --group OmniDataTransform --group OmniIntegrationProcedure --group OmniScript --group OmniUiCard --non-interactive
+bin/sf-docs.sh run --group OmniDataTransform --group OmniIntegrationProcedure --group OmniScript --group OmniUiCard --component <DataRaptor> --component <IntegrationProcedure> --component <OmniScript> --component <FlexCard> --non-interactive
 ```
 
 - **Formato:** a org usa o OmniStudio padrão (os quatro tipos `Omni*` aparecem no primeiro comando) ou o pacote gerenciado Vlocity (datapacks, fora do escopo)? Sem os tipos, os grupos ficam `NOT_ENABLED`.
@@ -260,7 +274,7 @@ bin/sf-docs.sh run --group OmniDataTransform --group OmniIntegrationProcedure --
 
 ## 6. Execução completa
 
-Só depois das fases A, B e C. Use `selection.mode = "ALL"` ou uma `SELECTED` aprovada (ver `guia-instalacao-e-uso.md`, seção 4):
+Só depois das fases A, B e C, e só com aprovação explícita de recuperar a org inteira (todos os componentes dos 37 grupos). Sem `--component`, o modo `ALL` recupera os tipos inteiros:
 
 ```bash
 bin/sf-docs.sh run --non-interactive
@@ -308,7 +322,7 @@ Um registro por item, sem dados da org:
 |---|---|
 | Item | `C8 — LeadConvertSettings` |
 | Commit / versões | `44475ba`, `sf 2.x`, Python 3.x, login web |
-| Comando | `bin/sf-docs.sh run --group LeadConvertSettings --non-interactive` |
+| Comando | `bin/sf-docs.sh run --group LeadConvertSettings --component LeadConvertSettings --non-interactive` |
 | Resultado | `SUCCESS`; 1 documento; tabela de-para vazia |
 | Premissa | `objectMapping` → nome real `<...>` (só o nome do elemento) |
 | Decisão | ajustar parser `lead-convert` |
@@ -324,7 +338,7 @@ bin/sf-docs.sh purge --older-than-days 0                              # lista o 
 bin/sf-docs.sh purge --older-than-days 0 --apply --delete-sensitive   # marca e apaga os artefatos sensíveis
 ```
 
-Remova também, se combinado, `saida/` e a autorização da CLI (`sf org logout --target-org dev`).
+Remova também, se combinado, `saida/` e a autorização da CLI (`sf org logout --target-org dev --no-prompt`).
 
 ## Apêndice A — consultas de dados internos
 

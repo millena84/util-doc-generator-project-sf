@@ -76,6 +76,14 @@ class ExperienceDocumentsTest(P3Base):
                 self.assertNotIn("sentinela", text, c["unitId"])
                 self.assertNotIn("@example.invalid", text, c["unitId"])
 
+    def test_normalized_has_no_users_or_emails(self):
+        # ADD-02: usuários do site e remetente da Network redigidos no normalizado.
+        for name in ("Portal_Clientes",):
+            for e in (c for c in self.state.data["components"] if c.get("component") == name and c.get("normalized")):
+                text = (self.root / e["normalized"]).read_text().lower()
+                self.assertNotIn("sentinela", text, e["unitId"])
+                self.assertNotIn("@example.invalid", text, e["unitId"])
+
     def test_network(self):
         doc = self.doc("network")
         self.assertIn("| Remetente de e-mail | Configurado (não documentado) | XML |", doc)

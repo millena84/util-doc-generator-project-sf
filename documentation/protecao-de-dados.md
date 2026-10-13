@@ -29,7 +29,7 @@
 | `inventory.raw.json` / `inventory.index.json` | `inventory/.../<tipo>/` | nomes de componentes, IDs, usuários que alteraram | 0600 (raw) | versionável após revisão | por execução documental |
 | XML recuperado (raw) | `inventory/.../components/` | conteúdo integral do metadata: pode ter `consumerSecret`, senhas legadas, valores de CMDT, URLs internas; `.crt` | 0600 | **ignorado** | mínimo necessário para regenerar; apagar após publicação aprovada |
 | Retrieve raw | `inventory/.../retrieve/` | lista de arquivos recuperados | 0600 | versionável após revisão | junto do XML |
-| Normalizado | `inventory/.../normalized/` | dados do XML; segredos (`sensitiveXmlElements`) como `[REDACTED]`; `consumerKey`, valores CMDT etc. preservados | 0600 | **ignorado** | junto do XML |
+| Normalizado | `inventory/.../normalized/` | dados do XML; segredos e dados pessoais de `sensitiveXmlElements` (inclui a configuração JSON do OmniStudio, usuários e e-mails) como `[REDACTED]`; `consumerKey`, valores CMDT etc. preservados | 0600 | **ignorado** | junto do XML |
 | Dados internos (SOQL) | `inventory/.../internal-data/` | IDs, datas, nomes | 0600 | versionável após revisão | por execução |
 | Resumo da execução | `runs/<runId>/resumo.md` | status, cobertura, identidade da org, lacunas e métricas; gerado a partir do run state já mascarado e mascarado de novo | padrão | versionável após revisão | junto do run state |
 | Run state | `runs/run-*.json` | status, caminhos, avisos; todo texto passa pela máscara (token e valores secretos encontrados no XML) | 0600 | versionável após revisão | histórico de auditoria (ex.: 90 dias) |
@@ -74,6 +74,10 @@ A lista não é considerada completa. `sensitiveXmlElements` (redigidos no norma
 |---|---|
 | `consumerSecret`, `privateKey`, `password`, `secret`, `accessToken`, `refreshToken`, `oauthToken` | lista anterior |
 | `oauthRefreshToken` | **adicionado**: campo de Named Credential legado (Metadata API), ao lado de `password` e `oauthToken`, depreciados na API 56 |
+| `propertySetConfig`, `dataSourceConfig`, `sampleDataSourceResponse` | **movidos de `omitFromDocumentation` (ADD-02, 2026-10-13)**: texto JSON do OmniStudio que pode ter cabeçalhos HTTP (`Authorization`), valores fixos e dados de exemplo. Antes ficavam em claro no normalizado. Os parsers do OmniStudio leem o XML bruto, então as referências (nomes de componentes) continuam extraídas |
+| `notifyTo`, `notifyEmail`, `senderEmail`, `senderName`, `replyToEmail`, `email`, `emailSenderAddress`, `emailSenderName`, `emailSenderEmail`, `siteAdmin`, `siteGuestRecordDefaultOwner` | **movidos de `omitFromDocumentation` (ADD-02)**: usuários e e-mails (dado pessoal) de regras de atendimento, filas, Network e CustomSite. Agora também redigidos no normalizado e mascarados em logs |
+
+Limites conhecidos: o XML bruto (`components/`) e o raw do retrieve continuam com esses valores, por regra (raw intacto, permissão 0600). Usuário de destino de regra de atribuição (`assignedTo` com tipo User) não é um elemento próprio: fica no normalizado e só é mascarado pelo parser na saída. O `Masker` ignora valores com menos de 8 caracteres.
 
 A confirmar em documentação oficial antes de entrar na lista (não adicionados para não inventar elementos): segredos de provedores de autenticação (`AuthProvider`), de `ExternalCredential` (parâmetros de principal) e chaves de serviços externos citadas em outros metadata types. Novos tipos do MVP devem passar por essa revisão antes do primeiro retrieve.
 

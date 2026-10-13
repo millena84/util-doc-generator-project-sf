@@ -1,5 +1,7 @@
 # Guia de instalação e uso
 
+> ⚠️ **Produção:** por ora não é permitido login em org produtiva, e o utilitário exige login para executar `run`. Use só org de desenvolvimento ou sandbox autorizada. O cenário produtivo (clone do repositório Flosum mais exportações do Salesforce Inspector) ainda não é suportado: ver [`como-testar-o-mvp.md`](como-testar-o-mvp.md), seção 3.
+
 > **Status:** guia operacional da versão atual do repositório. Leia as ressalvas de segurança antes de conectar uma org real. A simulação com fixtures não valida o comportamento nem as permissões de uma org Salesforce real.
 
 ## 1. O que é necessário
@@ -89,6 +91,7 @@ Regras (validadas **antes de qualquer chamada à org**):
 Comportamento:
 
 - Componentes fora da seleção **não são recuperados**. Dependências comprovadas do principal selecionado continuam: `FlowDefinition` de mesmo nome, filhos do objeto, records do `__mdt`, EC referenciada no XML da NC.
+- **Limitação conhecida (ADD-09):** a seleção é por tipo principal; quando dois grupos têm o mesmo tipo principal (`CustomObject` nos grupos CustomObject e PlatformEvent), só o primeiro grupo é selecionável.
 - Em `SELECTED`, relações que só se comprovam lendo o XML de **cada candidato** (`FIELD_EQUALS_PRIMARY`, `REFERENCE_SCAN` — ex.: `ExtlClntApp*` de uma ECA) **não recuperam candidatos**: as seções correspondentes mostram `Não informado`, a lacuna fica em `selection.relatedNotResolved` e a cobertura é `COMPLETE_WITH_WARNINGS`. Em `ALL` os candidatos são recuperados e o vínculo é verificado normalmente.
 - Componente pedido e não encontrado (ou excluído pelo `componentFilter` do grupo) vira `NOT_FOUND` (`selection.notFound`) e a execução termina como `COMPLETED_WITH_GAPS` — nunca vira "todos os componentes".
 - O run state registra `selection.requested` (formato do config.json), `selection.cli`, `selection.effective`, o alias e sua origem; grupos fora da seleção aparecem como `OUT_OF_SCOPE`. `bin/sf-docs.sh validate-config` mostra alias e seleção.
@@ -147,7 +150,7 @@ bin/sf-docs.sh run --group Flow --component Meu_Flow
 
 ### Mais de um grupo ou componente
 
-Os argumentos repetíveis `--group` e `--component` podem ser informados mais de uma vez. Eles só restringem o escopo do `config.json`: em `SELECTED`, pedir algo fora da seleção é erro antes de qualquer chamada à org. Para um piloto, prefira declarar a seleção em `selection.metadataTypes`.
+Os argumentos repetíveis `--group` e `--component` podem ser informados mais de uma vez. Eles só restringem o escopo do `config.json`: em `SELECTED`, pedir algo fora da seleção é erro antes de qualquer chamada à org. Para o piloto, use `--component` em todo `run` (modo `ALL`): o retrieve de acesso pede só `Tipo:Nome` dos componentes informados. Não use `SELECTED` por enquanto: o tipo `CustomObject` é principal de dois grupos (CustomObject e PlatformEvent) e o grupo PlatformEvent não é selecionável (achado ADD-09, ver `piloto-org-real.md`, seção 0).
 
 ### Informar a versão da API
 
@@ -222,11 +225,11 @@ Consulte o sumário do terminal e `runs/<runId>.json`. Alguns estados existentes
 
 ## 9. Primeiro teste em org real
 
-O roteiro completo está em [`piloto-org-real.md`](piloto-org-real.md): validação sem org, aprovação da org, execução mínima, conferência do acesso (passo 6b), confirmação por grupo (C0–C10), execução completa, revisão de proteção de dados, critérios de aprovação e de parada, modelo de relato e limpeza. Em resumo:
+Visão geral dos níveis de teste (sem org, org não produtiva, produção): [`como-testar-o-mvp.md`](como-testar-o-mvp.md). O roteiro completo do primeiro teste em org está em [`piloto-org-real.md`](piloto-org-real.md): validação sem org, aprovação da org, execução mínima, conferência do acesso (passo 6b), confirmação por grupo (C0–C10), execução completa, revisão de proteção de dados, critérios de aprovação e de parada, modelo de relato e limpeza. Em resumo:
 
 1. Use um commit aprovado e rode `validate-config --strict` e toda a suíte de testes.
 2. Confirme autorização, alias, org-alvo e usuário; registre a org em `approvedOrgs`.
-3. Comece com um grupo pequeno e amplie fase a fase; não suponha que `run` documenta toda a org.
+3. Comece com um grupo pequeno e use `--component` em todo `run` (sem ele, o modo `ALL` recupera tipos inteiros); amplie fase a fase.
 4. Execute em armazenamento aprovado e com acesso restrito.
 5. Revise o `resumo.md`, os documentos e a busca por dados sensíveis antes de compartilhar qualquer coisa.
 6. Registre cobertura, limitações e aprovação do responsável; remova os dados locais conforme a retenção combinada.

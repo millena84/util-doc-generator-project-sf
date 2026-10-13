@@ -133,20 +133,7 @@
     "accessToken",
     "refreshToken",
     "oauthToken",
-    "oauthRefreshToken"
-  ],
-  "omitFromDocumentation": [
-    "consumerKey",
-    "callbackUrl",
-    "contactEmail",
-    "contactPhone",
-    "certificate",
-    "jsonWebKey",
-    "parameterValue",
-    "clientCredentialsFlowUser",
-    "executeHandlerAs",
-    "principal",
-    "endpoint",
+    "oauthRefreshToken",
     "notifyTo",
     "notifyEmail",
     "senderEmail",
@@ -161,6 +148,19 @@
     "propertySetConfig",
     "dataSourceConfig",
     "sampleDataSourceResponse"
+  ],
+  "omitFromDocumentation": [
+    "consumerKey",
+    "callbackUrl",
+    "contactEmail",
+    "contactPhone",
+    "certificate",
+    "jsonWebKey",
+    "parameterValue",
+    "clientCredentialsFlowUser",
+    "executeHandlerAs",
+    "principal",
+    "endpoint"
   ],
   "accessSources": {
     "notes": "Onde cada componente está configurado (perfil, permission set, permission set group, fila, regra de compartilhamento). Fonte: XML. Os tipos abaixo são recuperados num retrieve único junto com os componentes documentados, para que o XML do Profile/PermissionSet traga as permissões desses componentes.",

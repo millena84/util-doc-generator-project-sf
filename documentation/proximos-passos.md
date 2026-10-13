@@ -66,6 +66,16 @@ Atividades:
 
 Pendências: validar o fluxo do token com CLI real (versões suportadas) em org autorizada; confirmar em documentação oficial os demais elementos sensíveis candidatos antes de incluí-los.
 
+## Pendente de plano: produção sem login (clone Flosum + Salesforce Inspector)
+
+> **Não implementado; não iniciar sem aprovação.** Registro da restrição e do cenário em 2026-10-13.
+
+- **Restrição:** por ora não é permitido login em org produtiva. O MVP atual depende de login em todos os passos de coleta (1–7 e 9) e não deve ser usado em produção.
+- **Fonte de metadata em produção:** o projeto Salesforce num diretório de clone do repositório Flosum.
+- **Dados de objetos internos:** plano em elaboração para consultá-los pelo Salesforce Inspector e salvar os resultados num diretório.
+- **Impacto esperado, quando aprovado:** um modo de execução sem org. O clone substitui inventário e retrieve (passos 4, 6, 6b e 7) e as exportações substituem as consultas (passo 9). Normalização, contratos, modelos e Markdown (passos 8 e 10) continuam os mesmos. O modo precisará de novas fontes na coluna "Fonte", de raw preservado (clone e exportações com sha256) e de identificação da org sem `sf org display`.
+- **Perguntas em aberto** (formato do clone, perfis completos no repositório, formato e nomes das exportações, aprovação de exportar da produção, armazenamento): `documentation/como-testar-o-mvp.md`, seção 3.
+
 ## Testes antes de cada piloto
 
 ```bash

@@ -2,12 +2,16 @@
 
 Utilitário único para gerar documentação Markdown de componentes Salesforce, combinando dados da org, XMLs recuperados, objetos internos e modelos por metadata type.
 
+> ⚠️ **Restrição atual — produção sem login.** Por ora **não é permitido login** (`sf org login ...`) em org **produtiva**. O MVP **exige** login em todos os passos de coleta (CLI, Metadata API, consultas). Por isso ele só deve ser executado em org de desenvolvimento ou sandbox autorizada. O cenário produtivo previsto é diferente: metadata a partir do **diretório de clone do repositório Flosum** e dados de objetos internos **exportados pelo Salesforce Inspector** para um diretório. Esse modo **ainda não existe**; o plano de ação está em definição e o MVP **não foi modificado** para ele. Detalhes e perguntas em aberto: [`documentation/como-testar-o-mvp.md`](documentation/como-testar-o-mvp.md), seção 3.
+
+**Como testar o MVP** (sem org, org não produtiva e produção): [`documentation/como-testar-o-mvp.md`](documentation/como-testar-o-mvp.md).
+
 ## Requisitos
 
 - Python **3.8+** — somente biblioteca padrão. **Nenhum `pip install`** é necessário.
 - Salesforce CLI (`sf`) **2.0.0+** (mínima configurada em `config/config.json`).
 - Bash (para o invólucro `bin/sf-docs.sh`; opcional — o módulo Python roda direto).
-- Org autenticada: `sf org login web --alias dev`.
+- Org **não produtiva** autenticada: `sf org login web --alias dev` (produção: login não permitido por ora; ver a restrição acima).
 
 ## Uso
 
@@ -74,7 +78,7 @@ Estado da execução: `runs/run-<AAAAMMDD-HHMMSS>.json`. Respostas de erro ficam
 - **Token**: obtido só depois da aprovação da org — de `sf org display` quando a CLI ainda o exibe, senão de `sf org auth show-access-token --json` (resposta não gravada) —, mantido só em memória, mascarado em logs/`repr`/`str`, não serializável (pickle/deepcopy) e descartado (`OrgSession.clear()`) ao fim de cada execução. Se a CLI ainda exibir o token em `sf org display`, a resposta **não vira raw**: grava-se apenas `org-display.sanitized.json`, com `accessToken` e demais credenciais como `[REDACTED]` (política R1: resposta com credencial não é persistida em bruto). Sem credencial na resposta, `org-display.raw.json` é salvo inalterado, `0600` e no `.gitignore`.
 - **Retrieve**: roda em um projeto SFDX temporário; o XML é copiado byte a byte, preservando as pastas do formato source (ex.: `objects/Obj__c/fields/...`).
 - **Valores ausentes**: `Não aplicável` quando o `describeValueType` comprova que o campo não existe no tipo; `Não informado` quando existe mas não veio no XML/dado interno.
-- **Dados sensíveis**: elementos listados em `sensitiveXmlElements` (ex.: `consumerSecret`) nunca são renderizados e são substituídos por `[REDACTED]` no JSON normalizado (o XML original fica intacto); o run log avisa quando um XML recuperado os contém. `ExtlClntAppGlobalOauthSettings` é tipo excluído (contém consumer secret).
+- **Dados sensíveis**: elementos listados em `sensitiveXmlElements` (ex.: `consumerSecret`; também a configuração JSON do OmniStudio e os elementos de usuário/e-mail) nunca são renderizados e são substituídos por `[REDACTED]` no JSON normalizado (o XML original fica intacto); o run log avisa quando um XML recuperado os contém. `ExtlClntAppGlobalOauthSettings` é tipo excluído (contém consumer secret).
 - **Valores sujeitos a decisão de segurança** (`omitFromDocumentation`: `consumerKey`, `callbackUrl`, `contactEmail/Phone`, `certificate`, `parameterValue`, usuários de execução; permission sets e perfis autorizados **saíram** da lista — ver "Acesso e configuração"): nunca entram no Markdown. A linha é **omitida** (sem criar valor além de `Não informado`/`Não aplicável`) e o nome da propriedade fica em `omittedProperties` no run state. Valores (`<values>`) de records de Custom Metadata também não são renderizados.
 - **`inventory/**/components/` e `inventory/**/normalized/` estão no `.gitignore`**: o raw é preservado em disco, mas pode conter valores sensíveis.
 - **External Client App**: o nome correto do metadata type é `ExternalClientApplication` (Metadata API). O grupo continua chamado `ExternalClientApp`.
@@ -309,7 +313,7 @@ Sem `contexto-*.md` no `ajudAI` para esta onda: referência nos prompts de `_sf_
 
 - **Regras de atribuição, resposta automática e escalonamento** (`modelo-doc-assignment-rules`, `-auto-response-rules`, `-escalation-rules`, um por objeto): situação (quantas regras ativas), regras, entradas na ordem de avaliação (critério, lógica, destino, demais configurações) e, no escalonamento, ações; registros na org (`AssignmentRule`/`AutoResponseRule`/`EscalationRule`, `validationPending`).
 - **Fila** (`modelo-doc-queue`): objetos aceitos, roteamento (`queueRoutingConfig`), regras que direcionam para a fila e membros (papéis, grupos) na seção de acesso.
-- **Parsers** (`src/salesforce_docs/parsing/service_rules_parser.py`): leitura genérica do XML (nomes internos não confirmados); **usuário de destino, usuários notificados, membros usuários e e-mails nunca são documentados** — aparecem como texto fixo ou contagem; os elementos também entraram em `omitFromDocumentation`.
+- **Parsers** (`src/salesforce_docs/parsing/service_rules_parser.py`): leitura genérica do XML (nomes internos não confirmados); **usuário de destino, usuários notificados, membros usuários e e-mails nunca são documentados** — aparecem como texto fixo ou contagem; os elementos também entraram em `sensitiveXmlElements` (redigidos no normalizado).
 - **Conteúdo genérico e o que ficou fora** (Omni-Channel, Entitlements, CaseSettings): [`documentation/referencia-service-cloud.md`](documentation/referencia-service-cloud.md).
 
 ## Objetos de evento — Onda 06

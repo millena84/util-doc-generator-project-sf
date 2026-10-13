@@ -128,6 +128,12 @@ class DocumentPipeline:
                 log.warn(w)
             effective = self._resolve_scope(p, alias, org_alias, groups, components)
             self._git_guard(p)
+            # RESTRIÇÃO ATUAL (2026-10-13): os passos 1–7 e 9 exigem org autenticada pela CLI. Login em
+            # org PRODUTIVA não é permitido por ora; use só org de desenvolvimento ou sandbox aprovada.
+            # Cenário produtivo previsto (NÃO implementado; não implementar sem aprovação): metadata do
+            # diretório de clone do repositório Flosum (substituiria os passos 4, 6, 6b e 7) e dados de
+            # objetos internos exportados pelo Salesforce Inspector para um diretório (substituiria o
+            # passo 9). Plano e perguntas em aberto: documentation/como-testar-o-mvp.md, seção 3.
             self._step1_cli(p)
             self._step2_org_list(p, alias)
             self._step3_org_display(p, alias, api_version)
@@ -739,8 +745,10 @@ class DocumentPipeline:
     def _doc_specs(self, enabled, inventories, effective):
         """Componentes documentados que entram no retrieve de acesso.
 
-        selection.mode ALL: o tipo inteiro (`Tipo`); SELECTED: sempre `Tipo:Nome` dos componentes
-        documentados (mesmo com `components: ALL`) — nada fora da seleção é recuperado.
+        selection.mode ALL sem filtro de componentes: o tipo inteiro (`Tipo`). Com filtro de
+        componentes (`--component` no ALL) ou SELECTED: sempre `Tipo:Nome` dos componentes
+        documentados (mesmo com `components: ALL` no SELECTED) — nada fora do pedido é recuperado
+        (minimização de dados: pedir um componente não pode trazer o código do tipo inteiro).
         """
         whole_types = str(self.app.selection.mode).upper() == "ALL"
         specs = set()
@@ -750,7 +758,7 @@ class DocumentPipeline:
             for unit in deviation_handler.build_units(group, inventories, self.mvp):
                 if component_filter is not None and unit["fullName"] not in component_filter:
                     continue
-                whole = whole_types and not group.data.get("fixedComponents")
+                whole = whole_types and component_filter is None and not group.data.get("fixedComponents")
                 specs.add(unit["metadataType"] if whole else f"{unit['metadataType']}:{unit['fullName']}")
         return specs
 
