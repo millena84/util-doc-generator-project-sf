@@ -230,6 +230,22 @@
         "metaFile": false,
         "suffix": "app",
         "xmlName": "CustomApplication"
+      },
+      {
+        "childXmlNames": [],
+        "directoryName": "platformEventChannelMembers",
+        "inFolder": false,
+        "metaFile": false,
+        "suffix": "platformEventChannelMember",
+        "xmlName": "PlatformEventChannelMember"
+      },
+      {
+        "childXmlNames": [],
+        "directoryName": "platformEventSubscriberConfigs",
+        "inFolder": false,
+        "metaFile": false,
+        "suffix": "platformEventSubscriberConfig",
+        "xmlName": "PlatformEventSubscriberConfig"
       }
     ],
     "organizationNamespace": "",

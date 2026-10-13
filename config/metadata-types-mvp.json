@@ -52,6 +52,12 @@
       "documentSlug": "flexipage",
       "sourceParser": { "name": "flexipage", "suffix": ".flexipage-meta.xml", "key": "flexipage" }
     },
+    "PlatformEventChannelMember": {
+      "folder": "platform-event-channel-members",
+      "contract": "change-data-capture.schema.json",
+      "documentSlug": "change-data-capture",
+      "sourceParser": { "name": "event-channel-member", "suffix": ".platformEventChannelMember-meta.xml", "key": "cdc" }
+    },
     "CustomField": { "retrievedWith": "CustomObject" },
     "RecordType": { "retrievedWith": "CustomObject" },
     "ValidationRule": { "retrievedWith": "CustomObject" },
@@ -90,7 +96,7 @@
     "notes": "Onde cada componente está configurado (perfil, permission set, permission set group, fila, regra de compartilhamento). Fonte: XML. Os tipos abaixo são recuperados num retrieve único junto com os componentes documentados, para que o XML do Profile/PermissionSet traga as permissões desses componentes.",
     "enabled": true,
     "folder": "access",
-    "retrieveTypes": ["Profile", "PermissionSet", "PermissionSetGroup", "Queue", "SharingRules", "CustomApplication"],
+    "retrieveTypes": ["Profile", "PermissionSet", "PermissionSetGroup", "Queue", "SharingRules", "CustomApplication", "PlatformEventSubscriberConfig"],
     "grantContainers": { "Profile": "Perfil", "PermissionSet": "Permission Set" },
     "grants": [
       { "element": "classAccesses", "nameField": "apexClass", "enabledField": "enabled", "accessKey": "ApexClass", "accessLabel": "Executar" },
@@ -102,7 +108,8 @@
       { "element": "recordTypeVisibilities", "nameField": "recordType", "enabledField": "visible", "accessKey": "RecordType", "accessLabel": "Visível" },
       { "element": "customMetadataTypeAccesses", "nameField": "name", "enabledField": "enabled", "accessKey": "CustomMetadataType", "accessLabel": "Ler" },
       { "element": "externalCredentialPrincipalAccesses", "nameField": "externalCredentialPrincipal", "enabledField": "enabled", "accessKey": "ExternalCredentialPrincipal", "accessLabel": "Usar principal" },
-      { "element": "customPermissions", "nameField": "name", "enabledField": "enabled", "accessKey": "CustomPermission", "accessLabel": "Habilitada" }
+      { "element": "customPermissions", "nameField": "name", "enabledField": "enabled", "accessKey": "CustomPermission", "accessLabel": "Habilitada" },
+      { "element": "userPermissions", "nameField": "name", "enabledField": "enabled", "accessKey": "UserPermission", "accessLabel": "Habilitada" }
     ],
     "permissionSetGroups": { "metadataType": "PermissionSetGroup", "element": "permissionSets", "label": "Permission Set Group" },
     "queues": { "metadataType": "Queue", "element": "queueSobject", "field": "sobjectType", "label": "Fila" },
@@ -121,7 +128,14 @@
       "contentField": "content",
       "fields": ["actionName", "formFactor", "pageOrSobjectType", "profile", "recordType"]
     },
-    "validationPending": "objectPermissions, PermissionSetGroup.permissionSets, SharingRules.sharedTo, customPermissions (name/enabled), CustomApplication.profileActionOverrides e o formato de externalCredentialPrincipal não confirmados nesta adaptação; confirmar no piloto (documentation/piloto-org-real.md)."
+    "subscriberConfigs": {
+      "notes": "Usuário e lote das triggers de platform event / change event. O usuário configurado nunca é documentado: só se há um.",
+      "metadataType": "PlatformEventSubscriberConfig",
+      "consumerField": "platformEventConsumer",
+      "batchSizeField": "batchSize",
+      "userField": "user"
+    },
+    "validationPending": "objectPermissions, PermissionSetGroup.permissionSets, SharingRules.sharedTo, customPermissions (name/enabled), CustomApplication.profileActionOverrides, PlatformEventSubscriberConfig (platformEventConsumer/batchSize/user) e o formato de externalCredentialPrincipal não confirmados nesta adaptação; confirmar no piloto (documentation/piloto-org-real.md)."
   },
   "automationIndex": {
     "notes": "Automações que convivem no mesmo objeto (documento de Apex Trigger). Fonte: XML/código dos componentes processados na execução. Fases na ordem oficial de execução; 'order' null = posição relativa não confirmada nesta adaptação.",
@@ -159,6 +173,12 @@
       "pageType": "FlexiPage",
       "parsedKey": "flexipage",
       "orgDefault": { "metadataType": "CustomObject", "element": "actionOverrides", "typeField": "type", "typeValue": "Flexipage", "contentField": "content", "fields": ["actionName", "formFactor"] }
+    },
+    "events": {
+      "notes": "Quem publica e quem assina cada evento (platform event __e, change event): Apex (EventBus.publish + new X__e), triggers no evento, Flows (start.triggerType PlatformEvent; recordCreates de __e) e LWC (canais /event e /data com lightning/empApi).",
+      "suffixes": ["__e", "ChangeEvent"],
+      "flowTriggerType": "PlatformEvent",
+      "flowCreateElement": "recordCreates"
     }
   },
   "metadataTypeGroups": [
@@ -356,6 +376,28 @@
         "notes": "Páginas de pacote gerenciado (ns__Pagina) ficam fora."
       },
       "notes": "XML achatado pelo sourceParser flexipage. Processado com os grupos que usam o índice: o documento do LWC mostra as páginas que o usam; a ativação vem do CustomObject processado (padrão da org) e do CustomApplication (passo 6b)."
+    },
+    {
+      "group": "PlatformEvent",
+      "primaryMetadataType": "CustomObject",
+      "relatedMetadataTypes": ["CustomField"],
+      "documentStrategy": "SINGLE_DOCUMENT_PER_OBJECT_WITH_RELATED_COMPONENTS",
+      "contract": "platform-event.schema.json",
+      "documentSlug": "platform-event",
+      "referenceDoc": "_sf_utilities/ajudAI/contexto-platform-objects.md",
+      "componentFilter": { "includeRegex": "__e$", "notes": "Platform events são CustomObject com sufixo __e; o grupo CustomObject fica com __c." },
+      "relations": [ { "metadataType": "CustomField", "match": "CHILD_OF_PRIMARY" } ],
+      "usesRunIndex": true,
+      "notes": "Publicadores e assinantes vêm dos componentes processados na execução (recordIndex.events); configuração das triggers assinantes, de PlatformEventSubscriberConfig (passo 6b)."
+    },
+    {
+      "group": "ChangeDataCapture",
+      "primaryMetadataType": "PlatformEventChannelMember",
+      "relatedMetadataTypes": [],
+      "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+      "referenceDoc": "_sf_utilities/ajudAI/contexto-platform-objects.md",
+      "usesRunIndex": true,
+      "notes": "Objetos selecionados para Change Data Capture (canal padrão ChangeEvents ou customizado), enriquecimento e filtro. Um documento por membro de canal."
     },
     {
       "group": "PermissionSet",

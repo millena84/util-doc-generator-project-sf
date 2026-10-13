@@ -16,6 +16,7 @@ DASH = "—"
 BUILDER_PLACEHOLDERS = {
     "role_hierarchy_rows": ("hierarchy_relation", "hierarchy_role", "hierarchy_level"),
     "page_usage_rows": ("usage_page", "usage_page_type", "usage_region", "usage_identifier", "usage_visibility"),
+    "event_reference_rows": ("event_role", "event_kind", "event_component", "event_detail", "event_subscriber_config"),
 }
 
 
@@ -85,6 +86,36 @@ def page_usage_rows(ctx, args):
     return rows
 
 
+def event_reference_rows(ctx, args):
+    """Quem publica e quem assina o evento, entre os componentes processados na execução.
+
+    args: path — nome do evento (ex.: @fullName para `X__e`; cdc.selectedEntity no CDC).
+    Trigger assinante: configuração de PlatformEventSubscriberConfig (XML do passo 6b), sem o usuário.
+    """
+    from salesforce_docs.rendering.context import resolve
+    index = _index(ctx)
+    name, _ = resolve(ctx, args.get("path", "@fullName"))
+    if index is None or not name:
+        return []
+    configs = (getattr(ctx.root(), "access_index", None) or {}).get("subscriberConfigs") or {}
+    rows = []
+    for r in sorted((index.get("eventRefs") or {}).get(str(name).lower(), []),
+                    key=lambda r: (r["role"] != "Publica", r["kind"], r["component"].lower())):
+        cfg_text = DASH
+        if r["role"] == "Assina" and r["kind"] == "Apex Trigger":
+            cfg = configs.get(r["component"])
+            cfg_text = (f"{cfg['name']}: batchSize {cfg.get('batchSize') or 'não informado'}; "
+                        f"usuário {'configurado (não documentado)' if cfg.get('userConfigured') else 'não configurado'}"
+                        if cfg else "Sem PlatformEventSubscriberConfig nos XMLs recuperados")
+        rows.append({"event_role": r["role"], "event_kind": r["kind"], "event_component": r["component"],
+                     "event_detail": r.get("detail") or DASH, "event_subscriber_config": cfg_text})
+    if not rows:
+        return [{"event_role": "Nenhum publicador ou assinante entre os componentes processados",
+                 "event_kind": DASH, "event_component": DASH, "event_detail": DASH,
+                 "event_subscriber_config": DASH}]
+    return rows
+
+
 TABLE_BUILDERS = {"index_record_rows": index_record_rows, "role_hierarchy_rows": role_hierarchy_rows,
-                  "page_usage_rows": page_usage_rows}
+                  "page_usage_rows": page_usage_rows, "event_reference_rows": event_reference_rows}
 BLOCK_BUILDERS = {}

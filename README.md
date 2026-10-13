@@ -141,6 +141,8 @@ Registro da auditoria de segurança de 2026-10-11 (10 riscos: 1 crítico, 2 alto
 | ApexTrigger | `ONE_DOCUMENT_PER_COMPONENT` | — (o `.trigger` é lido pelo parser `apex-trigger`; grupo com `usesRunIndex`: processado por último, mostra Flows, regras de validação e triggers do mesmo objeto; `lookupInventories` lista ApexClass só para conferência) |
 | LightningComponentBundle | `ONE_DOCUMENT_PER_COMPONENT` + subdocumentos por target | — (o bundle inteiro — `.js`, `.html`, `.css`, `.svg`, `.js-meta.xml` — é lido pelo parser `lwc` com `sourceParser.bundle`; `usesRunIndex` para conferir os métodos Apex chamados nas classes processadas) |
 | FlexiPage | `ONE_DOCUMENT_PER_COMPONENT` | — (XML achatado pelo parser `flexipage`; ativação pelo `actionOverrides` do CustomObject processado e pelo CustomApplication do passo 6b; `usesRunIndex`) |
+| PlatformEvent (`CustomObject` `__e`) | `SINGLE_DOCUMENT_PER_OBJECT_WITH_RELATED_COMPONENTS` | CustomField do evento (`CHILD_OF_PRIMARY`); grupo com `contract`/`documentSlug` próprios, `componentFilter` `__e$` (o grupo CustomObject segue com `__c$`) |
+| ChangeDataCapture (`PlatformEventChannelMember`) | `ONE_DOCUMENT_PER_COMPONENT` | — (XML lido pelo parser `event-channel-member`; objeto de origem pela convenção de nomes) |
 
 Cada componente (principal ou relacionado) é extraído e normalizado de forma independente; a agregação acontece apenas no documento.
 
@@ -253,6 +255,16 @@ Adaptação de `_sf_utilities/ajudAI/contexto-flexipage.md` (ver a matriz em `do
 - **Onde é usado**: o documento do LWC ganhou a seção "Onde é usado (páginas Lightning)" (`recordIndex.pages`).
 - **Conteúdo genérico** (templates, hierarquia de ativação, regras de visibilidade): [`documentation/referencia-flexipage.md`](documentation/referencia-flexipage.md).
 
+## Objetos de evento — Onda 06
+
+Adaptação de `_sf_utilities/ajudAI/contexto-platform-objects.md` (ver a matriz em `documentation/refatoracao-1-matriz-ajudai.md`).
+
+- **Platform event** (`modelo-doc-platform-event`, um por objeto `__e`): identificação (`eventType`, `publishBehavior`...), campos do evento, **publicadores e assinantes** (Apex com `EventBus.publish` e `new X__e(`, triggers no evento, Flows disparados pelo evento ou que criam o evento, LWC com `lightning/empApi`), configuração da trigger assinante (`PlatformEventSubscriberConfig`: lote e se há usuário configurado — **o usuário nunca é documentado**) e permissões de objeto do evento.
+- **Change Data Capture** (`modelo-doc-change-data-capture`, um por `PlatformEventChannelMember`): canal (padrão `ChangeEvents` ou customizado), evento selecionado, filtro, campos de enriquecimento, objeto de origem (convenção de nomes), assinantes e quem tem as permissões exigidas para assinar (Ver todos no objeto, View All Data, View All Users).
+- **Índice de eventos** (`recordIndex.events`): quem publica e quem assina, a partir dos componentes processados na execução. Os parsers de Apex, trigger e LWC passaram a registrar `platformEvents` e `streamingChannels`.
+- **Retrieve de acesso** (passo 6b) inclui `PlatformEventSubscriberConfig`; o índice de acesso ganhou `userPermissions` (permissões de sistema) e `subscriberConfigs`.
+- **Conteúdo genérico** (retenção, replay, tipos de campo, cabeçalho do change event): [`documentation/referencia-eventos.md`](documentation/referencia-eventos.md).
+
 ## Segurança, acesso e governança — Onda 05
 
 Adaptação de `_sf_utilities/ajudAI/contexto-seg-controle-acesso-gov.md` (ver a matriz em `documentation/refatoracao-1-matriz-ajudai.md`).
@@ -312,11 +324,11 @@ Os testes usam uma Salesforce CLI **simulada** (`tests/fixtures/bin/sf`) e respo
 ### Simulação de todas as documentações do MVP
 
 ```bash
-python3 -m unittest tests.test_mvp_simulation        # verifica os 29 modelos e os 28 metadata types
+python3 -m unittest tests.test_mvp_simulation        # verifica os 31 modelos e os 29 metadata types
 python3 -m tests.simulate_mvp --out /tmp/sim-mvp     # executa e gera o relatório passo a passo
 ```
 
-O cenário `mvp_complete` da CLI simulada sobrepõe `tests/fixtures/mvp-complete/` às fixtures base, de modo que todo metadata type do MVP tenha ao menos um componente. O relatório versionado em `documentation/simulacao/relatorio-simulacao-mvp.md` mostra, para essa simulação, a saída no terminal, os comandos por passo, a situação de cada tipo, a árvore de arquivos e o conteúdo dos 50 documentos gerados.
+O cenário `mvp_complete` da CLI simulada sobrepõe `tests/fixtures/mvp-complete/` às fixtures base, de modo que todo metadata type do MVP tenha ao menos um componente. O relatório versionado em `documentation/simulacao/relatorio-simulacao-mvp.md` mostra, para essa simulação, a saída no terminal, os comandos por passo, a situação de cada tipo, a árvore de arquivos e o conteúdo dos 57 documentos gerados.
 
 | Grupo | Documento(s) / modelo | Tipos que aparecem dentro do documento |
 |---|---|---|
@@ -340,6 +352,8 @@ O cenário `mvp_complete` da CLI simulada sobrepõe `tests/fixtures/mvp-complete
 | ApexTrigger | `modelo-doc-apex-trigger` | Flows record-triggered, regras de validação e outras triggers do mesmo objeto (coexistência) |
 | LightningComponentBundle | `modelo-doc-lwc` + subdocumentos `modelo-doc-lwc-quick-action` e `modelo-doc-lwc-flow-screen` | — (métodos Apex conferidos nas classes processadas) |
 | FlexiPage | `modelo-doc-flexipage` | ativação (CustomObject processado, CustomApplication do passo 6b); o LWC mostra as páginas que o usam |
+| PlatformEvent | `modelo-doc-platform-event` | CustomField do evento; publicadores e assinantes processados |
+| ChangeDataCapture | `modelo-doc-change-data-capture` | assinantes processados |
 
 ## Estrutura
 

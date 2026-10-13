@@ -134,6 +134,18 @@ bin/sf-docs.sh run --group OrgSecurity --group CustomObject --group Profile --gr
 - **Perfis padrão:** a consulta de dados internos filtra `Profile.Name` pelo fullName do metadata (`Admin`), mas o Name é "System Administrator": relate o par fullName/Name para ajustar o filtro.
 - **Confira** os elementos de `sessionSettings`, `passwordPolicies` e `networkAccess` contra o Setup; `parentRole` e níveis de acesso do Role; `doesIncludeBosses` do Group; `mutingPermissionSets` do PSG.
 
+## 5f. Objetos de evento (Onda 06)
+
+```bash
+bin/sf-docs.sh run --group PlatformEvent --group ChangeDataCapture --group ApexTrigger --group ApexClass --group Flow --non-interactive
+sf data query --use-tooling-api --target-org dev --json --query "SELECT Id, DeveloperName, EventChannel, SelectedEntity FROM PlatformEventChannelMember"
+```
+
+- **Platform event:** o retrieve de `CustomObject:<Evento>__e` traz os campos? Compare `eventType`/`publishBehavior` com o Setup.
+- **CDC:** a seleção do Setup (Change Data Capture) aparece como `PlatformEventChannelMember` no canal `ChangeEvents`? Relate o fullName dos membros (formato `Canal_Entidade`?) e o nome do change event de objeto customizado (`X__ChangeEvent`).
+- **PlatformEventSubscriberConfig:** confira `platformEventConsumer`, `batchSize` e `user` no XML (o valor de `user` nunca vai para o documento; não o cole no relato).
+- **Permissões:** confirme o nome de API das permissões View All Data / View All Users no XML de perfil (`ViewAllData`, `ViewAllUsers`).
+
 ## 6. Acesso e configuração
 
 O ponto mais importante: confirmar se o XML de Profile/PermissionSet traz as permissões **só** dos componentes recuperados no mesmo pedido. O utilitário já recupera tudo junto (passo 6b), mas o resultado precisa ser conferido:

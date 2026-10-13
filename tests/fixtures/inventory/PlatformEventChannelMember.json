@@ -1,0 +1,20 @@
+[
+  {
+    "fullName": "Canal_Pedido_Pedido_ChangeEvent",
+    "type": "PlatformEventChannelMember",
+    "fileName": "x/Canal_Pedido_Pedido_ChangeEvent",
+    "id": "0PS000000000000AAA",
+    "namespacePrefix": "",
+    "manageableState": "unmanaged",
+    "lastModifiedDate": "2026-10-01T00:00:00.000Z"
+  },
+  {
+    "fullName": "ChangeEvents_Pedido_ChangeEvent",
+    "type": "PlatformEventChannelMember",
+    "fileName": "x/ChangeEvents_Pedido_ChangeEvent",
+    "id": "0PS000000000000AAA",
+    "namespacePrefix": "",
+    "manageableState": "unmanaged",
+    "lastModifiedDate": "2026-10-01T00:00:00.000Z"
+  }
+]

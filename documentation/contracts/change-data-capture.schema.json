@@ -1,0 +1,136 @@
+{
+  "metadataType": "PlatformEventChannelMember",
+  "apiVersion": "67.0",
+  "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+  "xmlFilePattern": "**/platformEventChannelMembers/*.platformEventChannelMember-meta.xml",
+  "template": "modelo-doc-change-data-capture-vapi-{apiMajor}.md",
+  "titlePath": "@fullName",
+  "referenceDoc": "_sf_utilities/ajudAI/contexto-platform-objects.md",
+  "classification": "Documento de todo membro de canal de eventos (seleção de objeto para Change Data Capture).",
+  "properties": [
+    {
+      "name": "Membro do canal",
+      "placeholder": "member_name",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "EventChannel",
+      "placeholder": "event_channel",
+      "path": "cdc.eventChannel",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "SelectedEntity",
+      "placeholder": "selected_entity",
+      "path": "cdc.selectedEntity",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação",
+      "notes": "Nome do change event (ex.: AccountChangeEvent) ou do platform event."
+    },
+    {
+      "name": "FilterExpression",
+      "placeholder": "filter_expression",
+      "path": "cdc.filterExpression",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação",
+      "notes": "Até um filtro por membro (confirmado)."
+    },
+    {
+      "name": "Objeto de origem",
+      "placeholder": "base_object",
+      "path": "cdc.baseObject",
+      "source": "Derivado",
+      "required": false,
+      "markdownSection": "Identificação",
+      "notes": "Pela convenção de nomes: XChangeEvent -> X; X__ChangeEvent -> X__c."
+    },
+    {
+      "name": "Tipo de canal",
+      "placeholder": "channel_kind",
+      "path": "cdc.channelKind",
+      "source": "Derivado",
+      "required": false,
+      "markdownSection": "Identificação",
+      "notes": "ChangeEvents = canal padrão; outro = canal customizado."
+    }
+  ],
+  "tables": [
+    {
+      "markdownSection": "Campos de enriquecimento",
+      "builder": "list_values",
+      "source": "XML",
+      "args": {
+        "path": "cdc.enrichedFields",
+        "valuePlaceholder": "enriched_field"
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "enrichedFields: até 10 por membro; aparecem só em eventos de update e delete (confirmado)."
+    },
+    {
+      "markdownSection": "Assinantes",
+      "builder": "event_reference_rows",
+      "source": "Derivado",
+      "args": {
+        "path": "cdc.selectedEntity"
+      },
+      "emptyValue": "Não informado",
+      "notes": "Triggers no change event, Flows e LWC (empApi /data/...) processados na execução."
+    },
+    {
+      "markdownSection": "Dados internos",
+      "builder": "internal_record_properties",
+      "source": "Objeto interno",
+      "args": {
+        "keyPlaceholder": "internal_property",
+        "valuePlaceholder": "internal_value"
+      },
+      "emptyValue": "Não informado"
+    },
+    {
+      "markdownSection": "Acesso e configuração",
+      "builder": "access_rows",
+      "source": "XML",
+      "args": {
+        "byPath": [
+          {
+            "path": "cdc.baseObject",
+            "accessKey": "CustomObject",
+            "via": "Objeto de origem {name}"
+          },
+          {
+            "names": [
+              "ViewAllData",
+              "ViewAllUsers"
+            ],
+            "accessKey": "UserPermission",
+            "via": "Permissão de sistema {name}"
+          }
+        ]
+      },
+      "emptyValue": "Não informado",
+      "notes": "Assinar change events exige View All Data, View All Users ou View All Records do objeto, conforme o canal (confirmado)."
+    }
+  ],
+  "internalData": {
+    "enabled": true,
+    "source": "Tooling API",
+    "object": "PlatformEventChannelMember",
+    "useToolingApi": true,
+    "query": "SELECT Id, DeveloperName, EventChannel, SelectedEntity FROM PlatformEventChannelMember WHERE DeveloperName = '{developerName}'",
+    "expectSingleRecord": true,
+    "blocking": false,
+    "validationPending": "PlatformEventChannelMember (Tooling API): confirmar campos no piloto."
+  },
+  "evidence": [
+    "Channels and Channel Members (selectedEntity, enrichedFields, filtro) — developer.salesforce.com/docs/platform/change-data-capture/guide/cdc-channel-examples.html",
+    "Enrich Change Events (até 10 campos; só update/delete; canal customizado recomendado) — developer.salesforce.com/docs/platform/change-data-capture/guide/cdc-enrich-intro.html",
+    "Change Event Storage and Delivery (retenção de 3 dias; permissões do assinante) — developer.salesforce.com/docs/platform/change-data-capture/guide/cdc-subscribe-delivery.html"
+  ]
+}

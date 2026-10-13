@@ -1092,7 +1092,8 @@ class DocumentPipeline:
 
     # Passo 10 -----------------------------------------------------------
     def render_unit(self, p, group, unit, primary, related, internal, contract, unresolved_types=()):
-        doc_slug = self.mvp.document_slug(unit["documentType"])
+        # Grupos com o mesmo tipo principal (ex.: CustomObject __c e platform event __e) usam slug próprio.
+        doc_slug = group.data.get("documentSlug") or self.mvp.document_slug(unit["documentType"])
         if contract is None:
             msg = self._missing_message(p, unit["documentType"], unit["fullName"],
                                         group.contract_file, None, group.data.get("referenceDoc"))

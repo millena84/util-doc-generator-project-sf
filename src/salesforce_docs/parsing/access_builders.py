@@ -47,7 +47,7 @@ def access_rows(ctx, args):
       ownFields — {campo do XML do próprio componente: tipo de origem} (ex.: ConnectedApp);
       relatedFields — {metadataType, fields} em componente relacionado (ex.: políticas da ECA);
       relatedAccess — {metadataType, accessKey, prefixMatch}: acesso via relacionado (ex.: NC → EC);
-      byPath — [{path, itemField?, accessKey, via}]: acesso a componentes que o próprio
+      byPath — [{path | names, itemField?, accessKey, via}]: acesso a componentes que o próprio
         componente referencia (ex.: trigger -> objeto e classes chamadas);
       noneText — texto quando não há concessão (índice disponível);
       pageActivation — FlexiPage: padrão da org (objeto) e ativação por app / app + perfil;
@@ -107,9 +107,12 @@ def access_rows(ctx, args):
         # Acesso a componentes que o próprio componente referencia (ex.: trigger -> objeto e
         # classes chamadas). bp: {path, itemField?, accessKey, via ("Objeto {name}")}.
         needs_index = True
-        value, _ = resolve(root, bp["path"])
-        names = [v.get(bp["itemField"]) if isinstance(v, dict) else v
-                 for v in as_list(value)] if bp.get("itemField") else _split(value)
+        if bp.get("names"):  # nomes fixos declarados no contrato (ex.: permissões exigidas)
+            names = list(bp["names"])
+        else:
+            value, _ = resolve(root, bp["path"])
+            names = [v.get(bp["itemField"]) if isinstance(v, dict) else v
+                     for v in as_list(value)] if bp.get("itemField") else _split(value)
         for name in dict.fromkeys(n for n in names if n):
             for _gname, r in _lookup(root.access_index, bp["accessKey"], name):
                 via = bp.get("via", "{name}").format(name=name)

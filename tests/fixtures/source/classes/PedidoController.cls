@@ -12,5 +12,7 @@ public with sharing class PedidoController {
 
     @AuraEnabled
     public static void enviar(Id pedidoId) {
+        Pedido_Evento__e evento = new Pedido_Evento__e(Numero_Pedido__c = String.valueOf(pedidoId));
+        EventBus.publish(evento);
     }
 }

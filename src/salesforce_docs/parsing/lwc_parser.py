@@ -189,9 +189,13 @@ def _parse_js(code, literals, imports):
     dyn = len(re.findall(r"\bnew\s+CustomEvent\s*\(\s*(?!['\"`])", code))
     if dyn:
         events.append({"kind": "Evento customizado", "name": None, "detail": f"nome não literal ({dyn}x)"})
+    channels = []
+    if any(m == "lightning/empApi" for m, _ in local.values()):
+        # Canais de streaming como literal no JS (ex.: '/event/X__e', '/data/XChangeEvent').
+        channels = sorted({lit for lit in literals if re.fullmatch(r"/(event|data)/[A-Za-z0-9_]+", lit)})
     calls = {name: bool(re.search(rf"(?<![\w.$]){name}\s*\(", code))
              for name in ("publish", "subscribe", "unsubscribe")}
-    return {"wires": wires, "apex": apex, "events": _dedupe(events), "lmsCalls": calls,
+    return {"wires": wires, "apex": apex, "events": _dedupe(events), "lmsCalls": calls, "channels": channels,
             "api": _api_members(code), "hooks": _hooks(code)}
 
 
@@ -288,7 +292,7 @@ def parse_lwc_bundle(files: dict) -> dict:
         meta = _parse_meta(files[meta_path])
     except ET.ParseError as exc:
         return {"parser": PARSER_ID, "parsed": False, "error": f".js-meta.xml inválido: {exc}"}
-    imports, api, hooks, wires, apex, events = [], [], [], [], [], []
+    imports, api, hooks, wires, apex, events, channels = [], [], [], [], [], [], []
     lms = {"publish": False, "subscribe": False, "unsubscribe": False}
     children, base = set(), set()
     for path in sorted(files):
@@ -302,6 +306,7 @@ def parse_lwc_bundle(files: dict) -> dict:
             wires += js["wires"]
             apex += js["apex"]
             events += js["events"]
+            channels += [c for c in js["channels"] if c not in channels]
             lms = {k: lms[k] or v for k, v in js["lmsCalls"].items()}
         elif path.endswith(".html"):
             c, b = _parse_html(files[path])
@@ -318,7 +323,7 @@ def parse_lwc_bundle(files: dict) -> dict:
 
     custom_perms = names_after("@salesforce/customPermission/")
     user_perms = names_after("@salesforce/userPermission/")
-    channels = names_after("@salesforce/messageChannel/")
+    channels_lms = names_after("@salesforce/messageChannel/")
 
     data_access = []
     for m in sorted(set(by_kind.get("Lightning Data Service", []))):
@@ -337,6 +342,8 @@ def parse_lwc_bundle(files: dict) -> dict:
     ops = ", ".join(k for k in ("publish", "subscribe", "unsubscribe") if lms[k]) or "—"
     communication = list(events)
     communication += [{"kind": "Message channel (LMS)", "name": c, "detail": f"chamadas no componente: {ops}"}
+                      for c in channels_lms]
+    communication += [{"kind": "Canal de streaming (empApi)", "name": c, "detail": "lightning/empApi"}
                       for c in channels]
     communication += [{"kind": "Componente filho (HTML)", "name": _kebab_to_module(t), "detail": t}
                       for t in sorted(children)]
@@ -391,7 +398,8 @@ def parse_lwc_bundle(files: dict) -> dict:
         "customPermissions": custom_perms,
         "permissionChecks": [{"kind": "Custom Permission", "name": n} for n in custom_perms] +
                             [{"kind": "User Permission", "name": n} for n in user_perms],
-        "messageChannels": channels,
+        "messageChannels": channels_lms,
+        "streamingChannels": channels,
         "quickAction": {
             "actionType": action_type,
             "hasInvoke": has_invoke,

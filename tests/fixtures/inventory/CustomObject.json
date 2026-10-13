@@ -9,18 +9,27 @@
     "lastModifiedDate": "2026-10-01T00:00:00.000Z"
   },
   {
-    "fullName": "Pedido__c",
+    "fullName": "Config__mdt",
     "type": "CustomObject",
-    "fileName": "x/Pedido__c",
+    "fileName": "x/Config__mdt",
     "id": "000000000000000AAA",
     "namespacePrefix": "",
     "manageableState": "unmanaged",
     "lastModifiedDate": "2026-10-01T00:00:00.000Z"
   },
   {
-    "fullName": "Config__mdt",
+    "fullName": "Pedido_Evento__e",
     "type": "CustomObject",
-    "fileName": "x/Config__mdt",
+    "fileName": "x/Pedido_Evento__e",
+    "id": "0PS000000000000AAA",
+    "namespacePrefix": "",
+    "manageableState": "unmanaged",
+    "lastModifiedDate": "2026-10-01T00:00:00.000Z"
+  },
+  {
+    "fullName": "Pedido__c",
+    "type": "CustomObject",
+    "fileName": "x/Pedido__c",
     "id": "000000000000000AAA",
     "namespacePrefix": "",
     "manageableState": "unmanaged",

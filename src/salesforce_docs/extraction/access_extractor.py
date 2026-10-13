@@ -45,6 +45,7 @@ def retrieve_access_sources(runner, session, specs, access_dir, errors_dir, proj
 
 def _empty_index():
     return {"grants": {}, "permissionSetGroups": {}, "queues": {}, "sharingRules": {}, "pageAssignments": {},
+            "subscriberConfigs": {},
             "sourceFiles": []}
 
 
@@ -153,6 +154,15 @@ def build_access_index(files, project_root, cfg):
                 index["pageAssignments"].setdefault(page, []).append(
                     {"level": level, "app": f["fullName"],
                      **{k: item.get(k) for k in page_cfg.get("fields") or []}, "source": f["path"]})
+    # Usuário e lote das triggers de evento. O usuário (nome de usuário) NUNCA entra no índice.
+    sub_cfg = cfg.get("subscriberConfigs") or {}
+    for f in by_type.get(sub_cfg.get("metadataType"), []):
+        _, data = parse_xml_file(root / f["path"])
+        consumer = data.get(sub_cfg.get("consumerField", "platformEventConsumer"))
+        if consumer:
+            index["subscriberConfigs"][consumer] = {
+                "name": f["fullName"], "batchSize": data.get(sub_cfg.get("batchSizeField", "batchSize")),
+                "userConfigured": bool(data.get(sub_cfg.get("userField", "user"))), "source": f["path"]}
     for key in index["grants"]:
         for name in index["grants"][key]:
             index["grants"][key][name].sort(key=lambda r: (r["originType"], r["origin"], r["via"] or ""))
