@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomApplication xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionOverrides>
+        <actionName>View</actionName>
+        <content>Pedido_Record_Page</content>
+        <formFactor>Large</formFactor>
+        <pageOrSobjectType>Pedido__c</pageOrSobjectType>
+        <skipRecordTypeSelect>false</skipRecordTypeSelect>
+        <type>Flexipage</type>
+    </actionOverrides>
+    <formFactors>Large</formFactors>
+    <label>Vendas</label>
+    <navType>Standard</navType>
+    <profileActionOverrides>
+        <actionName>View</actionName>
+        <content>Pedido_Record_Page</content>
+        <formFactor>Large</formFactor>
+        <pageOrSobjectType>Pedido__c</pageOrSobjectType>
+        <recordType>Pedido__c.Padrao</recordType>
+        <type>Flexipage</type>
+        <profile>Vendas</profile>
+    </profileActionOverrides>
+    <uiType>Lightning</uiType>
+</CustomApplication>

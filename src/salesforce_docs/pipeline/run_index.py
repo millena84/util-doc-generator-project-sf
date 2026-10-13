@@ -87,8 +87,9 @@ def build_run_index(records, cfg, class_inventory=None, class_type="ApexClass", 
     record_fields: {metadataType: [campos]} copiados do XML para index["records"][tipo][nome].
     """
     cfg = cfg or {}
+    page_cfg = (record_fields or {}).get("pages") or {}
     record_fields = (record_fields or {}).get("fields") or {}
-    index = {"automations": {}, "classes": {}, "records": {},
+    index = {"automations": {}, "classes": {}, "records": {}, "pageUsage": {}, "pageOrgDefaults": {},
              "classInventory": sorted(class_inventory, key=str.lower) if class_inventory is not None else None,
              "phases": cfg.get("phases") or [], "reference": cfg.get("officialReference")}
     seen = set()
@@ -98,6 +99,7 @@ def build_run_index(records, cfg, class_inventory=None, class_type="ApexClass", 
             continue
         seen.add(key)
         data = rec["data"]
+        _page_entries(index, page_cfg, key[0], key[1], data)
         if key[0] in record_fields:
             index["records"].setdefault(key[0], {})[key[1]] = {
                 f: _text(_get(data, f, key[1])) for f in record_fields[key[0]]}
@@ -115,6 +117,32 @@ def build_run_index(records, cfg, class_inventory=None, class_type="ApexClass", 
                             for m in code.get("methods") or [] if m.get("name")},
             }
     return index
+
+
+def _page_entries(index, cfg, metadata_type, full_name, data):
+    """Onde cada componente é usado (FlexiPage) e páginas ativadas como padrão da org (objeto)."""
+    if not cfg:
+        return
+    if metadata_type == cfg.get("pageType"):
+        page = data.get(cfg.get("parsedKey", "flexipage")) or {}
+        for c in page.get("components") or []:
+            if c.get("componentName"):
+                index["pageUsage"].setdefault(c["componentName"].lower(), []).append(
+                    {"page": full_name, "region": c.get("region"), "identifier": c.get("identifier"),
+                     "hasVisibility": c.get("hasVisibility"), "pageType": data.get("type")})
+        for flow in page.get("flows") or []:
+            index["pageUsage"].setdefault(f"flow:{flow.lower()}", []).append(
+                {"page": full_name, "region": None, "identifier": None, "hasVisibility": None,
+                 "pageType": data.get("type")})
+    od = cfg.get("orgDefault") or {}
+    if metadata_type == od.get("metadataType"):
+        items = data.get(od.get("element")) or []
+        for item in items if isinstance(items, list) else [items]:
+            if isinstance(item, dict) and str(item.get(od.get("typeField", "type"))) == od.get("typeValue"):
+                page = item.get(od.get("contentField", "content"))
+                if page:
+                    index["pageOrgDefaults"].setdefault(page, []).append(
+                        {"object": full_name, **{k: item.get(k) for k in od.get("fields") or []}})
 
 
 def records_of(record):

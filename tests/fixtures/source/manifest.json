@@ -412,5 +412,26 @@
       "fullName": "Security",
       "path": "settings/Security.settings-meta.xml"
     }
+  ],
+  "FlexiPage:Pedido_Record_Page": [
+    {
+      "type": "FlexiPage",
+      "fullName": "Pedido_Record_Page",
+      "path": "flexipages/Pedido_Record_Page.flexipage-meta.xml"
+    }
+  ],
+  "FlexiPage:Pedidos_App_Page": [
+    {
+      "type": "FlexiPage",
+      "fullName": "Pedidos_App_Page",
+      "path": "flexipages/Pedidos_App_Page.flexipage-meta.xml"
+    }
+  ],
+  "CustomApplication:Vendas": [
+    {
+      "type": "CustomApplication",
+      "fullName": "Vendas",
+      "path": "applications/Vendas.app-meta.xml"
+    }
   ]
 }

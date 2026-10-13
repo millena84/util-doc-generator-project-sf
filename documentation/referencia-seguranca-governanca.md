@@ -2,7 +2,7 @@
 
 Conteúdo **genérico da plataforma** (modelo de compartilhamento, hierarquia de papéis, permission sets e muting, políticas da org), que vale para qualquer org. Por isso ele não aparece como propriedade nos documentos gerados (`modelo-doc-org-security`, `-profile`, `-permission-set`, `-permission-set-group`, `-sharing-rules`, `-role`, `-public-group`), que só mostram o que está no XML recuperado, nos dados internos ou nos componentes processados na execução.
 
-> Origem: adaptado de `_sf_utilities/ajudAI/contexto-seg-controle-acesso-gov.md` (material de referência, não normativo; o arquivo chama esta onda de "Onda 05"). O acesso direto a developer.salesforce.com não estava disponível no ambiente da adaptação (2026-10-13): os itens "confirmado" vieram de trechos das páginas oficiais retornados pela busca. Itens *a confirmar* não foram verificados.
+> Origem: adaptado de `_sf_utilities/ajudAI/contexto-seg-controle-acesso-gov.md` (material de referência, não normativo; Onda 05). O acesso direto a developer.salesforce.com não estava disponível no ambiente da adaptação (2026-10-13): os itens "confirmado" vieram de trechos das páginas oficiais retornados pela busca. Itens *a confirmar* não foram verificados.
 
 ## Fontes oficiais
 

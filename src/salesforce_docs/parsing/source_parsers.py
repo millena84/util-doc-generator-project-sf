@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from salesforce_docs.parsing.apex_parser import parse_apex_source
 from salesforce_docs.parsing.apex_trigger_parser import parse_apex_trigger
+from salesforce_docs.parsing.flexipage_parser import parse_flexipage
 from salesforce_docs.parsing.lwc_parser import parse_lwc_bundle
 
 SOURCE_PARSERS = {
@@ -16,6 +17,8 @@ SOURCE_PARSERS = {
     "apex-trigger": parse_apex_trigger,
     # bundle: recebe {caminho relativo: texto} de todos os arquivos com os sufixos configurados
     "lwc": parse_lwc_bundle,
+    # lê o próprio XML (FlexiPage) e achata regiões/componentes/visibilidade
+    "flexipage": parse_flexipage,
 }
 
 

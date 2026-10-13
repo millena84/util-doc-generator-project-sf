@@ -108,7 +108,19 @@ bin/sf-docs.sh run --group LightningComponentBundle --group ApexClass --componen
 - **`INVALID_FIELD`:** relate; o campo sai do contrato `lwc.schema.json`.
 - **Confira:** `fullName` dos arquivos no retrieve do bundle (todos com o nome do componente?); targets e propriedades de `targetConfigs` iguais ao `.js-meta.xml`; métodos Apex chamados e a verificação `@AuraEnabled`; perfil/permission set com `customPermissions` da permissão importada (formato `<customPermissions><enabled>`/`<name>`).
 
-## 5d. Segurança e governança (Onda 04)
+## 5d. Páginas Lightning — FlexiPage (Onda 04)
+
+```bash
+sf data query --use-tooling-api --target-org dev --json --query "SELECT Id, DeveloperName, MasterLabel, Type, EntityDefinitionId, Description FROM FlexiPage WHERE DeveloperName = '<Pagina>'"
+bin/sf-docs.sh run --group FlexiPage --group CustomObject --group LightningComponentBundle --non-interactive
+```
+
+- **Esperado:** `status: 0`; documento `doc-<pagina>-flexipage.md` com regiões e componentes iguais ao Lightning App Builder.
+- **Ativação:** compare a seção "Acesso e configuração" com o botão *Activation* da página. Confirme no XML do app (`access/components/applications/*.app-meta.xml`) o formato de `profileActionOverrides` (`profile`, `recordType`, `formFactor`) e, no do objeto, o `actionOverrides` de View com `type` Flexipage.
+- **Visibilidade:** relate o formato real de `leftValue` (ex.: `{!Record.Campo__c}`, `{!$Permission.CustomPermission.X}`).
+- **Volume:** `CustomApplication` entrou no retrieve de acesso (passo 6b); anote o tempo numa org grande.
+
+## 5e. Segurança e governança (Onda 05)
 
 ```bash
 sf project retrieve start --metadata Settings:Security --target-org dev --json | python3 -c "import json,sys; r=json.load(sys.stdin)['result']; print([(f['type'], f['fullName']) for f in r.get('files', [])])"

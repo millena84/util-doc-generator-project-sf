@@ -214,6 +214,22 @@
         "metaFile": false,
         "suffix": "settings",
         "xmlName": "SecuritySettings"
+      },
+      {
+        "childXmlNames": [],
+        "directoryName": "flexipages",
+        "inFolder": false,
+        "metaFile": false,
+        "suffix": "flexipage",
+        "xmlName": "FlexiPage"
+      },
+      {
+        "childXmlNames": [],
+        "directoryName": "applications",
+        "inFolder": false,
+        "metaFile": false,
+        "suffix": "app",
+        "xmlName": "CustomApplication"
       }
     ],
     "organizationNamespace": "",

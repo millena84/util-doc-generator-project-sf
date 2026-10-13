@@ -1,0 +1,209 @@
+{
+  "metadataType": "FlexiPage",
+  "apiVersion": "67.0",
+  "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+  "xmlFilePattern": "**/*.flexipage-meta.xml",
+  "template": "modelo-doc-flexipage-vapi-{apiMajor}.md",
+  "titlePath": "@fullName",
+  "referenceDoc": "_sf_utilities/ajudAI/contexto-flexipage.md",
+  "classification": "Documento de toda página Lightning (FlexiPage): estrutura, componentes, visibilidade e ativação.",
+  "properties": [
+    {
+      "name": "Name",
+      "placeholder": "page_name",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "MasterLabel",
+      "placeholder": "master_label",
+      "path": "masterLabel",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Type",
+      "placeholder": "page_type",
+      "path": "type",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação",
+      "notes": "RecordPage, AppPage, HomePage, UtilityBar..., como no XML."
+    },
+    {
+      "name": "SobjectType",
+      "placeholder": "sobject_type",
+      "path": "sobjectType",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação",
+      "notes": "Objeto da página de registro."
+    },
+    {
+      "name": "Template",
+      "placeholder": "template",
+      "path": "flexipage.template",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação",
+      "notes": "<template><name>."
+    },
+    {
+      "name": "Description",
+      "placeholder": "description",
+      "path": "description",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "ParentFlexiPage",
+      "placeholder": "parent_page",
+      "path": "parentFlexiPage",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    }
+  ],
+  "tables": [
+    {
+      "markdownSection": "Regiões",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "flexipage.regions",
+        "columns": {
+          "region_name": "name",
+          "region_type": "type",
+          "region_mode": "mode",
+          "region_items": "items"
+        }
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Facet = sub-região usada dentro de outro componente (ex.: aba)."
+    },
+    {
+      "markdownSection": "Componentes",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "flexipage.components",
+        "columns": {
+          "comp_region": "region",
+          "comp_name": "componentName",
+          "comp_identifier": "identifier",
+          "comp_kind": "kind",
+          "comp_visibility": "hasVisibility"
+        }
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Tipo pelo prefixo do nome: c: = do projeto (LWC ou Aura); flowruntime:interview = Flow; namespaces da plataforma; outros namespaces = pacote."
+    },
+    {
+      "markdownSection": "Campos (Dynamic Forms)",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "flexipage.fields",
+        "columns": {
+          "field_region": "region",
+          "field_item": "field",
+          "field_identifier": "identifier",
+          "field_visibility": "hasVisibility"
+        }
+      },
+      "emptyValue": "Não aplicável"
+    },
+    {
+      "markdownSection": "Propriedades dos componentes",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "flexipage.componentProperties",
+        "columns": {
+          "prop_identifier": "identifier",
+          "prop_component": "componentName",
+          "prop_name": "name",
+          "prop_value": "value"
+        }
+      },
+      "emptyValue": "Não aplicável"
+    },
+    {
+      "markdownSection": "Visibilidade condicional",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "flexipage.visibility",
+        "columns": {
+          "vis_identifier": "identifier",
+          "vis_context": "context",
+          "vis_left": "leftValue",
+          "vis_operator": "operator",
+          "vis_right": "rightValue",
+          "vis_logic": "booleanFilter"
+        }
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Critérios de <visibilityRule>. Contexto lido do início de leftValue (Record, User, Permission, Client...)."
+    },
+    {
+      "markdownSection": "Flows embarcados",
+      "builder": "list_values",
+      "source": "XML",
+      "args": {
+        "path": "flexipage.flows",
+        "valuePlaceholder": "page_flow"
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Propriedade flowName de flowruntime:interview."
+    },
+    {
+      "markdownSection": "Dados internos",
+      "builder": "internal_record_properties",
+      "source": "Objeto interno",
+      "args": {
+        "keyPlaceholder": "internal_property",
+        "valuePlaceholder": "internal_value"
+      },
+      "emptyValue": "Não informado"
+    },
+    {
+      "markdownSection": "Acesso e configuração",
+      "builder": "access_rows",
+      "source": "XML",
+      "args": {
+        "pageActivation": true,
+        "noneText": "Página não ativada nos componentes processados",
+        "byPath": [
+          {
+            "path": "flexipage.customPermissions",
+            "accessKey": "CustomPermission",
+            "via": "Custom Permission {name} (visibilidade)"
+          }
+        ]
+      },
+      "emptyValue": "Não informado",
+      "notes": "Ativação: padrão da org (actionOverrides do CustomObject processado) e por app / app + perfil (CustomApplication, passo 6b). Também quem tem as Custom Permissions usadas na visibilidade."
+    }
+  ],
+  "internalData": {
+    "enabled": true,
+    "source": "Objeto interno",
+    "object": "FlexiPage",
+    "useToolingApi": true,
+    "query": "SELECT Id, DeveloperName, MasterLabel, Type, EntityDefinitionId, Description, NamespacePrefix, CreatedDate, LastModifiedDate FROM FlexiPage WHERE DeveloperName = '{developerName}'",
+    "expectSingleRecord": true,
+    "blocking": false,
+    "validationPending": "Objeto FlexiPage (Tooling API): confirmar campos no piloto."
+  },
+  "evidence": [
+    "Metadata API FlexiPage (regiões com componentes) — developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_flexipage.htm",
+    "Activate Lightning Record Pages: padrão da org, padrão do app, app + record type + perfil (record type só em página de registro) — help.salesforce.com/s/articleView?id=lightning_app_builder_customize_lex_pages_activate.htm",
+    "Visibility Rules on Lightning Pages (campos do registro, User, User Permission, dispositivo) — help.salesforce.com/s/articleView?id=platform.lightning_page_components_visibility.htm",
+    "Ativação gera actionOverrides (View) no object-meta.xml (padrão da org) ou no app-meta.xml (padrão do app) — developer.salesforce.com/blogs/2018/06/working-with-modular-development-and-unlocked-packages-part-2"
+  ]
+}

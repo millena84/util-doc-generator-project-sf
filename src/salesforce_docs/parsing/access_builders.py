@@ -50,6 +50,7 @@ def access_rows(ctx, args):
       byPath — [{path, itemField?, accessKey, via}]: acesso a componentes que o próprio
         componente referencia (ex.: trigger -> objeto e classes chamadas);
       noneText — texto quando não há concessão (índice disponível);
+      pageActivation — FlexiPage: padrão da org (objeto) e ativação por app / app + perfil;
       sharedTo — tipos de destinatário (ex.: role, roleAndSubordinates): regras de
         compartilhamento que compartilham com o próprio componente (papel, grupo);
       notApplicable — motivo quando o tipo não tem atribuição por perfil/permission set.
@@ -88,6 +89,20 @@ def access_rows(ctx, args):
                 if r.get("via"):
                     via += f"; {r['via']}"
                 rows.append(_row(r["originType"], r["origin"], r["access"], via))
+    if args.get("pageActivation"):
+        # Onde a página Lightning está ativada: padrão da org (actionOverrides do objeto, índice da
+        # execução) e por app / app + perfil (XML do CustomApplication, passo 6b).
+        needs_index = True
+        run = getattr(root, "run_index", None) or {}
+        for d in (run.get("pageOrgDefaults") or {}).get(root.full_name, []):
+            detail = ", ".join(str(d[k]) for k in ("actionName", "formFactor") if d.get(k))
+            rows.append(_row("Padrão da org", d["object"], f"Ativada ({detail})" if detail else "Ativada",
+                             f"Objeto {d['object']}"))
+        for a in ((root.access_index or {}).get("pageAssignments") or {}).get(root.full_name, []):
+            detail = ", ".join(str(a[k]) for k in ("actionName", "formFactor") if a.get(k))
+            via = "; ".join(f"{lbl} {a[k]}" for k, lbl in (("pageOrSobjectType", "Objeto"), ("profile", "Perfil"),
+                                                            ("recordType", "Record type")) if a.get(k))
+            rows.append(_row(a["level"], a["app"], f"Ativada ({detail})" if detail else "Ativada", via or None))
     for bp in args.get("byPath") or []:
         # Acesso a componentes que o próprio componente referencia (ex.: trigger -> objeto e
         # classes chamadas). bp: {path, itemField?, accessKey, via ("Objeto {name}")}.
