@@ -1,0 +1,32 @@
+{
+  "done": true,
+  "totalSize": 2,
+  "records": [
+    {
+      "attributes": {
+        "type": "OmniProcess"
+      },
+      "Id": "0jN000000000001AAA",
+      "UniqueName": "Pedido_EnviarERP_Procedure_1",
+      "Type": "Pedido",
+      "SubType": "EnviarERP",
+      "Language": "Procedure",
+      "VersionNumber": 1,
+      "IsActive": true,
+      "IsIntegrationProcedure": true
+    },
+    {
+      "attributes": {
+        "type": "OmniProcess"
+      },
+      "Id": "0jN000000000002AAA",
+      "UniqueName": "Vendas_CriarPedido_Portuguese_1",
+      "Type": "Vendas",
+      "SubType": "CriarPedido",
+      "Language": "Portuguese",
+      "VersionNumber": 1,
+      "IsActive": true,
+      "IsIntegrationProcedure": false
+    }
+  ]
+}

@@ -98,6 +98,22 @@
       "folder": "experiences", "contract": "experience-bundle.schema.json", "documentSlug": "experience",
       "sourceParser": { "name": "experience-bundle", "suffix": [".json", ".site-meta.xml"], "key": "experience", "bundle": true }
     },
+    "OmniDataTransform": {
+      "folder": "omni-data-transforms", "contract": "omni-data-transform.schema.json", "documentSlug": "dataraptor",
+      "sourceParser": { "name": "omni-data-transform", "suffix": ".rpt-meta.xml", "key": "omni" }
+    },
+    "OmniIntegrationProcedure": {
+      "folder": "omni-integration-procedures", "contract": "omni-integration-procedure.schema.json", "documentSlug": "integration-procedure",
+      "sourceParser": { "name": "omni-process", "suffix": ".oip-meta.xml", "key": "omni" }
+    },
+    "OmniScript": {
+      "folder": "omni-scripts", "contract": "omni-script.schema.json", "documentSlug": "omniscript",
+      "sourceParser": { "name": "omni-process", "suffix": ".os-meta.xml", "key": "omni" }
+    },
+    "OmniUiCard": {
+      "folder": "omni-ui-cards", "contract": "omni-ui-card.schema.json", "documentSlug": "flexcard",
+      "sourceParser": { "name": "omni-ui-card", "suffix": ".ouc-meta.xml", "key": "omni" }
+    },
     "CustomField": { "retrievedWith": "CustomObject" },
     "RecordType": { "retrievedWith": "CustomObject" },
     "ValidationRule": { "retrievedWith": "CustomObject" },
@@ -141,7 +157,10 @@
     "emailSenderName",
     "emailSenderEmail",
     "siteAdmin",
-    "siteGuestRecordDefaultOwner"
+    "siteGuestRecordDefaultOwner",
+    "propertySetConfig",
+    "dataSourceConfig",
+    "sampleDataSourceResponse"
   ],
   "accessSources": {
     "notes": "Onde cada componente está configurado (perfil, permission set, permission set group, fila, regra de compartilhamento). Fonte: XML. Os tipos abaixo são recuperados num retrieve único junto com os componentes documentados, para que o XML do Profile/PermissionSet traga as permissões desses componentes.",
@@ -231,6 +250,11 @@
         "pageType": "Experience Cloud",
         "lwc": { "metadataType": "LightningComponentBundle", "parsedKey": "lwc", "classesKey": "apexClasses" }
       }
+    },
+    "omni": {
+      "notes": "Referências entre componentes do OmniStudio processados (OmniScript -> Integration Procedure -> DataRaptor, classes Apex, Named Credentials), lidas do propertySetConfig/dataSourceConfig. O texto desses JSON nunca é documentado.",
+      "parsedKey": "omni",
+      "types": { "OmniDataTransform": "DataRaptor", "OmniIntegrationProcedure": "Integration Procedure", "OmniScript": "OmniScript", "OmniUiCard": "FlexCard" }
     },
     "rules": {
       "notes": "Destinos (fila, grupo...) das regras de atribuição e escalonamento processadas, para o documento da fila. Usuários de destino nunca entram.",
@@ -555,6 +579,42 @@
       "referenceDoc": "_sf_utilities/ajudAI/contexto-doc-experience-cloud.md",
       "usesRunIndex": true,
       "notes": "Páginas (views), rotas e componentes do Experience Builder (sites Aura/LWR no formato ExperienceBundle). DigitalExperienceBundle (sites LWR aprimorados) não é coberto. O índice da execução liga os LWC das páginas aos documentos de LWC e às classes Apex que eles importam."
+    },
+    {
+      "group": "OmniDataTransform",
+      "primaryMetadataType": "OmniDataTransform",
+      "relatedMetadataTypes": [],
+      "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+      "referenceDoc": "_sf_utilities/ajudAI/contexto-doc-industries-omni.md",
+      "usesRunIndex": true,
+      "notes": "DataRaptor (OmniStudio padrão, XML da Metadata API): itens de mapeamento, objetos lidos/gravados e quem tem acesso a esses objetos. Datapacks .json do Vlocity Build Tool (pacote gerenciado) não são lidos."
+    },
+    {
+      "group": "OmniIntegrationProcedure",
+      "primaryMetadataType": "OmniIntegrationProcedure",
+      "relatedMetadataTypes": [],
+      "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+      "referenceDoc": "_sf_utilities/ajudAI/contexto-doc-industries-omni.md",
+      "usesRunIndex": true,
+      "notes": "Integration Procedure: elementos em ordem e as referências (DataRaptor, Integration Procedure, Apex, Named Credential) do propertySetConfig, cujo texto nunca é documentado."
+    },
+    {
+      "group": "OmniScript",
+      "primaryMetadataType": "OmniScript",
+      "relatedMetadataTypes": [],
+      "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+      "referenceDoc": "_sf_utilities/ajudAI/contexto-doc-industries-omni.md",
+      "usesRunIndex": true,
+      "notes": "OmniScript: elementos (passos e ações) e referências. Quem lança o OmniScript (FlexCard, página) e o LWC compilado não são ligados: chaves e nomes a confirmar no piloto."
+    },
+    {
+      "group": "OmniUiCard",
+      "primaryMetadataType": "OmniUiCard",
+      "relatedMetadataTypes": [],
+      "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+      "referenceDoc": "_sf_utilities/ajudAI/contexto-doc-industries-omni.md",
+      "usesRunIndex": true,
+      "notes": "FlexCard: fonte de dados e ações; sampleDataSourceResponse (dados de exemplo) nunca é documentado."
     },
     {
       "group": "PermissionSet",

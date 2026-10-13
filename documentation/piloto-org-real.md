@@ -184,6 +184,19 @@ sf project retrieve start --metadata "ExperienceBundle:<site>" --target-org dev 
 - **ExperienceBundle:** estrutura de pastas (`config`, `views`, `routes`, `themes`, `brandingSets`...); campos `pageAccess`, `urlPrefix`, `activeViewId` das rotas; como a audiência aparece nos componentes das views (chaves com `audience`/`visibility`?). Relate se o site é LWR aprimorado (`DigitalExperienceBundle`), que não é coberto.
 - **Objetos internos:** `Network` (Name é o nome de API?) e `Site` (campos `SiteType`, `UrlPathPrefix`).
 
+## 5j. OmniStudio (Onda 10)
+
+```bash
+sf org list metadata --metadata-type OmniIntegrationProcedure --target-org dev --json | python3 -c "import json,sys; print([r['fullName'] for r in json.load(sys.stdin).get('result') or []][:10])"
+bin/sf-docs.sh run --group OmniDataTransform --group OmniIntegrationProcedure --group OmniScript --group OmniUiCard --non-interactive
+```
+
+- **Formato:** a org usa o OmniStudio padrão (objetos `OmniProcess`, `OmniDataTransform`, `OmniUiCard`) ou o pacote gerenciado Vlocity (datapacks, fora do escopo)? Relate se os tipos não aparecem em `org list metadata-types`.
+- **Nomes:** formato do fullName (`Type_SubType_Language_Version`?); sufixos `.rpt`, `.oip`, `.os`, `.ouc`; elementos `omniProcessElements`/`childElements`, `omniDataTransformItem` (`inputObjectName`, `outputFieldName`...), `dataSourceConfig`.
+- **Referências:** as chaves `bundle`, `integrationProcedureKey`, `ipMethod`, `remoteClass`, `namedCredential` existem no `propertySetConfig`? Como um FlexCard lança um OmniScript? **Não cole o `propertySetConfig`** no relato: pode ter cabeçalhos e valores fixos.
+- **Segurança do DataRaptor:** qual elemento corresponde a "verificar FLS" / "ignorar segurança"?
+- **Objetos internos:** filtro `UniqueName = fullName` funciona em `OmniProcess` e `OmniUiCard`? `Name = fullName` em `OmniDataTransform`?
+
 ## 6. Acesso e configuração
 
 O ponto mais importante: confirmar se o XML de Profile/PermissionSet traz as permissões **só** dos componentes recuperados no mesmo pedido. O utilitário já recupera tudo junto (passo 6b), mas o resultado precisa ser conferido:

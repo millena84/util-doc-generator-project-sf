@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SIMULADO para testes. O cabeçalho HTTP tem um segredo SIMULADO que nunca pode aparecer nos documentos. -->
+<OmniIntegrationProcedure xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Envia o pedido ao ERP</description>
+    <isActive>true</isActive>
+    <isIntegrationProcedure>true</isIntegrationProcedure>
+    <language>Procedure</language>
+    <name>EnviarERP</name>
+    <omniProcessElements>
+        <isActive>true</isActive>
+        <level>0</level>
+        <name>DR_ExtrairPedido</name>
+        <propertySetConfig>{"bundle": "ExtrairPedido", "label": "Extrair"}</propertySetConfig>
+        <type>DataRaptor Extract Action</type>
+    </omniProcessElements>
+    <omniProcessElements>
+        <isActive>true</isActive>
+        <level>0</level>
+        <name>HTTP_EnviarERP</name>
+        <propertySetConfig>{"namedCredential": "Minha_NC", "restMethod": "POST", "restPath": "/pedidos", "httpHeaders": [{"name": "Authorization", "value": "Bearer SEGREDO_SIMULADO"}]}</propertySetConfig>
+        <type>Rest Action</type>
+    </omniProcessElements>
+    <omniProcessElements>
+        <isActive>true</isActive>
+        <level>0</level>
+        <name>Remote_Registrar</name>
+        <propertySetConfig>{"remoteClass": "PedidoService", "remoteMethod": "registrar"}</propertySetConfig>
+        <type>Remote Action</type>
+    </omniProcessElements>
+    <omniProcessElements>
+        <isActive>true</isActive>
+        <level>0</level>
+        <name>Resposta</name>
+        <propertySetConfig>{"label": "Resposta"}</propertySetConfig>
+        <type>Response Action</type>
+    </omniProcessElements>
+    <subType>EnviarERP</subType>
+    <type>Pedido</type>
+    <versionNumber>1</versionNumber>
+</OmniIntegrationProcedure>

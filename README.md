@@ -152,6 +152,7 @@ Registro da auditoria de segurança de 2026-10-11 (10 riscos: 1 crítico, 2 alto
 | Network | `ONE_DOCUMENT_PER_COMPONENT` | CustomSite cujo nome é o `<site>` da Network (`PRIMARY_FIELD_REFERENCES`); parser `network` (remetente de e-mail nunca guardado) |
 | CustomSite | `ONE_DOCUMENT_PER_COMPONENT` | Network cujo `<site>` é o site (`FIELD_EQUALS_PRIMARY`); parser `custom-site` (usuários nunca guardados) |
 | ExperienceBundle | `ONE_DOCUMENT_PER_COMPONENT` | — (bundle: `.site-meta.xml` + `views/`, `routes/`... em JSON, parser `experience-bundle`; índice da execução liga as views aos LWC) |
+| OmniDataTransform, OmniIntegrationProcedure, OmniScript, OmniUiCard | `ONE_DOCUMENT_PER_COMPONENT` | — (XML da Metadata API; parsers `omni-data-transform`, `omni-process` e `omni-ui-card`; quem chama quem via `recordIndex.omni`) |
 
 Cada componente (principal ou relacionado) é extraído e normalizado de forma independente; a agregação acontece apenas no documento.
 
@@ -264,6 +265,18 @@ Adaptação de `_sf_utilities/ajudAI/contexto-flexipage.md` (ver a matriz em `do
 - **Onde é usado**: o documento do LWC ganhou a seção "Onde é usado (páginas Lightning)" (`recordIndex.pages`).
 - **Conteúdo genérico** (templates, hierarquia de ativação, regras de visibilidade): [`documentation/referencia-flexipage.md`](documentation/referencia-flexipage.md).
 
+## OmniStudio — Onda 10
+
+Adaptação de `_sf_utilities/ajudAI/contexto-doc-industries-omni.md` (ver a matriz em `documentation/refatoracao-1-matriz-ajudai.md`).
+
+- **Formato lido:** o XML da Metadata API do OmniStudio padrão (`OmniDataTransform`, `OmniIntegrationProcedure`, `OmniScript`, `OmniUiCard`), recuperado como os demais tipos. Os `.json` do Vlocity Build Tool descritos no `ajudAI` (datapacks do pacote gerenciado) **não** são lidos.
+- **DataRaptor** (`modelo-doc-omni-data-transform`): tipo, entrada/saída, itens de mapeamento (objeto/campo de entrada e saída, filtro, se há fórmula), objetos lidos e gravados, quem usa o DataRaptor e, na seção de acesso, quem tem permissão nesses objetos.
+- **Integration Procedure** (`modelo-doc-omni-integration-procedure`) e **OmniScript** (`modelo-doc-omni-script`): elementos na ordem do XML (com nível e elemento pai) e os componentes que cada um referencia (DataRaptor, Integration Procedure, classe Apex, Named Credential). O Integration Procedure mostra também quem o chama (OmniScripts, FlexCards). Na seção de acesso, quem executa as classes Apex chamadas.
+- **FlexCard** (`modelo-doc-omni-ui-card`): fonte de dados, ações e referências.
+- **Segurança:** o texto de `propertySetConfig`, `dataSourceConfig` e `sampleDataSourceResponse` nunca vai para o Markdown (pode ter cabeçalhos HTTP, valores fixos e dados de exemplo): só os nomes dos componentes referenciados. Fórmulas do DataRaptor também não são reproduzidas.
+- **Novidades genéricas:** índice `omniRefs` (`recordIndex.omni`) e builder `omni_usage_rows`.
+- **Conteúdo genérico e o que não foi confirmado:** [`documentation/referencia-omnistudio.md`](documentation/referencia-omnistudio.md).
+
 ## Experience Cloud — Onda 09
 
 Adaptação de `_sf_utilities/ajudAI/contexto-doc-experience-cloud.md` (ver a matriz em `documentation/refatoracao-1-matriz-ajudai.md`).
@@ -368,11 +381,11 @@ Os testes usam uma Salesforce CLI **simulada** (`tests/fixtures/bin/sf`) e respo
 ### Simulação de todas as documentações do MVP
 
 ```bash
-python3 -m unittest tests.test_mvp_simulation        # verifica os 42 modelos e os 42 metadata types
+python3 -m unittest tests.test_mvp_simulation        # verifica os 46 modelos e os 46 metadata types
 python3 -m tests.simulate_mvp --out /tmp/sim-mvp     # executa e gera o relatório passo a passo
 ```
 
-O cenário `mvp_complete` da CLI simulada sobrepõe `tests/fixtures/mvp-complete/` às fixtures base, de modo que todo metadata type do MVP tenha ao menos um componente. O relatório versionado em `documentation/simulacao/relatorio-simulacao-mvp.md` mostra, para essa simulação, a saída no terminal, os comandos por passo, a situação de cada tipo, a árvore de arquivos e o conteúdo dos 69 documentos gerados.
+O cenário `mvp_complete` da CLI simulada sobrepõe `tests/fixtures/mvp-complete/` às fixtures base, de modo que todo metadata type do MVP tenha ao menos um componente. O relatório versionado em `documentation/simulacao/relatorio-simulacao-mvp.md` mostra, para essa simulação, a saída no terminal, os comandos por passo, a situação de cada tipo, a árvore de arquivos e o conteúdo dos 73 documentos gerados.
 
 | Grupo | Documento(s) / modelo | Tipos que aparecem dentro do documento |
 |---|---|---|
@@ -407,6 +420,10 @@ O cenário `mvp_complete` da CLI simulada sobrepõe `tests/fixtures/mvp-complete
 | Network | `modelo-doc-network` | CustomSite do site |
 | CustomSite | `modelo-doc-custom-site` | Network que usa o site |
 | ExperienceBundle | `modelo-doc-experience-bundle` | — |
+| OmniDataTransform | `modelo-doc-omni-data-transform` | componentes que usam o DataRaptor |
+| OmniIntegrationProcedure | `modelo-doc-omni-integration-procedure` | componentes referenciados e quem chama |
+| OmniScript | `modelo-doc-omni-script` | componentes referenciados |
+| OmniUiCard | `modelo-doc-omni-ui-card` | componentes referenciados |
 
 ## Estrutura
 

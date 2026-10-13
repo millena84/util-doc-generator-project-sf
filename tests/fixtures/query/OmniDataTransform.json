@@ -1,0 +1,16 @@
+{
+  "done": true,
+  "totalSize": 1,
+  "records": [
+    {
+      "attributes": {
+        "type": "OmniDataTransform"
+      },
+      "Id": "0jI000000000001AAA",
+      "Name": "ExtrairPedido",
+      "Type": "Extract",
+      "IsActive": true,
+      "VersionNumber": 1
+    }
+  ]
+}

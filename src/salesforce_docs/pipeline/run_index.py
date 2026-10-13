@@ -90,9 +90,10 @@ def build_run_index(records, cfg, class_inventory=None, class_type="ApexClass", 
     page_cfg = (record_fields or {}).get("pages") or {}
     event_cfg = (record_fields or {}).get("events") or {}
     rules_cfg = (record_fields or {}).get("rules") or {}
+    omni_cfg = (record_fields or {}).get("omni") or {}
     record_fields = (record_fields or {}).get("fields") or {}
     index = {"automations": {}, "classes": {}, "records": {}, "pageUsage": {}, "pageOrgDefaults": {}, "eventRefs": {}, "ruleTargets": {},
-             "experienceUsage": {}, "lwcApex": {},
+             "experienceUsage": {}, "lwcApex": {}, "omniRefs": {},
              "classInventory": sorted(class_inventory, key=str.lower) if class_inventory is not None else None,
              "phases": cfg.get("phases") or [], "reference": cfg.get("officialReference")}
     seen = set()
@@ -105,6 +106,7 @@ def build_run_index(records, cfg, class_inventory=None, class_type="ApexClass", 
         _page_entries(index, page_cfg, key[0], key[1], data)
         _event_entries(index, event_cfg, key[0], key[1], data)
         _experience_entries(index, page_cfg.get("experience") or {}, key[0], key[1], data)
+        _omni_entries(index, omni_cfg, key[0], key[1], data)
         rules = data.get(rules_cfg.get("parsedKey", "rules")) if rules_cfg else None
         if isinstance(rules, dict) and key[0] in (rules_cfg.get("types") or []):
             for t in rules.get("targets") or []:
@@ -174,6 +176,16 @@ def _experience_entries(index, cfg, metadata_type, full_name, data):
         code = data.get(lwc_cfg.get("parsedKey", "lwc")) or {}
         if code.get("parsed"):
             index["lwcApex"][full_name.lower()] = list(code.get(lwc_cfg.get("classesKey", "apexClasses")) or [])
+
+
+def _omni_entries(index, cfg, metadata_type, full_name, data):
+    """Quem referencia cada componente do OmniStudio (DataRaptor, Integration Procedure, Apex...)."""
+    if not cfg or metadata_type not in (cfg.get("types") or {}):
+        return
+    parsed = data.get(cfg.get("parsedKey", "omni")) or {}
+    for r in parsed.get("references") or []:
+        index["omniRefs"].setdefault(f"{r['kind']}:{r['name']}".lower(), []).append(
+            {"component": full_name, "componentType": cfg["types"][metadata_type], "element": r.get("element")})
 
 
 def _is_event(name, cfg):

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SIMULADO para testes. sampleDataSourceResponse tem dado pessoal sentinela que nunca pode aparecer nos documentos. -->
+<OmniUiCard xmlns="http://soap.sforce.com/2006/04/metadata">
+    <dataSourceConfig>{"type": "IntegrationProcedures", "value": {"ipMethod": "Pedido_EnviarERP", "vlocityAsync": false}}</dataSourceConfig>
+    <description>Resumo do pedido</description>
+    <isActive>true</isActive>
+    <name>CartaoPedido</name>
+    <omniUiCardType>Parent</omniUiCardType>
+    <propertySetConfig>{"states": [{"name": "Active", "actions": [], "components": {"layer-0": {"children": [{"element": "action", "property": {"actionList": [{"label": "Reenviar", "stateAction": {"type": "IntegrationProcedure", "ipMethod": "Pedido_EnviarERP"}}, {"label": "Detalhes", "stateAction": {"type": "Flyout", "flyoutType": "childCard", "cardName": "PedidoDetalhe"}}]}}]}}}]}</propertySetConfig>
+    <sampleDataSourceResponse>[{"Nome": "Sentinela Cliente", "Email": "sentinela.cliente@example.invalid"}]</sampleDataSourceResponse>
+    <versionNumber>1</versionNumber>
+</OmniUiCard>

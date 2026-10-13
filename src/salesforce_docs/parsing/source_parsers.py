@@ -13,6 +13,7 @@ from salesforce_docs.parsing.event_channel_parser import parse_event_channel_mem
 from salesforce_docs.parsing.experience_parser import parse_custom_site, parse_experience_bundle, parse_network
 from salesforce_docs.parsing.flexipage_parser import parse_flexipage
 from salesforce_docs.parsing.lwc_parser import parse_lwc_bundle
+from salesforce_docs.parsing.omnistudio_parser import parse_data_transform, parse_omni_process, parse_ui_card
 from salesforce_docs.parsing.sales_parser import parse_business_process, parse_lead_convert
 from salesforce_docs.parsing.service_rules_parser import parse_queue, parse_service_rules
 
@@ -36,6 +37,10 @@ SOURCE_PARSERS = {
     "network": parse_network,
     "custom-site": parse_custom_site,
     "experience-bundle": parse_experience_bundle,
+    # OmniStudio (Onda 10): XML da Metadata API; JSON de configuração lido só para referências
+    "omni-process": parse_omni_process,
+    "omni-data-transform": parse_data_transform,
+    "omni-ui-card": parse_ui_card,
 }
 
 
