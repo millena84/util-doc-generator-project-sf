@@ -1,0 +1,20 @@
+[
+  {
+    "fullName": "Admin",
+    "type": "Profile",
+    "fileName": "profiles/Admin.profile",
+    "id": "0PS000000000000AAA",
+    "namespacePrefix": "",
+    "manageableState": "unmanaged",
+    "lastModifiedDate": "2026-10-01T00:00:00.000Z"
+  },
+  {
+    "fullName": "Vendas",
+    "type": "Profile",
+    "fileName": "profiles/Vendas.profile",
+    "id": "0PS000000000000AAA",
+    "namespacePrefix": "",
+    "manageableState": "unmanaged",
+    "lastModifiedDate": "2026-10-01T00:00:00.000Z"
+  }
+]

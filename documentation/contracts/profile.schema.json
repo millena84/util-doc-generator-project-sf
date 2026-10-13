@@ -1,0 +1,268 @@
+{
+  "metadataType": "Profile",
+  "apiVersion": "67.0",
+  "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+  "xmlFilePattern": "**/*.profile-meta.xml",
+  "template": "modelo-doc-profile-vapi-{apiMajor}.md",
+  "titlePath": "@fullName",
+  "referenceDoc": "_sf_utilities/ajudAI/contexto-seg-controle-acesso-gov.md",
+  "classification": "Documento de todo perfil. XML reaproveitado do retrieve de acesso (passo 6b).",
+  "properties": [
+    {
+      "name": "Name",
+      "placeholder": "profile_name",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação",
+      "notes": "fullName do perfil (perfis padrão usam nome de API, ex.: Admin)."
+    },
+    {
+      "name": "UserLicense",
+      "placeholder": "user_license",
+      "path": "userLicense",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Custom",
+      "placeholder": "custom",
+      "path": "custom",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação",
+      "notes": "true = perfil criado na org; false = perfil padrão."
+    },
+    {
+      "name": "Description",
+      "placeholder": "description",
+      "path": "description",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    }
+  ],
+  "tables": [
+    {
+      "markdownSection": "Objetos",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "objectPermissions",
+        "columns": {
+          "object": "object",
+          "allow_read": "allowRead",
+          "allow_create": "allowCreate",
+          "allow_edit": "allowEdit",
+          "allow_delete": "allowDelete",
+          "view_all": "viewAllRecords",
+          "modify_all": "modifyAllRecords"
+        }
+      },
+      "emptyValue": "Não aplicável"
+    },
+    {
+      "markdownSection": "Campos",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "fieldPermissions",
+        "columns": {
+          "field": "field",
+          "readable": "readable",
+          "editable": "editable"
+        }
+      },
+      "emptyValue": "Não aplicável"
+    },
+    {
+      "markdownSection": "Classes Apex",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "classAccesses",
+        "columns": {
+          "apex_class": "apexClass"
+        },
+        "where": [
+          {
+            "path": "enabled",
+            "equals": "true"
+          }
+        ]
+      },
+      "emptyValue": "Não aplicável"
+    },
+    {
+      "markdownSection": "Flows",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "flowAccesses",
+        "columns": {
+          "flow": "flow"
+        },
+        "where": [
+          {
+            "path": "enabled",
+            "equals": "true"
+          }
+        ]
+      },
+      "emptyValue": "Não aplicável"
+    },
+    {
+      "markdownSection": "Páginas Visualforce",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "pageAccesses",
+        "columns": {
+          "apex_page": "apexPage"
+        },
+        "where": [
+          {
+            "path": "enabled",
+            "equals": "true"
+          }
+        ]
+      },
+      "emptyValue": "Não aplicável"
+    },
+    {
+      "markdownSection": "Custom Permissions",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "customPermissions",
+        "columns": {
+          "custom_permission": "name"
+        },
+        "where": [
+          {
+            "path": "enabled",
+            "equals": "true"
+          }
+        ]
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "customPermissions (name/enabled): formato a confirmar no piloto."
+    },
+    {
+      "markdownSection": "Record types",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "recordTypeVisibilities",
+        "columns": {
+          "record_type": "recordType",
+          "visible": "visible",
+          "rt_default": "default"
+        }
+      },
+      "emptyValue": "Não aplicável"
+    },
+    {
+      "markdownSection": "Layouts de página",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "layoutAssignments",
+        "columns": {
+          "layout": "layout",
+          "layout_record_type": "recordType"
+        }
+      },
+      "emptyValue": "Não aplicável"
+    },
+    {
+      "markdownSection": "Guias",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "tabVisibilities",
+        "columns": {
+          "tab": "tab",
+          "tab_visibility": "visibility"
+        }
+      },
+      "emptyValue": "Não aplicável"
+    },
+    {
+      "markdownSection": "Permissões de sistema",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "userPermissions",
+        "columns": {
+          "user_permission": "name"
+        },
+        "where": [
+          {
+            "path": "enabled",
+            "equals": "true"
+          }
+        ]
+      },
+      "emptyValue": "Não aplicável"
+    },
+    {
+      "markdownSection": "Horário de login",
+      "builder": "child_properties",
+      "source": "XML",
+      "args": {
+        "path": "loginHours",
+        "keyPlaceholder": "login_hours_key",
+        "valuePlaceholder": "login_hours_value"
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Filhos de <loginHours> como estão no XML."
+    },
+    {
+      "markdownSection": "Faixas de IP de login",
+      "builder": "list_values",
+      "source": "XML",
+      "args": {
+        "path": "loginIpRanges",
+        "valuePlaceholder": "login_ip_range"
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Cada <loginIpRanges> com os elementos do XML."
+    },
+    {
+      "markdownSection": "Dados internos",
+      "builder": "internal_record_properties",
+      "source": "Objeto interno",
+      "args": {
+        "keyPlaceholder": "internal_property",
+        "valuePlaceholder": "internal_value"
+      },
+      "emptyValue": "Não informado"
+    },
+    {
+      "markdownSection": "Acesso e configuração",
+      "builder": "access_rows",
+      "source": "XML",
+      "args": {
+        "notApplicable": "Perfil é atribuído a usuários; usuários não são documentados (proteção de dados)"
+      },
+      "emptyValue": "Não informado",
+      "notes": "Perfil não é concedido por outro perfil ou permission set."
+    }
+  ],
+  "internalData": {
+    "enabled": true,
+    "source": "Objeto interno",
+    "object": "Profile",
+    "useToolingApi": false,
+    "query": "SELECT Id, Name, UserType, UserLicense.Name, Description, CreatedDate, LastModifiedDate FROM Profile WHERE Name = '{fullName}'",
+    "expectSingleRecord": true,
+    "blocking": false,
+    "validationPending": "Objeto Profile: perfis padrão têm Name (ex.: System Administrator) diferente do fullName do metadata (ex.: Admin); confirmar filtro e campos no piloto."
+  },
+  "evidence": [
+    "Metadata API Profile — developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_profile.htm",
+    "O XML do Profile só traz permissões dos componentes recuperados no mesmo pedido: reaproveitado do retrieve de acesso (passo 6b)."
+  ]
+}

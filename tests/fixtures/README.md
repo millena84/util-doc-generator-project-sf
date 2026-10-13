@@ -10,6 +10,7 @@ Nenhum dado aqui veio de uma org real e nenhum deve ser usado como documentaçã
 - `query/<Objeto>.json`: respostas simuladas de `sf data query`.
 - `source/triggers/` e `source/classes/PedidoTriggerHandler.cls`: triggers e handler simulados da Onda 02 (duas triggers em `Pedido__c`, para a seção de coexistência).
 - `source/lwc/` e `source/classes/PedidoController.cls`: bundles LWC simulados da Onda 03 (página, Quick Action headless e tela de Flow) e o controller Apex que eles chamam. `pedidoPainel/__tests__/` existe só para provar que testes Jest são ignorados.
+- `source/roles/`, `source/groups/` e `source/settings/Security.settings-meta.xml`: papéis (Diretoria → Vendas → Gerente_Vendas), grupo público e configurações de segurança simulados da Onda 04. O perfil `Admin` ganhou layouts, guia, horário e faixa de IP de login; `Integracao_API`, página Visualforce e guia; `PSG_Integracao`, um muting permission set.
 - `mvp-complete/`: camada usada no cenário `mvp_complete` (`FAKE_SF_SCENARIO=mvp_complete`). Tem prioridade sobre as fixtures base e acrescenta componentes para os tipos do MVP que, na base, ficam sem componentes: ExtlClntAppConfigurablePolicies, ExtlClntAppOauthConfigurablePolicies, WebLink e dados internos de ExternalCredential.
 
 ### Origem dos campos dos XMLs simulados novos

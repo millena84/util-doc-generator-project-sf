@@ -2,125 +2,157 @@
 
 > **SIMULADO.** CLI `sf` simulada (`tests/fixtures/bin/sf`, cenário `mvp_complete`) e Metadata API simulada. Nenhum dado veio de uma org real. Gerado por `python3 -m tests.simulate_mvp`.
 
-- Execução: `run-20261013-042240` — status **SUCCESS** — código de saída `0`
+- Execução: `run-20261013-050400` — status **SUCCESS** — código de saída `0`
 - Org: `dev` — API `67.0`
-- Cobertura: **COMPLETE** — 27 documentada(s) de 27 no escopo; lacunas: 0 (nenhuma)
+- Cobertura: **COMPLETE** — 36 documentada(s) de 36 no escopo; lacunas: 0 (nenhuma)
 
 ## 1. Saída no terminal
 
 ```
-[04:22:40] INFO  Seleção ALL: {'ApexClass': ['ALL'], 'ApexTrigger': ['ALL'], 'Certificate': ['ALL'], 'ConnectedApp': ['ALL'], 'CustomMetadata': ['ALL'], 'CustomObject': ['ALL'], 'ExternalClientApp': ['ALL'], 'ExternalCredential': ['ALL'], 'Flow': ['ALL'], 'LightningComponentBundle': ['ALL'], 'NamedCredential': ['ALL'], 'PermissionSet': ['ALL'], 'RemoteSiteSetting': ['ALL']}
-[04:22:40] WARN  Verificação de Git indisponível (fora de repositório Git): proteção de versionamento não verificada
-[04:22:40] INFO  Passo 1: Salesforce CLI 2.60.0 (mínima 2.0.0)
-[04:22:40] INFO  Passo 2: alias 'dev' autenticado
-[04:22:40] INFO  Passo 3: `sf org display` exibiu credenciais; gravado só o envelope sanitizado
-[04:22:40] INFO  Passo 3: usuario.simulado@example.com conectado; API 67.0 (detectada 67.0, fonte: sf org display)
-[04:22:40] INFO  Passo 3b: org 00D000000000000AAA aprovada (approvedOrgs)
-[04:22:40] INFO  Passo 3c: token de acesso obtido via `sf org display` (não persistido)
-[04:22:40] INFO  Passo 4: grupos habilitados: Flow, ExternalClientApp, ExternalCredential, ConnectedApp, CustomObject, CustomMetadata, NamedCredential, RemoteSiteSetting, Certificate, ApexClass, ApexTrigger, LightningComponentBundle, PermissionSet
-[04:22:40] INFO  Passo 6: Flow -> 3 componente(s)
-[04:22:40] INFO  Passo 6: FlowDefinition -> 1 componente(s)
-[04:22:40] INFO  Passo 6: ExternalClientApplication -> 1 componente(s)
-[04:22:40] INFO  Passo 6: ExtlClntAppOauthSettings -> 2 componente(s)
-[04:22:40] INFO  Passo 6: ExtlClntAppConfigurablePolicies -> 1 componente(s)
-[04:22:40] INFO  Passo 6: ExtlClntAppOauthConfigurablePolicies -> 1 componente(s)
-[04:22:40] INFO  Passo 6: ExternalCredential -> 1 componente(s)
-[04:22:40] INFO  Passo 6: ConnectedApp -> 1 componente(s)
-[04:22:40] INFO  Passo 6: CustomObject -> 3 componente(s)
-[04:22:40] INFO  Passo 6: CustomMetadata -> 2 componente(s)
-[04:22:40] INFO  Passo 6: NamedCredential -> 2 componente(s)
-[04:22:40] INFO  Passo 6: RemoteSiteSetting -> 1 componente(s)
-[04:22:40] INFO  Passo 6: Certificate -> 1 componente(s)
-[04:22:40] INFO  Passo 6: ApexClass -> 9 componente(s)
-[04:22:41] INFO  Passo 6: ApexTrigger -> 2 componente(s)
-[04:22:41] INFO  Passo 6: LightningComponentBundle -> 4 componente(s)
-[04:22:41] INFO  Passo 6: PermissionSet -> 2 componente(s)
-[04:22:41] INFO  Passo 6b: 7 fonte(s) de acesso; índice em inventory/org-dev/api-v67/access/access-index.json
-[04:22:41] INFO  [1/27] Flow:Flow:Meu_Flow
-[04:22:41] INFO  Flow:Flow:Meu_Flow: processando
-[04:22:41] INFO  Flow:Flow:Meu_Flow: SUCCESS -> saida/docs/doc-dev-101326/doc-meu-flow-flow.md
-[04:22:41] INFO  [2/27] Flow:Flow:Processa_Pedido
-[04:22:41] INFO  Flow:Flow:Processa_Pedido: processando
-[04:22:41] INFO  Flow:Flow:Processa_Pedido: SUCCESS -> saida/docs/doc-dev-101326/doc-processa-pedido-flow.md
-[04:22:41] INFO  [3/27] Flow:Flow:Tela_Cadastro
-[04:22:41] INFO  Flow:Flow:Tela_Cadastro: processando
-[04:22:41] INFO  Flow:Flow:Tela_Cadastro: SUCCESS -> saida/docs/doc-dev-101326/doc-tela-cadastro-flow.md
-[04:22:41] INFO  [4/27] ExternalClientApp:ExternalClientApplication:Minha_ECA
-[04:22:41] INFO  ExternalClientApp:ExternalClientApplication:Minha_ECA: processando
-[04:22:41] INFO  ExternalClientApp:ExternalClientApplication:Minha_ECA: SUCCESS -> saida/docs/doc-dev-101326/doc-minha-eca-external-client-app.md
-[04:22:41] INFO  [5/27] ExternalCredential:ExternalCredential:Minha_EC
-[04:22:41] INFO  ExternalCredential:ExternalCredential:Minha_EC: processando
-[04:22:41] INFO  ExternalCredential:ExternalCredential:Minha_EC: SUCCESS -> saida/docs/doc-dev-101326/doc-minha-ec-external-credential.md
-[04:22:41] INFO  [6/27] ConnectedApp:ConnectedApp:Meu_App
-[04:22:41] INFO  ConnectedApp:ConnectedApp:Meu_App: processando
-[04:22:41] INFO  ConnectedApp:ConnectedApp:Meu_App: SUCCESS -> saida/docs/doc-dev-101326/doc-meu-app-connected-app.md
-[04:22:41] INFO  [7/27] CustomObject:CustomObject:Pedido__c
-[04:22:41] INFO  CustomObject:CustomObject:Pedido__c: processando
-[04:22:42] INFO  CustomObject:CustomObject:Pedido__c: SUCCESS -> saida/docs/doc-dev-101326/doc-pedido-c-custom-object.md
-[04:22:42] INFO  [8/27] CustomMetadata:CustomMetadata:Config__mdt
-[04:22:42] INFO  CustomMetadata:CustomMetadata:Config__mdt: processando
-[04:22:42] INFO  CustomMetadata:CustomMetadata:Config__mdt: SUCCESS -> saida/docs/doc-dev-101326/doc-config-mdt-custom-metadata.md
-[04:22:42] INFO  [9/27] NamedCredential:NamedCredential:Minha_NC
-[04:22:42] INFO  NamedCredential:NamedCredential:Minha_NC: processando
-[04:22:42] INFO  NamedCredential:NamedCredential:Minha_NC: SUCCESS -> saida/docs/doc-dev-101326/doc-minha-nc-named-credential.md
-[04:22:42] INFO  [10/27] NamedCredential:NamedCredential:NC_Legada
-[04:22:42] INFO  NamedCredential:NamedCredential:NC_Legada: processando
-[04:22:42] INFO  NamedCredential:NamedCredential:NC_Legada: SUCCESS -> saida/docs/doc-dev-101326/doc-nc-legada-named-credential.md
-[04:22:42] INFO  [11/27] RemoteSiteSetting:RemoteSiteSetting:Meu_Site
-[04:22:42] INFO  RemoteSiteSetting:RemoteSiteSetting:Meu_Site: processando
-[04:22:42] INFO  RemoteSiteSetting:RemoteSiteSetting:Meu_Site: SUCCESS -> saida/docs/doc-dev-101326/doc-meu-site-remote-site-setting.md
-[04:22:42] INFO  [12/27] Certificate:Certificate:Meu_Certificado
-[04:22:42] INFO  Certificate:Certificate:Meu_Certificado: processando
-[04:22:42] INFO  Certificate:Certificate:Meu_Certificado: SUCCESS -> saida/docs/doc-dev-101326/doc-meu-certificado-certificate.md
-[04:22:42] INFO  [13/27] ApexClass:ApexClass:AccountSyncQueueable
-[04:22:42] INFO  ApexClass:ApexClass:AccountSyncQueueable: processando
-[04:22:42] INFO  ApexClass:ApexClass:AccountSyncQueueable: SUCCESS -> saida/docs/doc-dev-101326/doc-accountsyncqueueable-apex-class.md
-[04:22:42] INFO  [14/27] ApexClass:ApexClass:DailyOrderCleanupScheduler
-[04:22:42] INFO  ApexClass:ApexClass:DailyOrderCleanupScheduler: processando
-[04:22:42] INFO  ApexClass:ApexClass:DailyOrderCleanupScheduler: SUCCESS -> saida/docs/doc-dev-101326/doc-dailyordercleanupscheduler-apex-class.md
-[04:22:42] INFO  [15/27] ApexClass:ApexClass:IntegrationAsyncHelper
-[04:22:42] INFO  ApexClass:ApexClass:IntegrationAsyncHelper: processando
-[04:22:42] INFO  ApexClass:ApexClass:IntegrationAsyncHelper: SUCCESS -> saida/docs/doc-dev-101326/doc-integrationasynchelper-apex-class.md
-[04:22:42] INFO  [16/27] ApexClass:ApexClass:MultiRoleJob
-[04:22:42] INFO  ApexClass:ApexClass:MultiRoleJob: processando
-[04:22:43] INFO  ApexClass:ApexClass:MultiRoleJob: SUCCESS -> saida/docs/doc-dev-101326/doc-multirolejob-apex-class.md
-[04:22:43] INFO  [17/27] ApexClass:ApexClass:OrderCleanupBatch
-[04:22:43] INFO  ApexClass:ApexClass:OrderCleanupBatch: processando
-[04:22:43] INFO  ApexClass:ApexClass:OrderCleanupBatch: SUCCESS -> saida/docs/doc-dev-101326/doc-ordercleanupbatch-apex-class.md
-[04:22:43] INFO  [18/27] ApexClass:ApexClass:PedidoController
-[04:22:43] INFO  ApexClass:ApexClass:PedidoController: processando
-[04:22:43] INFO  ApexClass:ApexClass:PedidoController: SUCCESS -> saida/docs/doc-dev-101326/doc-pedidocontroller-apex-class.md
-[04:22:43] INFO  [19/27] ApexClass:ApexClass:PedidoService
-[04:22:43] INFO  ApexClass:ApexClass:PedidoService: processando
-[04:22:43] INFO  ApexClass:ApexClass:PedidoService: SUCCESS -> saida/docs/doc-dev-101326/doc-pedidoservice-apex-class.md
-[04:22:43] INFO  [20/27] ApexClass:ApexClass:PedidoTriggerHandler
-[04:22:43] INFO  ApexClass:ApexClass:PedidoTriggerHandler: processando
-[04:22:43] INFO  ApexClass:ApexClass:PedidoTriggerHandler: SUCCESS -> saida/docs/doc-dev-101326/doc-pedidotriggerhandler-apex-class.md
-[04:22:43] INFO  [21/27] PermissionSet:PermissionSet:Integracao_API
-[04:22:43] INFO  PermissionSet:PermissionSet:Integracao_API: processando
-[04:22:43] INFO  PermissionSet:PermissionSet:Integracao_API: SUCCESS -> saida/docs/doc-dev-101326/doc-integracao-api-permission-set.md
-[04:22:43] INFO  [22/27] PermissionSet:PermissionSet:Leitura_Pedidos
-[04:22:43] INFO  PermissionSet:PermissionSet:Leitura_Pedidos: processando
-[04:22:43] INFO  PermissionSet:PermissionSet:Leitura_Pedidos: SUCCESS -> saida/docs/doc-dev-101326/doc-leitura-pedidos-permission-set.md
-[04:22:43] INFO  [23/27] ApexTrigger:ApexTrigger:PedidoAuditoriaTrigger
-[04:22:43] INFO  ApexTrigger:ApexTrigger:PedidoAuditoriaTrigger: processando
-[04:22:43] INFO  ApexTrigger:ApexTrigger:PedidoAuditoriaTrigger: SUCCESS -> saida/docs/doc-dev-101326/doc-pedidoauditoriatrigger-apex-trigger.md
-[04:22:43] INFO  [24/27] ApexTrigger:ApexTrigger:PedidoTrigger
-[04:22:43] INFO  ApexTrigger:ApexTrigger:PedidoTrigger: processando
-[04:22:43] INFO  ApexTrigger:ApexTrigger:PedidoTrigger: SUCCESS -> saida/docs/doc-dev-101326/doc-pedidotrigger-apex-trigger.md
-[04:22:43] INFO  [25/27] LightningComponentBundle:LightningComponentBundle:pedidoAcaoRapida
-[04:22:43] INFO  LightningComponentBundle:LightningComponentBundle:pedidoAcaoRapida: processando
-[04:22:43] INFO  LightningComponentBundle:LightningComponentBundle:pedidoAcaoRapida: SUCCESS -> saida/docs/doc-dev-101326/doc-pedidoacaorapida-lwc.md
-[04:22:43] INFO  [26/27] LightningComponentBundle:LightningComponentBundle:pedidoPainel
-[04:22:43] INFO  LightningComponentBundle:LightningComponentBundle:pedidoPainel: processando
-[04:22:44] INFO  LightningComponentBundle:LightningComponentBundle:pedidoPainel: SUCCESS -> saida/docs/doc-dev-101326/doc-pedidopainel-lwc.md
-[04:22:44] INFO  [27/27] LightningComponentBundle:LightningComponentBundle:pedidoTelaFlow
-[04:22:44] INFO  LightningComponentBundle:LightningComponentBundle:pedidoTelaFlow: processando
-[04:22:44] INFO  LightningComponentBundle:LightningComponentBundle:pedidoTelaFlow: SUCCESS -> saida/docs/doc-dev-101326/doc-pedidotelaflow-lwc.md
-[04:22:44] INFO  Execução run-20261013-042240 finalizada: SUCCESS {'SUCCESS': 27}
-[04:22:44] INFO  Cobertura: COMPLETE — 27 documentada(s) de 27 no escopo; lacunas bloqueantes: 0; avisos: 0
-[04:22:44] INFO  Tipos: configurados 21, processados 21, documentados 13, sem modelo 0, fora do escopo 0, não habilitados 0, descobertos e não configurados 7
-[04:22:44] INFO  Log: runs/run-20261013-042240.json
+[05:04:00] INFO  Seleção ALL: {'ApexClass': ['ALL'], 'ApexTrigger': ['ALL'], 'Certificate': ['ALL'], 'ConnectedApp': ['ALL'], 'CustomMetadata': ['ALL'], 'CustomObject': ['ALL'], 'ExternalClientApp': ['ALL'], 'ExternalCredential': ['ALL'], 'Flow': ['ALL'], 'LightningComponentBundle': ['ALL'], 'NamedCredential': ['ALL'], 'OrgSecurity': ['ALL'], 'PermissionSet': ['ALL'], 'PermissionSetGroup': ['ALL'], 'Profile': ['ALL'], 'PublicGroup': ['ALL'], 'RemoteSiteSetting': ['ALL'], 'Role': ['ALL'], 'SharingRules': ['ALL']}
+[05:04:00] WARN  Verificação de Git indisponível (fora de repositório Git): proteção de versionamento não verificada
+[05:04:00] INFO  Passo 1: Salesforce CLI 2.60.0 (mínima 2.0.0)
+[05:04:00] INFO  Passo 2: alias 'dev' autenticado
+[05:04:00] INFO  Passo 3: `sf org display` exibiu credenciais; gravado só o envelope sanitizado
+[05:04:00] INFO  Passo 3: usuario.simulado@example.com conectado; API 67.0 (detectada 67.0, fonte: sf org display)
+[05:04:00] INFO  Passo 3b: org 00D000000000000AAA aprovada (approvedOrgs)
+[05:04:00] INFO  Passo 3c: token de acesso obtido via `sf org display` (não persistido)
+[05:04:00] INFO  Passo 4: grupos habilitados: Flow, ExternalClientApp, ExternalCredential, ConnectedApp, CustomObject, CustomMetadata, NamedCredential, RemoteSiteSetting, Certificate, ApexClass, ApexTrigger, LightningComponentBundle, PermissionSet, Profile, PermissionSetGroup, SharingRules, Role, PublicGroup, OrgSecurity
+[05:04:00] INFO  Passo 6: Flow -> 3 componente(s)
+[05:04:00] INFO  Passo 6: FlowDefinition -> 1 componente(s)
+[05:04:00] INFO  Passo 6: ExternalClientApplication -> 1 componente(s)
+[05:04:00] INFO  Passo 6: ExtlClntAppOauthSettings -> 2 componente(s)
+[05:04:00] INFO  Passo 6: ExtlClntAppConfigurablePolicies -> 1 componente(s)
+[05:04:00] INFO  Passo 6: ExtlClntAppOauthConfigurablePolicies -> 1 componente(s)
+[05:04:00] INFO  Passo 6: ExternalCredential -> 1 componente(s)
+[05:04:00] INFO  Passo 6: ConnectedApp -> 1 componente(s)
+[05:04:00] INFO  Passo 6: CustomObject -> 3 componente(s)
+[05:04:00] INFO  Passo 6: CustomMetadata -> 2 componente(s)
+[05:04:00] INFO  Passo 6: NamedCredential -> 2 componente(s)
+[05:04:00] INFO  Passo 6: RemoteSiteSetting -> 1 componente(s)
+[05:04:00] INFO  Passo 6: Certificate -> 1 componente(s)
+[05:04:00] INFO  Passo 6: ApexClass -> 9 componente(s)
+[05:04:01] INFO  Passo 6: ApexTrigger -> 2 componente(s)
+[05:04:01] INFO  Passo 6: LightningComponentBundle -> 4 componente(s)
+[05:04:01] INFO  Passo 6: PermissionSet -> 2 componente(s)
+[05:04:01] INFO  Passo 6: Profile -> 2 componente(s)
+[05:04:01] INFO  Passo 6: PermissionSetGroup -> 1 componente(s)
+[05:04:01] INFO  Passo 6: SharingRules -> 1 componente(s)
+[05:04:01] INFO  Passo 6: Role -> 3 componente(s)
+[05:04:01] INFO  Passo 6: Group -> 1 componente(s)
+[05:04:01] INFO  Passo 6b: 7 fonte(s) de acesso; índice em inventory/org-dev/api-v67/access/access-index.json
+[05:04:01] INFO  [1/36] Flow:Flow:Meu_Flow
+[05:04:01] INFO  Flow:Flow:Meu_Flow: processando
+[05:04:01] INFO  Flow:Flow:Meu_Flow: SUCCESS -> saida/docs/doc-dev-101326/doc-meu-flow-flow.md
+[05:04:01] INFO  [2/36] Flow:Flow:Processa_Pedido
+[05:04:01] INFO  Flow:Flow:Processa_Pedido: processando
+[05:04:01] INFO  Flow:Flow:Processa_Pedido: SUCCESS -> saida/docs/doc-dev-101326/doc-processa-pedido-flow.md
+[05:04:01] INFO  [3/36] Flow:Flow:Tela_Cadastro
+[05:04:01] INFO  Flow:Flow:Tela_Cadastro: processando
+[05:04:01] INFO  Flow:Flow:Tela_Cadastro: SUCCESS -> saida/docs/doc-dev-101326/doc-tela-cadastro-flow.md
+[05:04:01] INFO  [4/36] ExternalClientApp:ExternalClientApplication:Minha_ECA
+[05:04:01] INFO  ExternalClientApp:ExternalClientApplication:Minha_ECA: processando
+[05:04:01] INFO  ExternalClientApp:ExternalClientApplication:Minha_ECA: SUCCESS -> saida/docs/doc-dev-101326/doc-minha-eca-external-client-app.md
+[05:04:01] INFO  [5/36] ExternalCredential:ExternalCredential:Minha_EC
+[05:04:01] INFO  ExternalCredential:ExternalCredential:Minha_EC: processando
+[05:04:02] INFO  ExternalCredential:ExternalCredential:Minha_EC: SUCCESS -> saida/docs/doc-dev-101326/doc-minha-ec-external-credential.md
+[05:04:02] INFO  [6/36] ConnectedApp:ConnectedApp:Meu_App
+[05:04:02] INFO  ConnectedApp:ConnectedApp:Meu_App: processando
+[05:04:02] INFO  ConnectedApp:ConnectedApp:Meu_App: SUCCESS -> saida/docs/doc-dev-101326/doc-meu-app-connected-app.md
+[05:04:02] INFO  [7/36] CustomObject:CustomObject:Pedido__c
+[05:04:02] INFO  CustomObject:CustomObject:Pedido__c: processando
+[05:04:02] INFO  CustomObject:CustomObject:Pedido__c: SUCCESS -> saida/docs/doc-dev-101326/doc-pedido-c-custom-object.md
+[05:04:02] INFO  [8/36] CustomMetadata:CustomMetadata:Config__mdt
+[05:04:02] INFO  CustomMetadata:CustomMetadata:Config__mdt: processando
+[05:04:02] INFO  CustomMetadata:CustomMetadata:Config__mdt: SUCCESS -> saida/docs/doc-dev-101326/doc-config-mdt-custom-metadata.md
+[05:04:02] INFO  [9/36] NamedCredential:NamedCredential:Minha_NC
+[05:04:02] INFO  NamedCredential:NamedCredential:Minha_NC: processando
+[05:04:02] INFO  NamedCredential:NamedCredential:Minha_NC: SUCCESS -> saida/docs/doc-dev-101326/doc-minha-nc-named-credential.md
+[05:04:02] INFO  [10/36] NamedCredential:NamedCredential:NC_Legada
+[05:04:02] INFO  NamedCredential:NamedCredential:NC_Legada: processando
+[05:04:02] INFO  NamedCredential:NamedCredential:NC_Legada: SUCCESS -> saida/docs/doc-dev-101326/doc-nc-legada-named-credential.md
+[05:04:02] INFO  [11/36] RemoteSiteSetting:RemoteSiteSetting:Meu_Site
+[05:04:02] INFO  RemoteSiteSetting:RemoteSiteSetting:Meu_Site: processando
+[05:04:02] INFO  RemoteSiteSetting:RemoteSiteSetting:Meu_Site: SUCCESS -> saida/docs/doc-dev-101326/doc-meu-site-remote-site-setting.md
+[05:04:02] INFO  [12/36] Certificate:Certificate:Meu_Certificado
+[05:04:02] INFO  Certificate:Certificate:Meu_Certificado: processando
+[05:04:02] INFO  Certificate:Certificate:Meu_Certificado: SUCCESS -> saida/docs/doc-dev-101326/doc-meu-certificado-certificate.md
+[05:04:02] INFO  [13/36] ApexClass:ApexClass:AccountSyncQueueable
+[05:04:02] INFO  ApexClass:ApexClass:AccountSyncQueueable: processando
+[05:04:02] INFO  ApexClass:ApexClass:AccountSyncQueueable: SUCCESS -> saida/docs/doc-dev-101326/doc-accountsyncqueueable-apex-class.md
+[05:04:02] INFO  [14/36] ApexClass:ApexClass:DailyOrderCleanupScheduler
+[05:04:02] INFO  ApexClass:ApexClass:DailyOrderCleanupScheduler: processando
+[05:04:03] INFO  ApexClass:ApexClass:DailyOrderCleanupScheduler: SUCCESS -> saida/docs/doc-dev-101326/doc-dailyordercleanupscheduler-apex-class.md
+[05:04:03] INFO  [15/36] ApexClass:ApexClass:IntegrationAsyncHelper
+[05:04:03] INFO  ApexClass:ApexClass:IntegrationAsyncHelper: processando
+[05:04:03] INFO  ApexClass:ApexClass:IntegrationAsyncHelper: SUCCESS -> saida/docs/doc-dev-101326/doc-integrationasynchelper-apex-class.md
+[05:04:03] INFO  [16/36] ApexClass:ApexClass:MultiRoleJob
+[05:04:03] INFO  ApexClass:ApexClass:MultiRoleJob: processando
+[05:04:03] INFO  ApexClass:ApexClass:MultiRoleJob: SUCCESS -> saida/docs/doc-dev-101326/doc-multirolejob-apex-class.md
+[05:04:03] INFO  [17/36] ApexClass:ApexClass:OrderCleanupBatch
+[05:04:03] INFO  ApexClass:ApexClass:OrderCleanupBatch: processando
+[05:04:03] INFO  ApexClass:ApexClass:OrderCleanupBatch: SUCCESS -> saida/docs/doc-dev-101326/doc-ordercleanupbatch-apex-class.md
+[05:04:03] INFO  [18/36] ApexClass:ApexClass:PedidoController
+[05:04:03] INFO  ApexClass:ApexClass:PedidoController: processando
+[05:04:03] INFO  ApexClass:ApexClass:PedidoController: SUCCESS -> saida/docs/doc-dev-101326/doc-pedidocontroller-apex-class.md
+[05:04:03] INFO  [19/36] ApexClass:ApexClass:PedidoService
+[05:04:03] INFO  ApexClass:ApexClass:PedidoService: processando
+[05:04:03] INFO  ApexClass:ApexClass:PedidoService: SUCCESS -> saida/docs/doc-dev-101326/doc-pedidoservice-apex-class.md
+[05:04:03] INFO  [20/36] ApexClass:ApexClass:PedidoTriggerHandler
+[05:04:03] INFO  ApexClass:ApexClass:PedidoTriggerHandler: processando
+[05:04:03] INFO  ApexClass:ApexClass:PedidoTriggerHandler: SUCCESS -> saida/docs/doc-dev-101326/doc-pedidotriggerhandler-apex-class.md
+[05:04:03] INFO  [21/36] PermissionSet:PermissionSet:Integracao_API
+[05:04:03] INFO  PermissionSet:PermissionSet:Integracao_API: processando
+[05:04:03] INFO  PermissionSet:PermissionSet:Integracao_API: SUCCESS -> saida/docs/doc-dev-101326/doc-integracao-api-permission-set.md
+[05:04:03] INFO  [22/36] PermissionSet:PermissionSet:Leitura_Pedidos
+[05:04:03] INFO  PermissionSet:PermissionSet:Leitura_Pedidos: processando
+[05:04:03] INFO  PermissionSet:PermissionSet:Leitura_Pedidos: SUCCESS -> saida/docs/doc-dev-101326/doc-leitura-pedidos-permission-set.md
+[05:04:03] INFO  [23/36] Profile:Profile:Admin
+[05:04:03] INFO  Profile:Profile:Admin: processando
+[05:04:03] INFO  Profile:Profile:Admin: SUCCESS -> saida/docs/doc-dev-101326/doc-admin-profile.md
+[05:04:03] INFO  [24/36] Profile:Profile:Vendas
+[05:04:03] INFO  Profile:Profile:Vendas: processando
+[05:04:03] INFO  Profile:Profile:Vendas: SUCCESS -> saida/docs/doc-dev-101326/doc-vendas-profile.md
+[05:04:03] INFO  [25/36] PermissionSetGroup:PermissionSetGroup:PSG_Integracao
+[05:04:03] INFO  PermissionSetGroup:PermissionSetGroup:PSG_Integracao: processando
+[05:04:03] INFO  PermissionSetGroup:PermissionSetGroup:PSG_Integracao: SUCCESS -> saida/docs/doc-dev-101326/doc-psg-integracao-permission-set-group.md
+[05:04:03] INFO  [26/36] PublicGroup:Group:Grupo_Suporte
+[05:04:03] INFO  PublicGroup:Group:Grupo_Suporte: processando
+[05:04:03] INFO  PublicGroup:Group:Grupo_Suporte: SUCCESS -> saida/docs/doc-dev-101326/doc-grupo-suporte-public-group.md
+[05:04:04] INFO  [27/36] ApexTrigger:ApexTrigger:PedidoAuditoriaTrigger
+[05:04:04] INFO  ApexTrigger:ApexTrigger:PedidoAuditoriaTrigger: processando
+[05:04:04] INFO  ApexTrigger:ApexTrigger:PedidoAuditoriaTrigger: SUCCESS -> saida/docs/doc-dev-101326/doc-pedidoauditoriatrigger-apex-trigger.md
+[05:04:04] INFO  [28/36] ApexTrigger:ApexTrigger:PedidoTrigger
+[05:04:04] INFO  ApexTrigger:ApexTrigger:PedidoTrigger: processando
+[05:04:04] INFO  ApexTrigger:ApexTrigger:PedidoTrigger: SUCCESS -> saida/docs/doc-dev-101326/doc-pedidotrigger-apex-trigger.md
+[05:04:04] INFO  [29/36] LightningComponentBundle:LightningComponentBundle:pedidoAcaoRapida
+[05:04:04] INFO  LightningComponentBundle:LightningComponentBundle:pedidoAcaoRapida: processando
+[05:04:04] INFO  LightningComponentBundle:LightningComponentBundle:pedidoAcaoRapida: SUCCESS -> saida/docs/doc-dev-101326/doc-pedidoacaorapida-lwc.md
+[05:04:04] INFO  [30/36] LightningComponentBundle:LightningComponentBundle:pedidoPainel
+[05:04:04] INFO  LightningComponentBundle:LightningComponentBundle:pedidoPainel: processando
+[05:04:04] INFO  LightningComponentBundle:LightningComponentBundle:pedidoPainel: SUCCESS -> saida/docs/doc-dev-101326/doc-pedidopainel-lwc.md
+[05:04:04] INFO  [31/36] LightningComponentBundle:LightningComponentBundle:pedidoTelaFlow
+[05:04:04] INFO  LightningComponentBundle:LightningComponentBundle:pedidoTelaFlow: processando
+[05:04:04] INFO  LightningComponentBundle:LightningComponentBundle:pedidoTelaFlow: SUCCESS -> saida/docs/doc-dev-101326/doc-pedidotelaflow-lwc.md
+[05:04:04] INFO  [32/36] SharingRules:SharingRules:Pedido__c
+[05:04:04] INFO  SharingRules:SharingRules:Pedido__c: processando
+[05:04:04] INFO  SharingRules:SharingRules:Pedido__c: SUCCESS -> saida/docs/doc-dev-101326/doc-pedido-c-sharing-rules.md
+[05:04:04] INFO  [33/36] Role:Role:Diretoria
+[05:04:04] INFO  Role:Role:Diretoria: processando
+[05:04:04] INFO  Role:Role:Diretoria: SUCCESS -> saida/docs/doc-dev-101326/doc-diretoria-role.md
+[05:04:04] INFO  [34/36] Role:Role:Gerente_Vendas
+[05:04:04] INFO  Role:Role:Gerente_Vendas: processando
+[05:04:04] INFO  Role:Role:Gerente_Vendas: SUCCESS -> saida/docs/doc-dev-101326/doc-gerente-vendas-role.md
+[05:04:04] INFO  [35/36] Role:Role:Vendas
+[05:04:04] INFO  Role:Role:Vendas: processando
+[05:04:04] INFO  Role:Role:Vendas: SUCCESS -> saida/docs/doc-dev-101326/doc-vendas-role.md
+[05:04:04] INFO  [36/36] OrgSecurity:SecuritySettings:Security
+[05:04:04] INFO  OrgSecurity:SecuritySettings:Security: processando
+[05:04:04] INFO  OrgSecurity:SecuritySettings:Security: SUCCESS -> saida/docs/doc-dev-101326/doc-security-org-security.md
+[05:04:04] INFO  Execução run-20261013-050400 finalizada: SUCCESS {'SUCCESS': 36}
+[05:04:04] INFO  Cobertura: COMPLETE — 36 documentada(s) de 36 no escopo; lacunas bloqueantes: 0; avisos: 0
+[05:04:04] INFO  Tipos: configurados 27, processados 27, documentados 19, sem modelo 0, fora do escopo 0, não habilitados 0, descobertos e não configurados 4
+[05:04:04] INFO  Log: runs/run-20261013-050400.json
 ```
 
 ## 2. Comandos executados na CLI (por passo)
@@ -148,64 +180,82 @@
 | 19 | 6 | `sf org list metadata --metadata-type ApexTrigger --target-org dev --api-version 67.0 --json` |
 | 20 | 6 | `sf org list metadata --metadata-type LightningComponentBundle --target-org dev --api-version 67.0 --json` |
 | 21 | 6 | `sf org list metadata --metadata-type PermissionSet --target-org dev --api-version 67.0 --json` |
-| 22 | 7 | `sf project retrieve start --metadata Profile --metadata PermissionSet --metadata PermissionSetGroup --metadata Queue --metadata SharingRules --metadata ApexClass --metadata ApexTrigger --metadata Certificate --metadata ConnectedApp --metadata CustomObject --metadata ExternalClientApplication --metadata ExternalCredential --metadata Flow --metadata LightningComponentBundle --metadata NamedCredential --metadata RemoteSiteSetting --target-org dev --api-version 67.0 --json` |
-| 23 | 7 | `sf project retrieve start --metadata Flow:Meu_Flow --target-org dev --api-version 67.0 --json` |
-| 24 | 7 | `sf project retrieve start --metadata FlowDefinition:Meu_Flow --target-org dev --api-version 67.0 --json` |
-| 25 | 9 | `sf data query --query SELECT Id, VersionNumber, Status FROM Flow WHERE Definition.DeveloperName = 'Meu_Flow' ORDER BY VersionNumber --use-tooling-api --target-org dev --api-version 67.0 --json` |
-| 26 | 7 | `sf project retrieve start --metadata Flow:Processa_Pedido --target-org dev --api-version 67.0 --json` |
-| 27 | 9 | `sf data query --query SELECT Id, VersionNumber, Status FROM Flow WHERE Definition.DeveloperName = 'Processa_Pedido' ORDER BY VersionNumber --use-tooling-api --target-org dev --api-version 67.0 --json` |
-| 28 | 7 | `sf project retrieve start --metadata Flow:Tela_Cadastro --target-org dev --api-version 67.0 --json` |
-| 29 | 9 | `sf data query --query SELECT Id, VersionNumber, Status FROM Flow WHERE Definition.DeveloperName = 'Tela_Cadastro' ORDER BY VersionNumber --use-tooling-api --target-org dev --api-version 67.0 --json` |
-| 30 | 7 | `sf project retrieve start --metadata ExternalClientApplication:Minha_ECA --target-org dev --api-version 67.0 --json` |
-| 31 | 7 | `sf project retrieve start --metadata ExtlClntAppOauthSettings:Minha_ECA_oauth --target-org dev --api-version 67.0 --json` |
-| 32 | 7 | `sf project retrieve start --metadata ExtlClntAppOauthSettings:Outra_ECA_oauth --target-org dev --api-version 67.0 --json` |
-| 33 | 7 | `sf project retrieve start --metadata ExtlClntAppConfigurablePolicies:Minha_ECA_plcy --target-org dev --api-version 67.0 --json` |
-| 34 | 7 | `sf project retrieve start --metadata ExtlClntAppOauthConfigurablePolicies:Minha_ECA_oauthPlcy --target-org dev --api-version 67.0 --json` |
-| 35 | 7 | `sf project retrieve start --metadata ExternalCredential:Minha_EC --target-org dev --api-version 67.0 --json` |
-| 36 | 9 | `sf data query --query SELECT Id, DeveloperName, MasterLabel, CreatedDate, LastModifiedDate FROM ExternalCredential WHERE DeveloperName = 'Minha_EC' --target-org dev --api-version 67.0 --json` |
-| 37 | 7 | `sf project retrieve start --metadata ConnectedApp:Meu_App --target-org dev --api-version 67.0 --json` |
-| 38 | 9 | `sf data query --query SELECT Id, Name, OptionsAllowAdminApprovedUsersOnly FROM ConnectedApplication WHERE Name = 'Meu_App' --target-org dev --api-version 67.0 --json` |
-| 39 | 7 | `sf project retrieve start --metadata CustomObject:Pedido__c --target-org dev --api-version 67.0 --json` |
-| 40 | 9 | `sf data query --query SELECT QualifiedApiName, Label, PluralLabel, KeyPrefix, LastModifiedDate FROM EntityDefinition WHERE QualifiedApiName = 'Pedido__c' --use-tooling-api --target-org dev --api-version 67.0 --json` |
-| 41 | 7 | `sf project retrieve start --metadata CustomObject:Config__mdt --target-org dev --api-version 67.0 --json` |
-| 42 | 7 | `sf project retrieve start --metadata CustomMetadata:Config.Padrao --target-org dev --api-version 67.0 --json` |
-| 43 | 7 | `sf project retrieve start --metadata CustomMetadata:Config.Secundario --target-org dev --api-version 67.0 --json` |
-| 44 | 9 | `sf data query --query SELECT QualifiedApiName, Label, PluralLabel, KeyPrefix, LastModifiedDate FROM EntityDefinition WHERE QualifiedApiName = 'Config__mdt' --use-tooling-api --target-org dev --api-version 67.0 --json` |
-| 45 | 7 | `sf project retrieve start --metadata NamedCredential:Minha_NC --target-org dev --api-version 67.0 --json` |
-| 46 | 9 | `sf data query --query SELECT Id, DeveloperName FROM NamedCredential WHERE DeveloperName = 'Minha_NC' --target-org dev --api-version 67.0 --json` |
-| 47 | 7 | `sf project retrieve start --metadata NamedCredential:NC_Legada --target-org dev --api-version 67.0 --json` |
-| 48 | 9 | `sf data query --query SELECT Id, DeveloperName FROM NamedCredential WHERE DeveloperName = 'NC_Legada' --target-org dev --api-version 67.0 --json` |
-| 49 | 7 | `sf project retrieve start --metadata RemoteSiteSetting:Meu_Site --target-org dev --api-version 67.0 --json` |
-| 50 | 7 | `sf project retrieve start --metadata Certificate:Meu_Certificado --target-org dev --api-version 67.0 --json` |
-| 51 | 9 | `sf data query --query SELECT DeveloperName, ExpirationDate, KeySize FROM Certificate WHERE DeveloperName = 'Meu_Certificado' --use-tooling-api --target-org dev --api-version 67.0 --json` |
-| 52 | 7 | `sf project retrieve start --metadata ApexClass:AccountSyncQueueable --target-org dev --api-version 67.0 --json` |
-| 53 | 9 | `sf data query --query SELECT Id, Name, ApiVersion, Status, IsValid, LengthWithoutComments, CreatedDate, LastModifiedDate FROM ApexClass WHERE Name = 'AccountSyncQueueable' --target-org dev --api-version 67.0 --json` |
-| 54 | 7 | `sf project retrieve start --metadata ApexClass:DailyOrderCleanupScheduler --target-org dev --api-version 67.0 --json` |
-| 55 | 9 | `sf data query --query SELECT Id, Name, ApiVersion, Status, IsValid, LengthWithoutComments, CreatedDate, LastModifiedDate FROM ApexClass WHERE Name = 'DailyOrderCleanupScheduler' --target-org dev --api-version 67.0 --json` |
-| 56 | 7 | `sf project retrieve start --metadata ApexClass:IntegrationAsyncHelper --target-org dev --api-version 67.0 --json` |
-| 57 | 9 | `sf data query --query SELECT Id, Name, ApiVersion, Status, IsValid, LengthWithoutComments, CreatedDate, LastModifiedDate FROM ApexClass WHERE Name = 'IntegrationAsyncHelper' --target-org dev --api-version 67.0 --json` |
-| 58 | 7 | `sf project retrieve start --metadata ApexClass:MultiRoleJob --target-org dev --api-version 67.0 --json` |
-| 59 | 9 | `sf data query --query SELECT Id, Name, ApiVersion, Status, IsValid, LengthWithoutComments, CreatedDate, LastModifiedDate FROM ApexClass WHERE Name = 'MultiRoleJob' --target-org dev --api-version 67.0 --json` |
-| 60 | 7 | `sf project retrieve start --metadata ApexClass:OrderCleanupBatch --target-org dev --api-version 67.0 --json` |
-| 61 | 9 | `sf data query --query SELECT Id, Name, ApiVersion, Status, IsValid, LengthWithoutComments, CreatedDate, LastModifiedDate FROM ApexClass WHERE Name = 'OrderCleanupBatch' --target-org dev --api-version 67.0 --json` |
-| 62 | 7 | `sf project retrieve start --metadata ApexClass:PedidoController --target-org dev --api-version 67.0 --json` |
-| 63 | 9 | `sf data query --query SELECT Id, Name, ApiVersion, Status, IsValid, LengthWithoutComments, CreatedDate, LastModifiedDate FROM ApexClass WHERE Name = 'PedidoController' --target-org dev --api-version 67.0 --json` |
-| 64 | 7 | `sf project retrieve start --metadata ApexClass:PedidoService --target-org dev --api-version 67.0 --json` |
-| 65 | 9 | `sf data query --query SELECT Id, Name, ApiVersion, Status, IsValid, LengthWithoutComments, CreatedDate, LastModifiedDate FROM ApexClass WHERE Name = 'PedidoService' --target-org dev --api-version 67.0 --json` |
-| 66 | 7 | `sf project retrieve start --metadata ApexClass:PedidoTriggerHandler --target-org dev --api-version 67.0 --json` |
-| 67 | 9 | `sf data query --query SELECT Id, Name, ApiVersion, Status, IsValid, LengthWithoutComments, CreatedDate, LastModifiedDate FROM ApexClass WHERE Name = 'PedidoTriggerHandler' --target-org dev --api-version 67.0 --json` |
-| 68 | 9 | `sf data query --query SELECT Id, Name, Label, IsOwnedByProfile, CreatedDate, LastModifiedDate FROM PermissionSet WHERE Name = 'Integracao_API' --target-org dev --api-version 67.0 --json` |
-| 69 | 9 | `sf data query --query SELECT Id, Name, Label, IsOwnedByProfile, CreatedDate, LastModifiedDate FROM PermissionSet WHERE Name = 'Leitura_Pedidos' --target-org dev --api-version 67.0 --json` |
-| 70 | 7 | `sf project retrieve start --metadata ApexTrigger:PedidoAuditoriaTrigger --target-org dev --api-version 67.0 --json` |
-| 71 | 7 | `sf project retrieve start --metadata ApexTrigger:PedidoTrigger --target-org dev --api-version 67.0 --json` |
-| 72 | 7 | `sf project retrieve start --metadata LightningComponentBundle:pedidoAcaoRapida --target-org dev --api-version 67.0 --json` |
-| 73 | 7 | `sf project retrieve start --metadata LightningComponentBundle:pedidoPainel --target-org dev --api-version 67.0 --json` |
-| 74 | 7 | `sf project retrieve start --metadata LightningComponentBundle:pedidoTelaFlow --target-org dev --api-version 67.0 --json` |
-| 75 | 9 | `sf data query --query SELECT Id, Name, TableEnumOrId, ApiVersion, Status, IsValid, UsageBeforeInsert, UsageAfterInsert, UsageBeforeUpdate, UsageAfterUpdate, UsageBeforeDelete, UsageAfterDelete, UsageAfterUndelete, CreatedDate, LastModifiedDate FROM ApexTrigger WHERE Name = 'PedidoAuditoriaTrigger' --target-org dev --api-version 67.0 --json` |
-| 76 | 9 | `sf data query --query SELECT Id, Name, TableEnumOrId, ApiVersion, Status, IsValid, UsageBeforeInsert, UsageAfterInsert, UsageBeforeUpdate, UsageAfterUpdate, UsageBeforeDelete, UsageAfterDelete, UsageAfterUndelete, CreatedDate, LastModifiedDate FROM ApexTrigger WHERE Name = 'PedidoTrigger' --target-org dev --api-version 67.0 --json` |
-| 77 | 9 | `sf data query --query SELECT Id, DeveloperName, MasterLabel, ApiVersion, IsExposed, Description, NamespacePrefix, CreatedDate, LastModifiedDate FROM LightningComponentBundle WHERE DeveloperName = 'pedidoAcaoRapida' --use-tooling-api --target-org dev --api-version 67.0 --json` |
-| 78 | 9 | `sf data query --query SELECT Id, DeveloperName, MasterLabel, ApiVersion, IsExposed, Description, NamespacePrefix, CreatedDate, LastModifiedDate FROM LightningComponentBundle WHERE DeveloperName = 'pedidoPainel' --use-tooling-api --target-org dev --api-version 67.0 --json` |
-| 79 | 9 | `sf data query --query SELECT Id, DeveloperName, MasterLabel, ApiVersion, IsExposed, Description, NamespacePrefix, CreatedDate, LastModifiedDate FROM LightningComponentBundle WHERE DeveloperName = 'pedidoTelaFlow' --use-tooling-api --target-org dev --api-version 67.0 --json` |
+| 22 | 6 | `sf org list metadata --metadata-type Profile --target-org dev --api-version 67.0 --json` |
+| 23 | 6 | `sf org list metadata --metadata-type PermissionSetGroup --target-org dev --api-version 67.0 --json` |
+| 24 | 6 | `sf org list metadata --metadata-type SharingRules --target-org dev --api-version 67.0 --json` |
+| 25 | 6 | `sf org list metadata --metadata-type Role --target-org dev --api-version 67.0 --json` |
+| 26 | 6 | `sf org list metadata --metadata-type Group --target-org dev --api-version 67.0 --json` |
+| 27 | 7 | `sf project retrieve start --metadata Profile --metadata PermissionSet --metadata PermissionSetGroup --metadata Queue --metadata SharingRules --metadata ApexClass --metadata ApexTrigger --metadata Certificate --metadata ConnectedApp --metadata CustomObject --metadata ExternalClientApplication --metadata ExternalCredential --metadata Flow --metadata Group --metadata LightningComponentBundle --metadata NamedCredential --metadata RemoteSiteSetting --metadata Role --metadata Settings:Security --target-org dev --api-version 67.0 --json` |
+| 28 | 7 | `sf project retrieve start --metadata Flow:Meu_Flow --target-org dev --api-version 67.0 --json` |
+| 29 | 7 | `sf project retrieve start --metadata FlowDefinition:Meu_Flow --target-org dev --api-version 67.0 --json` |
+| 30 | 9 | `sf data query --query SELECT Id, VersionNumber, Status FROM Flow WHERE Definition.DeveloperName = 'Meu_Flow' ORDER BY VersionNumber --use-tooling-api --target-org dev --api-version 67.0 --json` |
+| 31 | 7 | `sf project retrieve start --metadata Flow:Processa_Pedido --target-org dev --api-version 67.0 --json` |
+| 32 | 9 | `sf data query --query SELECT Id, VersionNumber, Status FROM Flow WHERE Definition.DeveloperName = 'Processa_Pedido' ORDER BY VersionNumber --use-tooling-api --target-org dev --api-version 67.0 --json` |
+| 33 | 7 | `sf project retrieve start --metadata Flow:Tela_Cadastro --target-org dev --api-version 67.0 --json` |
+| 34 | 9 | `sf data query --query SELECT Id, VersionNumber, Status FROM Flow WHERE Definition.DeveloperName = 'Tela_Cadastro' ORDER BY VersionNumber --use-tooling-api --target-org dev --api-version 67.0 --json` |
+| 35 | 7 | `sf project retrieve start --metadata ExternalClientApplication:Minha_ECA --target-org dev --api-version 67.0 --json` |
+| 36 | 7 | `sf project retrieve start --metadata ExtlClntAppOauthSettings:Minha_ECA_oauth --target-org dev --api-version 67.0 --json` |
+| 37 | 7 | `sf project retrieve start --metadata ExtlClntAppOauthSettings:Outra_ECA_oauth --target-org dev --api-version 67.0 --json` |
+| 38 | 7 | `sf project retrieve start --metadata ExtlClntAppConfigurablePolicies:Minha_ECA_plcy --target-org dev --api-version 67.0 --json` |
+| 39 | 7 | `sf project retrieve start --metadata ExtlClntAppOauthConfigurablePolicies:Minha_ECA_oauthPlcy --target-org dev --api-version 67.0 --json` |
+| 40 | 7 | `sf project retrieve start --metadata ExternalCredential:Minha_EC --target-org dev --api-version 67.0 --json` |
+| 41 | 9 | `sf data query --query SELECT Id, DeveloperName, MasterLabel, CreatedDate, LastModifiedDate FROM ExternalCredential WHERE DeveloperName = 'Minha_EC' --target-org dev --api-version 67.0 --json` |
+| 42 | 7 | `sf project retrieve start --metadata ConnectedApp:Meu_App --target-org dev --api-version 67.0 --json` |
+| 43 | 9 | `sf data query --query SELECT Id, Name, OptionsAllowAdminApprovedUsersOnly FROM ConnectedApplication WHERE Name = 'Meu_App' --target-org dev --api-version 67.0 --json` |
+| 44 | 7 | `sf project retrieve start --metadata CustomObject:Pedido__c --target-org dev --api-version 67.0 --json` |
+| 45 | 9 | `sf data query --query SELECT QualifiedApiName, Label, PluralLabel, KeyPrefix, LastModifiedDate FROM EntityDefinition WHERE QualifiedApiName = 'Pedido__c' --use-tooling-api --target-org dev --api-version 67.0 --json` |
+| 46 | 7 | `sf project retrieve start --metadata CustomObject:Config__mdt --target-org dev --api-version 67.0 --json` |
+| 47 | 7 | `sf project retrieve start --metadata CustomMetadata:Config.Padrao --target-org dev --api-version 67.0 --json` |
+| 48 | 7 | `sf project retrieve start --metadata CustomMetadata:Config.Secundario --target-org dev --api-version 67.0 --json` |
+| 49 | 9 | `sf data query --query SELECT QualifiedApiName, Label, PluralLabel, KeyPrefix, LastModifiedDate FROM EntityDefinition WHERE QualifiedApiName = 'Config__mdt' --use-tooling-api --target-org dev --api-version 67.0 --json` |
+| 50 | 7 | `sf project retrieve start --metadata NamedCredential:Minha_NC --target-org dev --api-version 67.0 --json` |
+| 51 | 9 | `sf data query --query SELECT Id, DeveloperName FROM NamedCredential WHERE DeveloperName = 'Minha_NC' --target-org dev --api-version 67.0 --json` |
+| 52 | 7 | `sf project retrieve start --metadata NamedCredential:NC_Legada --target-org dev --api-version 67.0 --json` |
+| 53 | 9 | `sf data query --query SELECT Id, DeveloperName FROM NamedCredential WHERE DeveloperName = 'NC_Legada' --target-org dev --api-version 67.0 --json` |
+| 54 | 7 | `sf project retrieve start --metadata RemoteSiteSetting:Meu_Site --target-org dev --api-version 67.0 --json` |
+| 55 | 7 | `sf project retrieve start --metadata Certificate:Meu_Certificado --target-org dev --api-version 67.0 --json` |
+| 56 | 9 | `sf data query --query SELECT DeveloperName, ExpirationDate, KeySize FROM Certificate WHERE DeveloperName = 'Meu_Certificado' --use-tooling-api --target-org dev --api-version 67.0 --json` |
+| 57 | 7 | `sf project retrieve start --metadata ApexClass:AccountSyncQueueable --target-org dev --api-version 67.0 --json` |
+| 58 | 9 | `sf data query --query SELECT Id, Name, ApiVersion, Status, IsValid, LengthWithoutComments, CreatedDate, LastModifiedDate FROM ApexClass WHERE Name = 'AccountSyncQueueable' --target-org dev --api-version 67.0 --json` |
+| 59 | 7 | `sf project retrieve start --metadata ApexClass:DailyOrderCleanupScheduler --target-org dev --api-version 67.0 --json` |
+| 60 | 9 | `sf data query --query SELECT Id, Name, ApiVersion, Status, IsValid, LengthWithoutComments, CreatedDate, LastModifiedDate FROM ApexClass WHERE Name = 'DailyOrderCleanupScheduler' --target-org dev --api-version 67.0 --json` |
+| 61 | 7 | `sf project retrieve start --metadata ApexClass:IntegrationAsyncHelper --target-org dev --api-version 67.0 --json` |
+| 62 | 9 | `sf data query --query SELECT Id, Name, ApiVersion, Status, IsValid, LengthWithoutComments, CreatedDate, LastModifiedDate FROM ApexClass WHERE Name = 'IntegrationAsyncHelper' --target-org dev --api-version 67.0 --json` |
+| 63 | 7 | `sf project retrieve start --metadata ApexClass:MultiRoleJob --target-org dev --api-version 67.0 --json` |
+| 64 | 9 | `sf data query --query SELECT Id, Name, ApiVersion, Status, IsValid, LengthWithoutComments, CreatedDate, LastModifiedDate FROM ApexClass WHERE Name = 'MultiRoleJob' --target-org dev --api-version 67.0 --json` |
+| 65 | 7 | `sf project retrieve start --metadata ApexClass:OrderCleanupBatch --target-org dev --api-version 67.0 --json` |
+| 66 | 9 | `sf data query --query SELECT Id, Name, ApiVersion, Status, IsValid, LengthWithoutComments, CreatedDate, LastModifiedDate FROM ApexClass WHERE Name = 'OrderCleanupBatch' --target-org dev --api-version 67.0 --json` |
+| 67 | 7 | `sf project retrieve start --metadata ApexClass:PedidoController --target-org dev --api-version 67.0 --json` |
+| 68 | 9 | `sf data query --query SELECT Id, Name, ApiVersion, Status, IsValid, LengthWithoutComments, CreatedDate, LastModifiedDate FROM ApexClass WHERE Name = 'PedidoController' --target-org dev --api-version 67.0 --json` |
+| 69 | 7 | `sf project retrieve start --metadata ApexClass:PedidoService --target-org dev --api-version 67.0 --json` |
+| 70 | 9 | `sf data query --query SELECT Id, Name, ApiVersion, Status, IsValid, LengthWithoutComments, CreatedDate, LastModifiedDate FROM ApexClass WHERE Name = 'PedidoService' --target-org dev --api-version 67.0 --json` |
+| 71 | 7 | `sf project retrieve start --metadata ApexClass:PedidoTriggerHandler --target-org dev --api-version 67.0 --json` |
+| 72 | 9 | `sf data query --query SELECT Id, Name, ApiVersion, Status, IsValid, LengthWithoutComments, CreatedDate, LastModifiedDate FROM ApexClass WHERE Name = 'PedidoTriggerHandler' --target-org dev --api-version 67.0 --json` |
+| 73 | 9 | `sf data query --query SELECT Id, Name, Label, IsOwnedByProfile, CreatedDate, LastModifiedDate FROM PermissionSet WHERE Name = 'Integracao_API' --target-org dev --api-version 67.0 --json` |
+| 74 | 9 | `sf data query --query SELECT Id, Name, Label, IsOwnedByProfile, CreatedDate, LastModifiedDate FROM PermissionSet WHERE Name = 'Leitura_Pedidos' --target-org dev --api-version 67.0 --json` |
+| 75 | 9 | `sf data query --query SELECT Id, Name, UserType, UserLicense.Name, Description, CreatedDate, LastModifiedDate FROM Profile WHERE Name = 'Admin' --target-org dev --api-version 67.0 --json` |
+| 76 | 9 | `sf data query --query SELECT Id, Name, UserType, UserLicense.Name, Description, CreatedDate, LastModifiedDate FROM Profile WHERE Name = 'Vendas' --target-org dev --api-version 67.0 --json` |
+| 77 | 9 | `sf data query --query SELECT Id, DeveloperName, MasterLabel, Status, HasActivationRequired, CreatedDate, LastModifiedDate FROM PermissionSetGroup WHERE DeveloperName = 'PSG_Integracao' --target-org dev --api-version 67.0 --json` |
+| 78 | 7 | `sf project retrieve start --metadata Group:Grupo_Suporte --target-org dev --api-version 67.0 --json` |
+| 79 | 9 | `sf data query --query SELECT Id, Name, DeveloperName, Type, DoesIncludeBosses, CreatedDate, LastModifiedDate FROM Group WHERE DeveloperName = 'Grupo_Suporte' --target-org dev --api-version 67.0 --json` |
+| 80 | 7 | `sf project retrieve start --metadata ApexTrigger:PedidoAuditoriaTrigger --target-org dev --api-version 67.0 --json` |
+| 81 | 7 | `sf project retrieve start --metadata ApexTrigger:PedidoTrigger --target-org dev --api-version 67.0 --json` |
+| 82 | 7 | `sf project retrieve start --metadata LightningComponentBundle:pedidoAcaoRapida --target-org dev --api-version 67.0 --json` |
+| 83 | 7 | `sf project retrieve start --metadata LightningComponentBundle:pedidoPainel --target-org dev --api-version 67.0 --json` |
+| 84 | 7 | `sf project retrieve start --metadata LightningComponentBundle:pedidoTelaFlow --target-org dev --api-version 67.0 --json` |
+| 85 | 7 | `sf project retrieve start --metadata Role:Diretoria --target-org dev --api-version 67.0 --json` |
+| 86 | 7 | `sf project retrieve start --metadata Role:Gerente_Vendas --target-org dev --api-version 67.0 --json` |
+| 87 | 7 | `sf project retrieve start --metadata Role:Vendas --target-org dev --api-version 67.0 --json` |
+| 88 | 7 | `sf project retrieve start --metadata Settings:Security --target-org dev --api-version 67.0 --json` |
+| 89 | 9 | `sf data query --query SELECT Id, Name, TableEnumOrId, ApiVersion, Status, IsValid, UsageBeforeInsert, UsageAfterInsert, UsageBeforeUpdate, UsageAfterUpdate, UsageBeforeDelete, UsageAfterDelete, UsageAfterUndelete, CreatedDate, LastModifiedDate FROM ApexTrigger WHERE Name = 'PedidoAuditoriaTrigger' --target-org dev --api-version 67.0 --json` |
+| 90 | 9 | `sf data query --query SELECT Id, Name, TableEnumOrId, ApiVersion, Status, IsValid, UsageBeforeInsert, UsageAfterInsert, UsageBeforeUpdate, UsageAfterUpdate, UsageBeforeDelete, UsageAfterDelete, UsageAfterUndelete, CreatedDate, LastModifiedDate FROM ApexTrigger WHERE Name = 'PedidoTrigger' --target-org dev --api-version 67.0 --json` |
+| 91 | 9 | `sf data query --query SELECT Id, DeveloperName, MasterLabel, ApiVersion, IsExposed, Description, NamespacePrefix, CreatedDate, LastModifiedDate FROM LightningComponentBundle WHERE DeveloperName = 'pedidoAcaoRapida' --use-tooling-api --target-org dev --api-version 67.0 --json` |
+| 92 | 9 | `sf data query --query SELECT Id, DeveloperName, MasterLabel, ApiVersion, IsExposed, Description, NamespacePrefix, CreatedDate, LastModifiedDate FROM LightningComponentBundle WHERE DeveloperName = 'pedidoPainel' --use-tooling-api --target-org dev --api-version 67.0 --json` |
+| 93 | 9 | `sf data query --query SELECT Id, DeveloperName, MasterLabel, ApiVersion, IsExposed, Description, NamespacePrefix, CreatedDate, LastModifiedDate FROM LightningComponentBundle WHERE DeveloperName = 'pedidoTelaFlow' --use-tooling-api --target-org dev --api-version 67.0 --json` |
+| 94 | 9 | `sf data query --query SELECT Id, Name, DeveloperName, ParentRoleId, RollupDescription, CaseAccessForAccountOwner, ContactAccessForAccountOwner, OpportunityAccessForAccountOwner FROM UserRole WHERE DeveloperName = 'Diretoria' --target-org dev --api-version 67.0 --json` |
+| 95 | 9 | `sf data query --query SELECT Id, Name, DeveloperName, ParentRoleId, RollupDescription, CaseAccessForAccountOwner, ContactAccessForAccountOwner, OpportunityAccessForAccountOwner FROM UserRole WHERE DeveloperName = 'Gerente_Vendas' --target-org dev --api-version 67.0 --json` |
+| 96 | 9 | `sf data query --query SELECT Id, Name, DeveloperName, ParentRoleId, RollupDescription, CaseAccessForAccountOwner, ContactAccessForAccountOwner, OpportunityAccessForAccountOwner FROM UserRole WHERE DeveloperName = 'Vendas' --target-org dev --api-version 67.0 --json` |
+| 97 | 9 | `sf data query --query SELECT Id, Name, OrganizationType, IsSandbox, InstanceName, DefaultAccountAccess, DefaultContactAccess, DefaultOpportunityAccess, DefaultCaseAccess, DefaultLeadAccess, DefaultCalendarAccess, DefaultPricebookAccess, DefaultCampaignAccess FROM Organization --target-org dev --api-version 67.0 --json` |
 
 O passo 5 (`describeValueType`) é SOAP direto na Metadata API, fora da CLI; o passo 8 (XML → JSON) e o passo 10 (Markdown) são locais.
 
@@ -227,11 +277,17 @@ O passo 5 (`describeValueType`) é SOAP direto na Metadata API, fora da CLI; o p
 | ExtlClntAppOauthSettings | ENABLED | SUCCESS | SUCCESS | 2 |
 | Flow | ENABLED | SUCCESS | SUCCESS | 3 |
 | FlowDefinition | ENABLED | SUCCESS | SUCCESS | 1 |
+| Group | ENABLED | SUCCESS | SUCCESS | 1 |
 | LightningComponentBundle | ENABLED | SUCCESS | SUCCESS | 4 |
 | NamedCredential | ENABLED | SUCCESS | SUCCESS | 2 |
 | PermissionSet | ENABLED | SUCCESS | SUCCESS | 2 |
+| PermissionSetGroup | ENABLED | SUCCESS | SUCCESS | 1 |
+| Profile | ENABLED | SUCCESS | SUCCESS | 2 |
 | RecordType | ENABLED | SUCCESS | via retrieve do CustomObject | — |
 | RemoteSiteSetting | ENABLED | SUCCESS | SUCCESS | 1 |
+| Role | ENABLED | SUCCESS | SUCCESS | 3 |
+| SecuritySettings | ENABLED | SUCCESS | via retrieve do CustomObject | — |
+| SharingRules | ENABLED | SUCCESS | SUCCESS | 1 |
 | ValidationRule | ENABLED | SUCCESS | via retrieve do CustomObject | — |
 | WebLink | ENABLED | SUCCESS | via retrieve do CustomObject | — |
 
@@ -271,6 +327,10 @@ O passo 5 (`describeValueType`) é SOAP direto na Metadata API, fora da CLI; o p
 | `doc-pedidotriggerhandler-apex-class.md` | `modelo-doc-apex-class-vapi-67.md` | ApexClass:PedidoTriggerHandler | — | SUCCESS |
 | `doc-integracao-api-permission-set.md` | `modelo-doc-permission-set-vapi-67.md` | PermissionSet:Integracao_API | — | SUCCESS |
 | `doc-leitura-pedidos-permission-set.md` | `modelo-doc-permission-set-vapi-67.md` | PermissionSet:Leitura_Pedidos | — | SUCCESS |
+| `doc-admin-profile.md` | `modelo-doc-profile-vapi-67.md` | Profile:Admin | — | SUCCESS |
+| `doc-vendas-profile.md` | `modelo-doc-profile-vapi-67.md` | Profile:Vendas | — | SUCCESS |
+| `doc-psg-integracao-permission-set-group.md` | `modelo-doc-permission-set-group-vapi-67.md` | PermissionSetGroup:PSG_Integracao | — | SUCCESS |
+| `doc-grupo-suporte-public-group.md` | `modelo-doc-public-group-vapi-67.md` | Group:Grupo_Suporte | — | SUCCESS |
 | `doc-pedidoauditoriatrigger-apex-trigger.md` | `modelo-doc-apex-trigger-vapi-67.md` | ApexTrigger:PedidoAuditoriaTrigger | — | SUCCESS |
 | `doc-pedidotrigger-apex-trigger.md` | `modelo-doc-apex-trigger-vapi-67.md` | ApexTrigger:PedidoTrigger | — | SUCCESS |
 | `doc-pedidoacaorapida-lwc.md` | `modelo-doc-lwc-vapi-67.md` | LightningComponentBundle:pedidoAcaoRapida | — | SUCCESS |
@@ -278,6 +338,11 @@ O passo 5 (`describeValueType`) é SOAP direto na Metadata API, fora da CLI; o p
 | `doc-pedidopainel-lwc.md` | `modelo-doc-lwc-vapi-67.md` | LightningComponentBundle:pedidoPainel | — | SUCCESS |
 | `doc-pedidotelaflow-lwc.md` | `modelo-doc-lwc-vapi-67.md` | LightningComponentBundle:pedidoTelaFlow | — | SUCCESS |
 | `doc-pedidotelaflow-lwc-flow-screen.md` | `modelo-doc-lwc-flow-screen-vapi-67.md` | LightningComponentBundle:pedidoTelaFlow | (subdocumento) | SUCCESS |
+| `doc-pedido-c-sharing-rules.md` | `modelo-doc-sharing-rules-vapi-67.md` | SharingRules:Pedido__c | — | SUCCESS |
+| `doc-diretoria-role.md` | `modelo-doc-role-vapi-67.md` | Role:Diretoria | — | SUCCESS |
+| `doc-gerente-vendas-role.md` | `modelo-doc-role-vapi-67.md` | Role:Gerente_Vendas | — | SUCCESS |
+| `doc-vendas-role.md` | `modelo-doc-role-vapi-67.md` | Role:Vendas | — | SUCCESS |
+| `doc-security-org-security.md` | `modelo-doc-org-security-vapi-67.md` | SecuritySettings:Security | — | SUCCESS |
 
 ## 5. Rastreamento de um componente: `Flow:Meu_Flow`
 
@@ -329,7 +394,7 @@ O passo 5 (`describeValueType`) é SOAP direto na Metadata API, fora da CLI; o p
       "directoryName": "certs",
       "suffix": "crt",
       "inFolder": false,
-... (169 linhas omitidas)
+... (190 linhas omitidas)
 ```
 
 **Passo 5** — `catalog/org-dev/api-v67/schemas/flow.schema.json`
@@ -398,7 +463,7 @@ O passo 5 (`describeValueType`) é SOAP direto na Metadata API, fora da CLI; o p
         "fullName": "Meu_Flow",
         "type": "Flow",
         "state": "Created",
-        "filePath": "/tmp/sfdocs-retrieve-u5pa31fz/force-app/main/default/flows/Meu_Flow.flow-meta.xml"
+        "filePath": "/tmp/sfdocs-retrieve-filisjj9/force-app/main/default/flows/Meu_Flow.flow-meta.xml"
       }
     ]
   }
@@ -561,16 +626,28 @@ catalog/org-dev/api-v67/schemas/flow-definition.describevaluetype.raw.json
 catalog/org-dev/api-v67/schemas/flow-definition.schema.json
 catalog/org-dev/api-v67/schemas/flow.describevaluetype.raw.json
 catalog/org-dev/api-v67/schemas/flow.schema.json
+catalog/org-dev/api-v67/schemas/group.describevaluetype.raw.json
+catalog/org-dev/api-v67/schemas/group.schema.json
 catalog/org-dev/api-v67/schemas/lightning-component-bundle.describevaluetype.raw.json
 catalog/org-dev/api-v67/schemas/lightning-component-bundle.schema.json
 catalog/org-dev/api-v67/schemas/named-credential.describevaluetype.raw.json
 catalog/org-dev/api-v67/schemas/named-credential.schema.json
+catalog/org-dev/api-v67/schemas/permission-set-group.describevaluetype.raw.json
+catalog/org-dev/api-v67/schemas/permission-set-group.schema.json
 catalog/org-dev/api-v67/schemas/permission-set.describevaluetype.raw.json
 catalog/org-dev/api-v67/schemas/permission-set.schema.json
+catalog/org-dev/api-v67/schemas/profile.describevaluetype.raw.json
+catalog/org-dev/api-v67/schemas/profile.schema.json
 catalog/org-dev/api-v67/schemas/record-type.describevaluetype.raw.json
 catalog/org-dev/api-v67/schemas/record-type.schema.json
 catalog/org-dev/api-v67/schemas/remote-site-setting.describevaluetype.raw.json
 catalog/org-dev/api-v67/schemas/remote-site-setting.schema.json
+catalog/org-dev/api-v67/schemas/role.describevaluetype.raw.json
+catalog/org-dev/api-v67/schemas/role.schema.json
+catalog/org-dev/api-v67/schemas/security-settings.describevaluetype.raw.json
+catalog/org-dev/api-v67/schemas/security-settings.schema.json
+catalog/org-dev/api-v67/schemas/sharing-rules.describevaluetype.raw.json
+catalog/org-dev/api-v67/schemas/sharing-rules.schema.json
 catalog/org-dev/api-v67/schemas/validation-rule.describevaluetype.raw.json
 catalog/org-dev/api-v67/schemas/validation-rule.schema.json
 catalog/org-dev/api-v67/schemas/web-link.describevaluetype.raw.json
@@ -600,6 +677,7 @@ inventory/org-dev/api-v67/access/components/externalCredentials/Minha_EC.externa
 inventory/org-dev/api-v67/access/components/flows/Meu_Flow.flow-meta.xml
 inventory/org-dev/api-v67/access/components/flows/Processa_Pedido.flow-meta.xml
 inventory/org-dev/api-v67/access/components/flows/Tela_Cadastro.flow-meta.xml
+inventory/org-dev/api-v67/access/components/groups/Grupo_Suporte.group-meta.xml
 inventory/org-dev/api-v67/access/components/lwc/pedidoAcaoRapida/pedidoAcaoRapida.js
 inventory/org-dev/api-v67/access/components/lwc/pedidoAcaoRapida/pedidoAcaoRapida.js-meta.xml
 inventory/org-dev/api-v67/access/components/lwc/pedidoPainel/__tests__/pedidoPainel.test.js
@@ -628,6 +706,10 @@ inventory/org-dev/api-v67/access/components/profiles/Admin.profile-meta.xml
 inventory/org-dev/api-v67/access/components/profiles/Vendas.profile-meta.xml
 inventory/org-dev/api-v67/access/components/queues/Fila_Pedidos.queue-meta.xml
 inventory/org-dev/api-v67/access/components/remoteSiteSettings/Meu_Site.remoteSite-meta.xml
+inventory/org-dev/api-v67/access/components/roles/Diretoria.role-meta.xml
+inventory/org-dev/api-v67/access/components/roles/Gerente_Vendas.role-meta.xml
+inventory/org-dev/api-v67/access/components/roles/Vendas.role-meta.xml
+inventory/org-dev/api-v67/access/components/settings/Security.settings-meta.xml
 inventory/org-dev/api-v67/access/components/sharingRules/Pedido__c.sharingRules-meta.xml
 inventory/org-dev/api-v67/access/components/triggers/PedidoAuditoriaTrigger.trigger
 inventory/org-dev/api-v67/access/components/triggers/PedidoAuditoriaTrigger.trigger-meta.xml
@@ -812,26 +894,67 @@ inventory/org-dev/api-v67/named-credentials/normalized/minha-nc.json
 inventory/org-dev/api-v67/named-credentials/normalized/nc-legada.json
 inventory/org-dev/api-v67/named-credentials/retrieve/minha-nc.raw.json
 inventory/org-dev/api-v67/named-credentials/retrieve/nc-legada.raw.json
+inventory/org-dev/api-v67/org-security/components/settings/Security.settings-meta.xml
+inventory/org-dev/api-v67/org-security/normalized/security.json
+inventory/org-dev/api-v67/org-security/retrieve/security.raw.json
+inventory/org-dev/api-v67/permission-set-groups/internal-data/psg-integracao.raw.json
+inventory/org-dev/api-v67/permission-set-groups/inventory.index.json
+inventory/org-dev/api-v67/permission-set-groups/inventory.raw.json
+inventory/org-dev/api-v67/permission-set-groups/normalized/psg-integracao.json
 inventory/org-dev/api-v67/permission-sets/internal-data/integracao-api.raw.json
 inventory/org-dev/api-v67/permission-sets/internal-data/leitura-pedidos.raw.json
 inventory/org-dev/api-v67/permission-sets/inventory.index.json
 inventory/org-dev/api-v67/permission-sets/inventory.raw.json
 inventory/org-dev/api-v67/permission-sets/normalized/integracao-api.json
 inventory/org-dev/api-v67/permission-sets/normalized/leitura-pedidos.json
+inventory/org-dev/api-v67/profiles/internal-data/admin.raw.json
+inventory/org-dev/api-v67/profiles/internal-data/vendas.raw.json
+inventory/org-dev/api-v67/profiles/inventory.index.json
+inventory/org-dev/api-v67/profiles/inventory.raw.json
+inventory/org-dev/api-v67/profiles/normalized/admin.json
+inventory/org-dev/api-v67/profiles/normalized/vendas.json
+inventory/org-dev/api-v67/public-groups/components/groups/Grupo_Suporte.group-meta.xml
+inventory/org-dev/api-v67/public-groups/internal-data/grupo-suporte.raw.json
+inventory/org-dev/api-v67/public-groups/inventory.index.json
+inventory/org-dev/api-v67/public-groups/inventory.raw.json
+inventory/org-dev/api-v67/public-groups/normalized/grupo-suporte.json
+inventory/org-dev/api-v67/public-groups/retrieve/grupo-suporte.raw.json
 inventory/org-dev/api-v67/remote-site-settings/components/remoteSiteSettings/Meu_Site.remoteSite-meta.xml
 inventory/org-dev/api-v67/remote-site-settings/inventory.index.json
 inventory/org-dev/api-v67/remote-site-settings/inventory.raw.json
 inventory/org-dev/api-v67/remote-site-settings/normalized/meu-site.json
 inventory/org-dev/api-v67/remote-site-settings/retrieve/meu-site.raw.json
-runs/run-20261013-042240/resumo.md
-runs/run-20261013-042240.json
+inventory/org-dev/api-v67/roles/components/roles/Diretoria.role-meta.xml
+inventory/org-dev/api-v67/roles/components/roles/Gerente_Vendas.role-meta.xml
+inventory/org-dev/api-v67/roles/components/roles/Vendas.role-meta.xml
+inventory/org-dev/api-v67/roles/internal-data/diretoria.raw.json
+inventory/org-dev/api-v67/roles/internal-data/gerente-vendas.raw.json
+inventory/org-dev/api-v67/roles/internal-data/vendas.raw.json
+inventory/org-dev/api-v67/roles/inventory.index.json
+inventory/org-dev/api-v67/roles/inventory.raw.json
+inventory/org-dev/api-v67/roles/normalized/diretoria.json
+inventory/org-dev/api-v67/roles/normalized/gerente-vendas.json
+inventory/org-dev/api-v67/roles/normalized/vendas.json
+inventory/org-dev/api-v67/roles/retrieve/diretoria.raw.json
+inventory/org-dev/api-v67/roles/retrieve/gerente-vendas.raw.json
+inventory/org-dev/api-v67/roles/retrieve/vendas.raw.json
+inventory/org-dev/api-v67/settings/internal-data/security.raw.json
+inventory/org-dev/api-v67/sharing-rules/inventory.index.json
+inventory/org-dev/api-v67/sharing-rules/inventory.raw.json
+inventory/org-dev/api-v67/sharing-rules/normalized/pedido-c.json
+runs/run-20261013-050400/resumo.md
+runs/run-20261013-050400.json
 saida/docs/doc-dev-101326/.manifest.json
 saida/docs/doc-dev-101326/.org.json
 saida/docs/doc-dev-101326/doc-accountsyncqueueable-apex-class.md
 saida/docs/doc-dev-101326/doc-accountsyncqueueable-apex-queueable.md
+saida/docs/doc-dev-101326/doc-admin-profile.md
 saida/docs/doc-dev-101326/doc-config-mdt-custom-metadata.md
 saida/docs/doc-dev-101326/doc-dailyordercleanupscheduler-apex-class.md
 saida/docs/doc-dev-101326/doc-dailyordercleanupscheduler-apex-scheduler.md
+saida/docs/doc-dev-101326/doc-diretoria-role.md
+saida/docs/doc-dev-101326/doc-gerente-vendas-role.md
+saida/docs/doc-dev-101326/doc-grupo-suporte-public-group.md
 saida/docs/doc-dev-101326/doc-integracao-api-permission-set.md
 saida/docs/doc-dev-101326/doc-integrationasynchelper-apex-class.md
 saida/docs/doc-dev-101326/doc-integrationasynchelper-processordersasync-apex-future.md
@@ -852,6 +975,7 @@ saida/docs/doc-dev-101326/doc-nc-legada-named-credential.md
 saida/docs/doc-dev-101326/doc-ordercleanupbatch-apex-batch.md
 saida/docs/doc-dev-101326/doc-ordercleanupbatch-apex-class.md
 saida/docs/doc-dev-101326/doc-pedido-c-custom-object.md
+saida/docs/doc-dev-101326/doc-pedido-c-sharing-rules.md
 saida/docs/doc-dev-101326/doc-pedidoacaorapida-lwc-quick-action.md
 saida/docs/doc-dev-101326/doc-pedidoacaorapida-lwc.md
 saida/docs/doc-dev-101326/doc-pedidoauditoriatrigger-apex-trigger.md
@@ -864,8 +988,12 @@ saida/docs/doc-dev-101326/doc-pedidotrigger-apex-trigger.md
 saida/docs/doc-dev-101326/doc-pedidotriggerhandler-apex-class.md
 saida/docs/doc-dev-101326/doc-processa-pedido-flow-autolaunched.md
 saida/docs/doc-dev-101326/doc-processa-pedido-flow.md
+saida/docs/doc-dev-101326/doc-psg-integracao-permission-set-group.md
+saida/docs/doc-dev-101326/doc-security-org-security.md
 saida/docs/doc-dev-101326/doc-tela-cadastro-dados-cliente-flow-screen.md
 saida/docs/doc-dev-101326/doc-tela-cadastro-flow.md
+saida/docs/doc-dev-101326/doc-vendas-profile.md
+saida/docs/doc-dev-101326/doc-vendas-role.md
 ```
 
 ## 7. Conteúdo dos documentos finais
@@ -2581,6 +2709,24 @@ Limites de governança, formas de invocação e monitoramento: ver `documentatio
 |---|---|
 | ApiEnabled | XML |
 
+## Custom Permissions
+
+| Custom Permission | Fonte |
+|---|---|
+| Aprova_Pedido | XML |
+
+## Páginas Visualforce
+
+| Página | Fonte |
+|---|---|
+| PedidoResumo | XML |
+
+## Guias
+
+| Guia | Visibilidade | Fonte |
+|---|---|---|
+| Pedido__c | Visible | XML |
+
 ## Dados internos
 
 | Propriedade | Valor | Fonte |
@@ -2662,6 +2808,24 @@ Limites de governança, formas de invocação e monitoramento: ver `documentatio
 |---|---|
 | Não aplicável | XML |
 
+## Custom Permissions
+
+| Custom Permission | Fonte |
+|---|---|
+| Não aplicável | XML |
+
+## Páginas Visualforce
+
+| Página | Fonte |
+|---|---|
+| Não aplicável | XML |
+
+## Guias
+
+| Guia | Visibilidade | Fonte |
+|---|---|---|
+| Não aplicável | Não aplicável | XML |
+
 ## Dados internos
 
 | Propriedade | Valor | Fonte |
@@ -2678,6 +2842,290 @@ Limites de governança, formas de invocação e monitoramento: ver `documentatio
 | Origem | Nome | Acesso | Via | Fonte |
 |---|---|---|---|---|
 | Nenhuma concessão encontrada | — | — | — | XML |
+```
+
+### `saida/docs/doc-dev-101326/doc-admin-profile.md`
+
+```markdown
+# Perfil: Admin
+
+## Identificação
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| Name | Admin | XML |
+| UserLicense | Salesforce | XML |
+| Custom | false | XML |
+| Description | Não aplicável | XML |
+
+## Objetos
+
+| Objeto | Ler | Criar | Editar | Excluir | Ver todos | Modificar todos | Fonte |
+|---|---|---|---|---|---|---|---|
+| Pedido__c | true | true | true | true | true | true | XML |
+
+## Campos
+
+| Campo | Ler | Editar | Fonte |
+|---|---|---|---|
+| Pedido__c.Valor__c | true | true | XML |
+
+## Classes Apex
+
+| Classe | Fonte |
+|---|---|
+| OrderCleanupBatch | XML |
+| PedidoController | XML |
+| PedidoService | XML |
+
+## Flows
+
+| Flow | Fonte |
+|---|---|
+| Meu_Flow | XML |
+
+## Páginas Visualforce
+
+| Página | Fonte |
+|---|---|
+| Não aplicável | XML |
+
+## Custom Permissions
+
+| Custom Permission | Fonte |
+|---|---|
+| Não aplicável | XML |
+
+## Record types
+
+| Record type | Visível | Padrão | Fonte |
+|---|---|---|---|
+| Pedido__c.Padrao | true | true | XML |
+
+## Layouts de página
+
+| Layout | Record type | Fonte |
+|---|---|---|
+| Pedido__c-Pedido Layout | Não informado | XML |
+| Pedido__c-Pedido Layout Venda | Pedido__c.Padrao | XML |
+
+## Guias
+
+| Guia | Visibilidade | Fonte |
+|---|---|---|
+| Pedido__c | DefaultOn | XML |
+
+## Permissões de sistema
+
+| Permissão | Fonte |
+|---|---|
+| ModifyAllData | XML |
+
+## Horário de login
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| mondayEnd | 1080 | XML |
+| mondayStart | 480 | XML |
+
+## Faixas de IP de login
+
+| Faixa (como no XML) | Fonte |
+|---|---|
+| description=Rede corporativa (simulada), endAddress=10.0.0.254, startAddress=10.0.0.1 | XML |
+
+## Dados internos
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| Não informado | Não informado | Objeto interno |
+
+## Acesso e configuração
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| Não aplicável | Perfil é atribuído a usuários; usuários não são documentados (proteção de dados) | — | — | XML |
+```
+
+### `saida/docs/doc-dev-101326/doc-vendas-profile.md`
+
+```markdown
+# Perfil: Vendas
+
+## Identificação
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| Name | Vendas | XML |
+| UserLicense | Salesforce | XML |
+| Custom | true | XML |
+| Description | Não aplicável | XML |
+
+## Objetos
+
+| Objeto | Ler | Criar | Editar | Excluir | Ver todos | Modificar todos | Fonte |
+|---|---|---|---|---|---|---|---|
+| Pedido__c | true | false | false | false | false | false | XML |
+
+## Campos
+
+| Campo | Ler | Editar | Fonte |
+|---|---|---|---|
+| Não aplicável | Não aplicável | Não aplicável | XML |
+
+## Classes Apex
+
+| Classe | Fonte |
+|---|---|
+| PedidoService | XML |
+| PedidoTriggerHandler | XML |
+
+## Flows
+
+| Flow | Fonte |
+|---|---|
+| Não aplicável | XML |
+
+## Páginas Visualforce
+
+| Página | Fonte |
+|---|---|
+| Não aplicável | XML |
+
+## Custom Permissions
+
+| Custom Permission | Fonte |
+|---|---|
+| Não aplicável | XML |
+
+## Record types
+
+| Record type | Visível | Padrão | Fonte |
+|---|---|---|---|
+| Não aplicável | Não aplicável | Não aplicável | XML |
+
+## Layouts de página
+
+| Layout | Record type | Fonte |
+|---|---|---|
+| Não aplicável | Não aplicável | XML |
+
+## Guias
+
+| Guia | Visibilidade | Fonte |
+|---|---|---|
+| Não aplicável | Não aplicável | XML |
+
+## Permissões de sistema
+
+| Permissão | Fonte |
+|---|---|
+| Não aplicável | XML |
+
+## Horário de login
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| Não aplicável | Não aplicável | XML |
+
+## Faixas de IP de login
+
+| Faixa (como no XML) | Fonte |
+|---|---|
+| Não aplicável | XML |
+
+## Dados internos
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| Id | 00e000000000001AAA | Objeto interno |
+| Name | Vendas | Objeto interno |
+| UserType | Standard | Objeto interno |
+| UserLicense | Name=Salesforce | Objeto interno |
+| Description | Perfil de vendas (simulado) | Objeto interno |
+
+## Acesso e configuração
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| Não aplicável | Perfil é atribuído a usuários; usuários não são documentados (proteção de dados) | — | — | XML |
+```
+
+### `saida/docs/doc-dev-101326/doc-psg-integracao-permission-set-group.md`
+
+```markdown
+# Permission Set Group: PSG_Integracao
+
+## Identificação
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| Name | PSG_Integracao | XML |
+| Label | PSG Integração | XML |
+| Description | Grupo de integração (SIMULADO) | XML |
+| HasActivationRequired | Não aplicável | XML |
+| Status | Updated | XML |
+
+## Permission sets incluídos
+
+| Permission set | Fonte |
+|---|---|
+| Integracao_API | XML |
+
+## Muting permission sets
+
+| Muting permission set | Fonte |
+|---|---|
+| PSG_Integracao_Muting | XML |
+
+## Dados internos
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| Id | 0PG000000000000AAA | Objeto interno |
+| DeveloperName | PSG_Integracao | Objeto interno |
+| MasterLabel | PSG Integração | Objeto interno |
+| Status | Updated | Objeto interno |
+| HasActivationRequired | False | Objeto interno |
+
+## Acesso e configuração
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| Não aplicável | Permission set group é atribuído a usuários; usuários não são documentados (proteção de dados) | — | — | XML |
+```
+
+### `saida/docs/doc-dev-101326/doc-grupo-suporte-public-group.md`
+
+```markdown
+# Grupo público: Grupo_Suporte
+
+## Identificação
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| Name | Grupo_Suporte | XML |
+| Label | Grupo Suporte | XML |
+| Description | Não aplicável | XML |
+| DoesIncludeBosses | true | XML |
+
+## Dados internos
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| Id | 00G000000000000AAA | Objeto interno |
+| Name | Grupo Suporte | Objeto interno |
+| DeveloperName | Grupo_Suporte | Objeto interno |
+| Type | Regular | Objeto interno |
+| DoesIncludeBosses | True | Objeto interno |
+
+## Acesso e configuração
+
+Grupo não é concedido por perfil/permission set. As linhas mostram as regras de compartilhamento que dão acesso a este grupo. Membros não são documentados (proteção de dados).
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| Regra de compartilhamento | Pedidos_Suporte | Edit | Objeto Pedido__c; Regra de compartilhamento por proprietário | XML |
 ```
 
 ### `saida/docs/doc-dev-101326/doc-pedidoauditoriatrigger-apex-trigger.md`
@@ -3329,5 +3777,251 @@ O LWC não tem acesso próprio por perfil ou permission set: aparece onde é col
 | Origem | Nome | Acesso | Via | Fonte |
 |---|---|---|---|---|
 | Nenhuma concessão encontrada | — | — | — | XML |
+```
+
+### `saida/docs/doc-dev-101326/doc-pedido-c-sharing-rules.md`
+
+```markdown
+# Regras de compartilhamento: Pedido__c
+
+## Identificação
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| Objeto | Pedido__c | XML |
+
+## Regras por critério
+
+| Regra | Rótulo | Acesso | Compartilhado com | Critérios | Lógica | Fonte |
+|---|---|---|---|---|---|---|
+| Pedidos_Altos | Pedidos Altos | Read | role=Gerente_Vendas | field=Valor__c, operation=greaterThan, value=1000 | Não informado | XML |
+
+## Regras por proprietário
+
+| Regra | Rótulo | Acesso | Compartilhado com | Registros de | Fonte |
+|---|---|---|---|---|---|
+| Pedidos_Suporte | Pedidos Suporte | Edit | group=Grupo_Suporte | roleAndSubordinates=Vendas | XML |
+
+## Padrão de compartilhamento do objeto (OWD)
+
+As regras só ampliam acesso a partir do padrão do objeto.
+
+| Objeto | Interno (sharingModel) | Externo (externalSharingModel) | Fonte |
+|---|---|---|---|
+| Pedido__c | ReadWrite | Não informado | XML |
+
+## Acesso e configuração
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| Não aplicável | Regras de compartilhamento não são concedidas por perfil ou permission set | — | — | XML |
+```
+
+### `saida/docs/doc-dev-101326/doc-diretoria-role.md`
+
+```markdown
+# Papel (Role): Diretoria
+
+## Identificação
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| Name | Diretoria | XML |
+| Label | Diretoria | XML |
+| ParentRole | Não aplicável | XML |
+| Description | Não aplicável | XML |
+| CaseAccessLevel | Edit | XML |
+| ContactAccessLevel | Edit | XML |
+| OpportunityAccessLevel | Edit | XML |
+| MayForecastManagerShare | false | XML |
+
+## Hierarquia
+
+Papéis acima herdam acesso aos registros deste papel quando o objeto concede acesso pela hierarquia.
+
+| Relação | Papel | Nível | Fonte |
+|---|---|---|---|
+| Topo da hierarquia (sem parentRole) | Diretoria | 0 | Derivado |
+| Subordinado direto | Vendas | 1 abaixo | Derivado |
+
+## Dados internos
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| Id | 00E000000000000AAA | Objeto interno |
+| Name | Diretoria | Objeto interno |
+| DeveloperName | Diretoria | Objeto interno |
+| ParentRoleId | Não informado | Objeto interno |
+| RollupDescription | Diretoria | Objeto interno |
+
+## Acesso e configuração
+
+Papel não é concedido por perfil/permission set. As linhas mostram as regras de compartilhamento que dão acesso a este papel.
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| Nenhuma regra de compartilhamento compartilha com este componente | — | — | — | XML |
+```
+
+### `saida/docs/doc-dev-101326/doc-gerente-vendas-role.md`
+
+```markdown
+# Papel (Role): Gerente_Vendas
+
+## Identificação
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| Name | Gerente_Vendas | XML |
+| Label | Gerente de Vendas | XML |
+| ParentRole | Vendas | XML |
+| Description | Não aplicável | XML |
+| CaseAccessLevel | Read | XML |
+| ContactAccessLevel | Read | XML |
+| OpportunityAccessLevel | Read | XML |
+| MayForecastManagerShare | false | XML |
+
+## Hierarquia
+
+Papéis acima herdam acesso aos registros deste papel quando o objeto concede acesso pela hierarquia.
+
+| Relação | Papel | Nível | Fonte |
+|---|---|---|---|
+| Acima | Vendas | 1 acima | Derivado |
+| Acima | Diretoria | 2 acima | Derivado |
+
+## Dados internos
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| Id | 00E000000000002AAA | Objeto interno |
+| Name | Gerente de Vendas | Objeto interno |
+| DeveloperName | Gerente_Vendas | Objeto interno |
+| ParentRoleId | 00E000000000001AAA | Objeto interno |
+| RollupDescription | Gerente de Vendas | Objeto interno |
+
+## Acesso e configuração
+
+Papel não é concedido por perfil/permission set. As linhas mostram as regras de compartilhamento que dão acesso a este papel.
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| Regra de compartilhamento | Pedidos_Altos | Read | Objeto Pedido__c; Regra de compartilhamento por critério | XML |
+```
+
+### `saida/docs/doc-dev-101326/doc-vendas-role.md`
+
+```markdown
+# Papel (Role): Vendas
+
+## Identificação
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| Name | Vendas | XML |
+| Label | Vendas | XML |
+| ParentRole | Diretoria | XML |
+| Description | Equipe de vendas (simulado) | XML |
+| CaseAccessLevel | Read | XML |
+| ContactAccessLevel | Edit | XML |
+| OpportunityAccessLevel | Read | XML |
+| MayForecastManagerShare | false | XML |
+
+## Hierarquia
+
+Papéis acima herdam acesso aos registros deste papel quando o objeto concede acesso pela hierarquia.
+
+| Relação | Papel | Nível | Fonte |
+|---|---|---|---|
+| Acima | Diretoria | 1 acima | Derivado |
+| Subordinado direto | Gerente_Vendas | 1 abaixo | Derivado |
+
+## Dados internos
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| Id | 00E000000000001AAA | Objeto interno |
+| Name | Vendas | Objeto interno |
+| DeveloperName | Vendas | Objeto interno |
+| ParentRoleId | 00E000000000000AAA | Objeto interno |
+| RollupDescription | Vendas | Objeto interno |
+
+## Acesso e configuração
+
+Papel não é concedido por perfil/permission set. As linhas mostram as regras de compartilhamento que dão acesso a este papel.
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| Nenhuma regra de compartilhamento compartilha com este componente | — | — | — | XML |
+```
+
+### `saida/docs/doc-dev-101326/doc-security-org-security.md`
+
+```markdown
+# Segurança da org: Security
+
+## Identificação
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| Componente | Security | XML |
+
+## Sessão
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| forceLogoutOnSessionTimeout | true | XML |
+| lockSessionsToDomain | true | XML |
+| lockSessionsToIp | false | XML |
+| sessionTimeout | TwoHours | XML |
+
+## Senhas
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| complexity | AlphaNumeric | XML |
+| expiration | NinetyDays | XML |
+| historyRestriction | 3 | XML |
+| maxLoginAttempts | TenAttempts | XML |
+| minimumPasswordLength | 8 | XML |
+
+## Faixas de IP confiáveis
+
+| Faixa (como no XML) | Fonte |
+|---|---|
+| description=Rede corporativa (simulada), end=10.0.0.254, start=10.0.0.1 | XML |
+
+## Padrão de compartilhamento por objeto (OWD)
+
+Objetos processados nesta execução (grupo CustomObject). Padrões de objetos padrão também aparecem nos dados internos (Organization).
+
+| Objeto | Rótulo | Interno (sharingModel) | Externo (externalSharingModel) | Fonte |
+|---|---|---|---|---|
+| Config__mdt | Config | Não informado | Não informado | XML |
+| Pedido__c | Pedido | ReadWrite | Não informado | XML |
+
+## Dados internos
+
+| Propriedade | Valor | Fonte |
+|---|---|---|
+| Id | 00D000000000000AAA | Objeto interno |
+| Name | Org Simulada | Objeto interno |
+| OrganizationType | Developer Edition | Objeto interno |
+| IsSandbox | False | Objeto interno |
+| InstanceName | NA000 | Objeto interno |
+| DefaultAccountAccess | Edit | Objeto interno |
+| DefaultContactAccess | ControlledByParent | Objeto interno |
+| DefaultOpportunityAccess | None | Objeto interno |
+| DefaultCaseAccess | Read | Objeto interno |
+| DefaultLeadAccess | ReadEditTransfer | Objeto interno |
+| DefaultCalendarAccess | HideDetailsInsert | Objeto interno |
+| DefaultPricebookAccess | ReadSelect | Objeto interno |
+| DefaultCampaignAccess | All | Objeto interno |
+
+## Acesso e configuração
+
+| Origem | Nome | Acesso | Via | Fonte |
+|---|---|---|---|---|
+| Não aplicável | Configuração global da org; não é concedida por perfil ou permission set | — | — | XML |
 ```
 

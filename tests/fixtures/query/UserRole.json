@@ -1,0 +1,36 @@
+{
+  "done": true,
+  "totalSize": 3,
+  "records": [
+    {
+      "attributes": {
+        "type": "UserRole"
+      },
+      "Id": "00E000000000000AAA",
+      "Name": "Diretoria",
+      "DeveloperName": "Diretoria",
+      "ParentRoleId": null,
+      "RollupDescription": "Diretoria"
+    },
+    {
+      "attributes": {
+        "type": "UserRole"
+      },
+      "Id": "00E000000000001AAA",
+      "Name": "Vendas",
+      "DeveloperName": "Vendas",
+      "ParentRoleId": "00E000000000000AAA",
+      "RollupDescription": "Vendas"
+    },
+    {
+      "attributes": {
+        "type": "UserRole"
+      },
+      "Id": "00E000000000002AAA",
+      "Name": "Gerente de Vendas",
+      "DeveloperName": "Gerente_Vendas",
+      "ParentRoleId": "00E000000000001AAA",
+      "RollupDescription": "Gerente de Vendas"
+    }
+  ]
+}

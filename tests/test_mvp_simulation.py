@@ -11,7 +11,7 @@ from salesforce_docs import status as st
 
 API = "inventory/org-dev/api-v67"
 
-# Documento -> modelo esperado (os 22 modelos de documentation/models/api-v67).
+# Documento -> modelo esperado (os 28 modelos de documentation/models/api-v67).
 EXPECTED_DOCS = {
     "doc-meu-flow-flow.md": "modelo-doc-flow-vapi-67.md",
     "doc-tela-cadastro-flow.md": "modelo-doc-flow-vapi-67.md",
@@ -53,6 +53,16 @@ EXPECTED_DOCS = {
     "doc-pedidoacaorapida-lwc-quick-action.md": "modelo-doc-lwc-quick-action-vapi-67.md",
     "doc-pedidotelaflow-lwc.md": "modelo-doc-lwc-vapi-67.md",
     "doc-pedidotelaflow-lwc-flow-screen.md": "modelo-doc-lwc-flow-screen-vapi-67.md",
+    # Segurança, acesso e governança (Onda 04)
+    "doc-security-org-security.md": "modelo-doc-org-security-vapi-67.md",
+    "doc-admin-profile.md": "modelo-doc-profile-vapi-67.md",
+    "doc-vendas-profile.md": "modelo-doc-profile-vapi-67.md",
+    "doc-psg-integracao-permission-set-group.md": "modelo-doc-permission-set-group-vapi-67.md",
+    "doc-pedido-c-sharing-rules.md": "modelo-doc-sharing-rules-vapi-67.md",
+    "doc-diretoria-role.md": "modelo-doc-role-vapi-67.md",
+    "doc-vendas-role.md": "modelo-doc-role-vapi-67.md",
+    "doc-gerente-vendas-role.md": "modelo-doc-role-vapi-67.md",
+    "doc-grupo-suporte-public-group.md": "modelo-doc-public-group-vapi-67.md",
     # Permission Set (XML do retrieve de acesso)
     "doc-integracao-api-permission-set.md": "modelo-doc-permission-set-vapi-67.md",
     "doc-leitura-pedidos-permission-set.md": "modelo-doc-permission-set-vapi-67.md",
@@ -89,9 +99,13 @@ LISTED_TYPES = {
     "NamedCredential": "named-credentials", "RemoteSiteSetting": "remote-site-settings",
     "Certificate": "certificates", "ApexClass": "apex-classes", "PermissionSet": "permission-sets",
     "ApexTrigger": "apex-triggers", "LightningComponentBundle": "lwc",
+    "Profile": "profiles", "PermissionSetGroup": "permission-set-groups", "SharingRules": "sharing-rules",
+    "Role": "roles", "Group": "public-groups",
 }
 # Tipos documentados cujo XML vem do retrieve das fontes de acesso (passo 6b).
-PREFETCHED_TYPES = {"PermissionSet"}
+PREFETCHED_TYPES = {"PermissionSet", "Profile", "PermissionSetGroup", "SharingRules"}
+# Tipos com componente fixo (fixedComponents): habilitação verificada, sem listagem (passo 6).
+FIXED_TYPES = {"SecuritySettings"}
 # Tipos que só chegam pelo retrieve do CustomObject (passo 7).
 CHILD_TYPES = ["CustomField", "RecordType", "ValidationRule", "WebLink"]
 
@@ -166,7 +180,7 @@ class MvpCompleteSimulationTest(PipelineTestBase):
         for name in ("Minha_EC", "Meu_App", "Outra_ECA_oauth"):
             self.assertNotIn(f"| {name} |", text)
         types = {t["metadataType"] for t in self.state.data["metadataTypes"]}
-        self.assertEqual(types, set(LISTED_TYPES) | set(CHILD_TYPES))
+        self.assertEqual(types, set(LISTED_TYPES) | set(CHILD_TYPES) | FIXED_TYPES)
 
     def test_regenerate_is_identical_and_offline(self):
         before = {d: self.read(c["document"]) for d, c in self.all_documents().items()}

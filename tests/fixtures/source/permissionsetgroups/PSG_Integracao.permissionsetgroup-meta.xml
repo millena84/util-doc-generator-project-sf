@@ -2,6 +2,7 @@
 <PermissionSetGroup xmlns="http://soap.sforce.com/2006/04/metadata">
     <description>Grupo de integração (SIMULADO)</description>
     <label>PSG Integração</label>
+    <mutingPermissionSets>PSG_Integracao_Muting</mutingPermissionSets>
     <permissionSets>Integracao_API</permissionSets>
     <status>Updated</status>
 </PermissionSetGroup>

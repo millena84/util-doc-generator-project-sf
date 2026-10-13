@@ -16,6 +16,8 @@ STRATEGY_UNIT_MODES = {
     "SINGLE_DOCUMENT_PER_OBJECT_WITH_RELATED_COMPONENTS": "PER_COMPONENT",
     "SINGLE_DOCUMENT_PER_NAMED_CREDENTIAL_WITH_RELATED_COMPONENTS": "PER_COMPONENT",
     "ONE_DOCUMENT_PER_TYPE_AND_RECORDS": "PER_TYPE_WITH_RECORDS",
+    # Documento único da org (ex.: Settings:Security), declarado em fixedComponents.
+    "ONE_DOCUMENT_PER_ORG": "PER_COMPONENT",
 }
 
 RELATION_MATCHES = {"SAME_FULL_NAME", "CHILD_OF_PRIMARY", "FIELD_EQUALS_PRIMARY", "REFERENCE_SCAN",
@@ -93,6 +95,9 @@ class MetadataTypesConfig:
         self.access_sources = data.get("accessSources") or {}
         # Automações por objeto e ordem oficial de execução (documento de Apex Trigger).
         self.automation_index = data.get("automationIndex") or {}
+        # Campos de outros componentes guardados no índice da execução (ex.: OWD do CustomObject
+        # para o documento de segurança da org; parentRole para a hierarquia de papéis).
+        self.record_index = data.get("recordIndex") or {}
         if self.access_sources and not isinstance(self.access_sources.get("retrieveTypes"), list):
             raise ConfigError("metadata-types-mvp.json: accessSources.retrieveTypes deve ser uma lista")
         groups = data.get("metadataTypeGroups")

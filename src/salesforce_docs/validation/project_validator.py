@@ -223,6 +223,11 @@ def table_placeholders(table):
     """Placeholders que o builder da tabela preenche (None = desconhecido)."""
     args = table.get("args") or {}
     builder = table.get("builder")
+    if builder == "index_record_rows":
+        return set(args.get("columns") or {}) | {args.get("namePlaceholder", "record_name")}
+    if builder == "role_hierarchy_rows":
+        from salesforce_docs.parsing.governance_builders import BUILDER_PLACEHOLDERS as GB
+        return set(GB[builder])
     if builder == "code_fact_rows":
         return set(args.get("columns") or {}) | {args.get("locationPlaceholder", "fact_location")}
     if builder in ("automation_rows", "referenced_class_rows", "apex_method_check_rows"):

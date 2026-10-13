@@ -1,0 +1,83 @@
+{
+  "metadataType": "Group",
+  "apiVersion": "67.0",
+  "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+  "xmlFilePattern": "**/*.group-meta.xml",
+  "template": "modelo-doc-public-group-vapi-{apiMajor}.md",
+  "titlePath": "@fullName",
+  "referenceDoc": "_sf_utilities/ajudAI/contexto-seg-controle-acesso-gov.md",
+  "classification": "Documento de todo grupo público.",
+  "properties": [
+    {
+      "name": "Name",
+      "placeholder": "group_api_name",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Label",
+      "placeholder": "group_label",
+      "path": "name",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Description",
+      "placeholder": "description",
+      "path": "description",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "DoesIncludeBosses",
+      "placeholder": "includes_bosses",
+      "path": "doesIncludeBosses",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação",
+      "notes": "true = superiores na hierarquia também recebem o acesso dado ao grupo."
+    }
+  ],
+  "tables": [
+    {
+      "markdownSection": "Dados internos",
+      "builder": "internal_record_properties",
+      "source": "Objeto interno",
+      "args": {
+        "keyPlaceholder": "internal_property",
+        "valuePlaceholder": "internal_value"
+      },
+      "emptyValue": "Não informado"
+    },
+    {
+      "markdownSection": "Acesso e configuração",
+      "builder": "access_rows",
+      "source": "XML",
+      "args": {
+        "sharedTo": [
+          "group"
+        ],
+        "noneText": "Nenhuma regra de compartilhamento compartilha com este componente"
+      },
+      "emptyValue": "Não informado",
+      "notes": "Regras de compartilhamento (XML do passo 6b) que compartilham com o grupo."
+    }
+  ],
+  "internalData": {
+    "enabled": true,
+    "source": "Objeto interno",
+    "object": "Group",
+    "useToolingApi": false,
+    "query": "SELECT Id, Name, DeveloperName, Type, DoesIncludeBosses, CreatedDate, LastModifiedDate FROM Group WHERE DeveloperName = '{developerName}'",
+    "expectSingleRecord": true,
+    "blocking": false,
+    "validationPending": "Objeto Group: confirmar campos no piloto. Membros (GroupMember) não são consultados."
+  },
+  "evidence": [
+    "Metadata API Group (grupos públicos com usuários, papéis e outros grupos) — developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_group.htm"
+  ]
+}

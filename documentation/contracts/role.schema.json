@@ -1,0 +1,127 @@
+{
+  "metadataType": "Role",
+  "apiVersion": "67.0",
+  "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+  "xmlFilePattern": "**/*.role-meta.xml",
+  "template": "modelo-doc-role-vapi-{apiMajor}.md",
+  "titlePath": "@fullName",
+  "referenceDoc": "_sf_utilities/ajudAI/contexto-seg-controle-acesso-gov.md",
+  "classification": "Documento de todo papel da hierarquia.",
+  "properties": [
+    {
+      "name": "Name",
+      "placeholder": "role_api_name",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Label",
+      "placeholder": "role_label",
+      "path": "name",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "ParentRole",
+      "placeholder": "parent_role",
+      "path": "parentRole",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Description",
+      "placeholder": "description",
+      "path": "description",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "CaseAccessLevel",
+      "placeholder": "case_access",
+      "path": "caseAccessLevel",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "ContactAccessLevel",
+      "placeholder": "contact_access",
+      "path": "contactAccessLevel",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "OpportunityAccessLevel",
+      "placeholder": "opportunity_access",
+      "path": "opportunityAccessLevel",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "MayForecastManagerShare",
+      "placeholder": "forecast_share",
+      "path": "mayForecastManagerShare",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    }
+  ],
+  "tables": [
+    {
+      "markdownSection": "Hierarquia",
+      "builder": "role_hierarchy_rows",
+      "source": "Derivado",
+      "args": {
+        "metadataType": "Role",
+        "parentField": "parentRole"
+      },
+      "emptyValue": "Não informado",
+      "notes": "Cadeia de parentRole entre os papéis processados na execução."
+    },
+    {
+      "markdownSection": "Dados internos",
+      "builder": "internal_record_properties",
+      "source": "Objeto interno",
+      "args": {
+        "keyPlaceholder": "internal_property",
+        "valuePlaceholder": "internal_value"
+      },
+      "emptyValue": "Não informado"
+    },
+    {
+      "markdownSection": "Acesso e configuração",
+      "builder": "access_rows",
+      "source": "XML",
+      "args": {
+        "sharedTo": [
+          "role",
+          "roleAndSubordinates",
+          "roleAndSubordinatesInternal"
+        ],
+        "noneText": "Nenhuma regra de compartilhamento compartilha com este componente"
+      },
+      "emptyValue": "Não informado",
+      "notes": "Regras de compartilhamento (XML do passo 6b) que compartilham com o papel."
+    }
+  ],
+  "internalData": {
+    "enabled": true,
+    "source": "Objeto interno",
+    "object": "UserRole",
+    "useToolingApi": false,
+    "query": "SELECT Id, Name, DeveloperName, ParentRoleId, RollupDescription, CaseAccessForAccountOwner, ContactAccessForAccountOwner, OpportunityAccessForAccountOwner FROM UserRole WHERE DeveloperName = '{developerName}'",
+    "expectSingleRecord": true,
+    "blocking": false,
+    "validationPending": "Objeto UserRole: confirmar campos no piloto."
+  },
+  "evidence": [
+    "Metadata API Role — developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_role.htm (campos a confirmar)"
+  ]
+}

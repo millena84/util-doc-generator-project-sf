@@ -1,0 +1,30 @@
+{
+  "done": true,
+  "totalSize": 2,
+  "records": [
+    {
+      "attributes": {
+        "type": "Profile"
+      },
+      "Id": "00e000000000000AAA",
+      "Name": "System Administrator",
+      "UserType": "Standard",
+      "UserLicense": {
+        "Name": "Salesforce"
+      },
+      "Description": null
+    },
+    {
+      "attributes": {
+        "type": "Profile"
+      },
+      "Id": "00e000000000001AAA",
+      "Name": "Vendas",
+      "UserType": "Standard",
+      "UserLicense": {
+        "Name": "Salesforce"
+      },
+      "Description": "Perfil de vendas (simulado)"
+    }
+  ]
+}

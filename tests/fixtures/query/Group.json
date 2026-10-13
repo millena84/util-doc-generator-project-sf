@@ -1,0 +1,16 @@
+{
+  "done": true,
+  "totalSize": 1,
+  "records": [
+    {
+      "attributes": {
+        "type": "Group"
+      },
+      "Id": "00G000000000000AAA",
+      "Name": "Grupo Suporte",
+      "DeveloperName": "Grupo_Suporte",
+      "Type": "Regular",
+      "DoesIncludeBosses": true
+    }
+  ]
+}

@@ -108,6 +108,20 @@ bin/sf-docs.sh run --group LightningComponentBundle --group ApexClass --componen
 - **`INVALID_FIELD`:** relate; o campo sai do contrato `lwc.schema.json`.
 - **Confira:** `fullName` dos arquivos no retrieve do bundle (todos com o nome do componente?); targets e propriedades de `targetConfigs` iguais ao `.js-meta.xml`; métodos Apex chamados e a verificação `@AuraEnabled`; perfil/permission set com `customPermissions` da permissão importada (formato `<customPermissions><enabled>`/`<name>`).
 
+## 5d. Segurança e governança (Onda 04)
+
+```bash
+sf project retrieve start --metadata Settings:Security --target-org dev --json | python3 -c "import json,sys; r=json.load(sys.stdin)['result']; print([(f['type'], f['fullName']) for f in r.get('files', [])])"
+sf org list metadata-types --target-org dev --json | python3 -c "import json,sys; print(sorted(t['xmlName'] for t in json.load(sys.stdin)['result']['metadataObjects'] if 'Settings' in t['xmlName'])[:20])"
+sf data query --target-org dev --json --query "SELECT Id, Name, OrganizationType, IsSandbox, DefaultAccountAccess FROM Organization"
+bin/sf-docs.sh run --group OrgSecurity --group CustomObject --group Profile --group Role --group PublicGroup --group SharingRules --group PermissionSetGroup --non-interactive
+```
+
+- **Retrieve de Settings:** o arquivo vem como `type: Settings` e `fullName: Security`? Se vier outro tipo, ajuste `fixedComponents.retrieveType` em `config/metadata-types-mvp.json`.
+- **`SecuritySettings` na lista de metadata types:** se não aparecer (e aparecer só `Settings`), troque `primaryMetadataType` do grupo `OrgSecurity`; o grupo fica `NOT_ENABLED` até isso.
+- **Perfis padrão:** a consulta de dados internos filtra `Profile.Name` pelo fullName do metadata (`Admin`), mas o Name é "System Administrator": relate o par fullName/Name para ajustar o filtro.
+- **Confira** os elementos de `sessionSettings`, `passwordPolicies` e `networkAccess` contra o Setup; `parentRole` e níveis de acesso do Role; `doesIncludeBosses` do Group; `mutingPermissionSets` do PSG.
+
 ## 6. Acesso e configuração
 
 O ponto mais importante: confirmar se o XML de Profile/PermissionSet traz as permissões **só** dos componentes recuperados no mesmo pedido. O utilitário já recupera tudo junto (passo 6b), mas o resultado precisa ser conferido:

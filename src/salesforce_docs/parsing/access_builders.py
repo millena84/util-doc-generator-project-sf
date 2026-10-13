@@ -49,6 +49,9 @@ def access_rows(ctx, args):
       relatedAccess — {metadataType, accessKey, prefixMatch}: acesso via relacionado (ex.: NC → EC);
       byPath — [{path, itemField?, accessKey, via}]: acesso a componentes que o próprio
         componente referencia (ex.: trigger -> objeto e classes chamadas);
+      noneText — texto quando não há concessão (índice disponível);
+      sharedTo — tipos de destinatário (ex.: role, roleAndSubordinates): regras de
+        compartilhamento que compartilham com o próprio componente (papel, grupo);
       notApplicable — motivo quando o tipo não tem atribuição por perfil/permission set.
     """
     if args.get("notApplicable"):
@@ -98,11 +101,27 @@ def access_rows(ctx, args):
                 if r.get("via"):
                     via += f"; {r['via']}"
                 rows.append(_row(r["originType"], r["origin"], r["access"], via))
+    if args.get("sharedTo"):
+        # Onde o papel/grupo é usado: regras de compartilhamento que compartilham COM ele.
+        needs_index = True
+        rows.extend(_row("Regra de compartilhamento", r["name"], r["accessLevel"], f"Objeto {obj}; {r['kind']}")
+                    for obj, r in sharing_targets(root.access_index, args["sharedTo"], root.full_name))
     if rows:
         return rows
     if needs_index and root.access_index is None:
         return []  # índice indisponível: "Não informado"
-    return [_row("Nenhuma concessão encontrada", DASH, None, None)]
+    return [_row(args.get("noneText", "Nenhuma concessão encontrada"), DASH, None, None)]
+
+
+def sharing_targets(index, target_types, name):
+    """(objeto, regra) cujo sharedTo contém `<tipo>: <name>` para algum tipo em target_types."""
+    wanted = {f"{t}: {name}".lower() for t in target_types}
+    out = []
+    for obj, rules in sorted(((index or {}).get("sharingRules") or {}).items()):
+        for r in rules:
+            if any(x.strip().lower() in wanted for x in str(r.get("sharedTo") or "").split(";")):
+                out.append((obj, r))
+    return out
 
 
 def object_sharing_rows(ctx, args):

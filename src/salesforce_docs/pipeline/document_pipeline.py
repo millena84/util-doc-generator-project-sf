@@ -694,6 +694,8 @@ class DocumentPipeline:
         inventories = {}
         for group_name, types in enabled.items():
             group = self.mvp.group(group_name)
+            if group.data.get("fixedComponents"):
+                continue  # componente fixo (ex.: Settings:Security): nada a listar
             listable = [t for t in group.all_types if t in types and not self.mvp.retrieved_with(t)]
             for t in listable:
                 if t in inventories:
@@ -748,7 +750,8 @@ class DocumentPipeline:
             for unit in deviation_handler.build_units(group, inventories, self.mvp):
                 if component_filter is not None and unit["fullName"] not in component_filter:
                     continue
-                specs.add(unit["metadataType"] if whole_types else f"{unit['metadataType']}:{unit['fullName']}")
+                whole = whole_types and not group.data.get("fixedComponents")
+                specs.add(unit["metadataType"] if whole else f"{unit['metadataType']}:{unit['fullName']}")
         return specs
 
     def _step6b_access_sources(self, p, enabled, inventories, effective):
@@ -960,7 +963,8 @@ class DocumentPipeline:
         carried = [e for e in p.run_state.data.get("components", [])
                    if e.get("role") == "primary" and (e.get("metadataType"), e.get("component")) not in cached]
         records.extend(run_index.records_from_entries(carried, self.root))
-        p.run_index = run_index.build_run_index(records, self.mvp.automation_index, p.class_inventory)
+        p.run_index = run_index.build_run_index(records, self.mvp.automation_index, p.class_inventory,
+                                                 record_fields=self.mvp.record_index)
 
     def _metrics(self):
         """Chamadas e duração por tipo de comando e por metadata type (CLI)."""
@@ -1258,7 +1262,8 @@ class DocumentPipeline:
         if any(g.data.get("usesRunIndex") for _, g, _, _, _ in prepared):
             p.class_inventory = self._regenerate_class_inventory(p)
             records = [r for _, _, _, prim, _ in prepared for r in run_index.records_of(prim)]
-            p.run_index = run_index.build_run_index(records, self.mvp.automation_index, p.class_inventory)
+            p.run_index = run_index.build_run_index(records, self.mvp.automation_index, p.class_inventory,
+                                                 record_fields=self.mvp.record_index)
         for unit_id, group, primary_entry, primary, related in prepared:
             internal = {"status": None, "records": None, "raw": None}
             if primary_entry.get("internalData") and (self.root / primary_entry["internalData"]).is_file():
@@ -1292,7 +1297,11 @@ class DocumentPipeline:
 
 
 def _record_type(group):
-    """Tipo do XML principal da unidade (CustomMetadata usa o tipo __mdt)."""
+    """Tipo do XML principal da unidade (CustomMetadata usa o tipo __mdt; componente fixo, o
+    retrieveType, ex.: Settings)."""
+    fixed = group.data.get("fixedComponents")
+    if fixed:
+        return fixed[0].get("retrieveType") or group.primary_type
     if group.unit_mode == "PER_TYPE_WITH_RECORDS":
         return group.type_definition["metadataType"]
     return group.primary_type

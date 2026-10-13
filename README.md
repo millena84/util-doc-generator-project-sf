@@ -133,6 +133,10 @@ Registro da auditoria de segurança de 2026-10-11 (10 riscos: 1 crítico, 2 alto
 | NamedCredential | `SINGLE_DOCUMENT_PER_NAMED_CREDENTIAL_WITH_RELATED_COMPONENTS` | `ExternalCredential` cujo fullName aparece exatamente em `namedCredentialParameters.externalCredential` do XML da NC (`PRIMARY_FIELD_REFERENCES`); as propriedades da EC vêm do XML da própria EC, com arquivo e sha256 |
 | ExternalCredential, ConnectedApp, RemoteSiteSetting, Certificate | `ONE_DOCUMENT_PER_COMPONENT` | — (Certificate: só o `.crt-meta.xml` é lido; o `.crt` fica só como raw) |
 | PermissionSet | `ONE_DOCUMENT_PER_COMPONENT` | — (XML do retrieve de acesso, passo 6b) |
+| Profile, PermissionSetGroup, SharingRules | `ONE_DOCUMENT_PER_COMPONENT` | — (XML do retrieve de acesso, passo 6b; SharingRules: um documento por objeto, com o OWD do CustomObject processado) |
+| Role | `ONE_DOCUMENT_PER_COMPONENT` | — (hierarquia por `parentRole` entre os papéis processados; `usesRunIndex`) |
+| PublicGroup (`Group`) | `ONE_DOCUMENT_PER_COMPONENT` | — (membros não documentados) |
+| OrgSecurity (`SecuritySettings`) | `ONE_DOCUMENT_PER_ORG` | — (componente fixo `Settings:Security` em `fixedComponents`, sem inventário; OWD dos CustomObject processados; `Organization` nos dados internos) |
 | ApexClass | `ONE_DOCUMENT_PER_COMPONENT` + subdocumentos por papel | — (o `.cls` é lido pelo parser estrutural configurado em `sourceParser`; classes de pacote gerenciado `ns__*` são excluídas por `componentFilter`) |
 | ApexTrigger | `ONE_DOCUMENT_PER_COMPONENT` | — (o `.trigger` é lido pelo parser `apex-trigger`; grupo com `usesRunIndex`: processado por último, mostra Flows, regras de validação e triggers do mesmo objeto; `lookupInventories` lista ApexClass só para conferência) |
 | LightningComponentBundle | `ONE_DOCUMENT_PER_COMPONENT` + subdocumentos por target | — (o bundle inteiro — `.js`, `.html`, `.css`, `.svg`, `.js-meta.xml` — é lido pelo parser `lwc` com `sourceParser.bundle`; `usesRunIndex` para conferir os métodos Apex chamados nas classes processadas) |
@@ -238,6 +242,26 @@ Adaptação de `_sf_utilities/ajudAI/contexto-lwc.md` (ver a matriz em `document
 - **Acesso**: LWC não tem acesso próprio por perfil/permission set. A seção lista quem acessa as classes Apex chamadas (`classAccesses`, exigido para métodos `@AuraEnabled`) e quem tem as Custom Permissions importadas no JS (`customPermissions`, nova concessão em `accessSources.grants`).
 - **Conteúdo genérico** (ciclo de vida, comunicação, LDS, APIs de plataforma): [`documentation/referencia-lwc.md`](documentation/referencia-lwc.md). Onde o componente é colocado (FlexiPage) entra na Onda 04.
 
+## Segurança, acesso e governança — Onda 04
+
+Adaptação de `_sf_utilities/ajudAI/contexto-seg-controle-acesso-gov.md` (ver a matriz em `documentation/refatoracao-1-matriz-ajudai.md`).
+
+| Documento | Conteúdo | Fontes |
+|---|---|---|
+| `modelo-doc-org-security` (um por org) | Sessão (`sessionSettings`), senhas (`passwordPolicies`), faixas de IP confiáveis (`networkAccess`), OWD por objeto (`sharingModel`, `externalSharingModel` dos CustomObject processados), `Organization` (edição, sandbox, padrões de acesso de objetos padrão) | XML, Objeto interno |
+| `modelo-doc-profile` | Licença, objetos, campos, classes, flows, páginas Visualforce, Custom Permissions, record types, layouts, guias, permissões de sistema, horário e faixas de IP de login | XML (passo 6b), Objeto interno |
+| `modelo-doc-permission-set` (ampliado) | + Custom Permissions, páginas Visualforce, guias | XML (passo 6b) |
+| `modelo-doc-permission-set-group` | Permission sets incluídos, muting permission sets, status | XML (passo 6b), Objeto interno |
+| `modelo-doc-sharing-rules` (um por objeto) | Regras por critério e por proprietário (acesso, compartilhado com, critérios, registros de), OWD do objeto | XML (passo 6b) |
+| `modelo-doc-role` | Níveis de acesso, papéis acima (cadeia de `parentRole`) e subordinados diretos, regras que compartilham com o papel | XML, Derivado |
+| `modelo-doc-public-group` | `doesIncludeBosses`, regras que compartilham com o grupo | XML, Objeto interno |
+
+- **Sem inventar nomes de campo:** sessão, senhas, horário de login e faixas de IP são renderizados como estão no XML (propriedade/valor), porque os nomes exatos não puderam ser confirmados na documentação oficial nesta adaptação.
+- **Componente fixo** (`fixedComponents` no grupo): o documento da org não depende de listagem; recupera `Settings:Security`. No modo `ALL`, o retrieve de acesso usa o nome, nunca o tipo `Settings` inteiro.
+- **Índice de registros** (`recordIndex` no config): campos copiados do XML de outros componentes (OWD do CustomObject, `parentRole` do Role) para os documentos da org, das regras e dos papéis. Só entram componentes processados na execução.
+- **Proteção de dados:** usuários atribuídos a perfis, permission sets e grupos, e membros de grupos, não são documentados.
+- **Conteúdo genérico** (modelo de compartilhamento, hierarquia, muting): [`documentation/referencia-seguranca-governanca.md`](documentation/referencia-seguranca-governanca.md).
+
 ## Refatoração 1 — modelos adaptados das referências `ajudAI`
 
 A matriz de rastreabilidade, as divergências entre `ajudAI`, o utilitário e a documentação Salesforce, as decisões aplicadas e as pendências estão em [`documentation/refatoracao-1-matriz-ajudai.md`](documentation/refatoracao-1-matriz-ajudai.md). Cada contrato registra `referenceDoc`, `evidence` e o que ficou `notSupported`/`pendingVerification`.
@@ -277,11 +301,11 @@ Os testes usam uma Salesforce CLI **simulada** (`tests/fixtures/bin/sf`) e respo
 ### Simulação de todas as documentações do MVP
 
 ```bash
-python3 -m unittest tests.test_mvp_simulation        # verifica os 22 modelos e os 21 metadata types
+python3 -m unittest tests.test_mvp_simulation        # verifica os 28 modelos e os 27 metadata types
 python3 -m tests.simulate_mvp --out /tmp/sim-mvp     # executa e gera o relatório passo a passo
 ```
 
-O cenário `mvp_complete` da CLI simulada sobrepõe `tests/fixtures/mvp-complete/` às fixtures base, de modo que todo metadata type do MVP tenha ao menos um componente. O relatório versionado em `documentation/simulacao/relatorio-simulacao-mvp.md` mostra, para essa simulação, a saída no terminal, os comandos por passo, a situação de cada tipo, a árvore de arquivos e o conteúdo dos 39 documentos gerados.
+O cenário `mvp_complete` da CLI simulada sobrepõe `tests/fixtures/mvp-complete/` às fixtures base, de modo que todo metadata type do MVP tenha ao menos um componente. O relatório versionado em `documentation/simulacao/relatorio-simulacao-mvp.md` mostra, para essa simulação, a saída no terminal, os comandos por passo, a situação de cada tipo, a árvore de arquivos e o conteúdo dos 48 documentos gerados.
 
 | Grupo | Documento(s) / modelo | Tipos que aparecem dentro do documento |
 |---|---|---|
@@ -295,6 +319,12 @@ O cenário `mvp_complete` da CLI simulada sobrepõe `tests/fixtures/mvp-complete
 | CustomObject | `modelo-doc-custom-object` | CustomField, RecordType, ValidationRule, WebLink |
 | CustomMetadata | `modelo-doc-custom-metadata` | campos e records do tipo `__mdt` |
 | PermissionSet | `modelo-doc-permission-set` | grupos que incluem o permission set |
+| Profile | `modelo-doc-profile` | — |
+| PermissionSetGroup | `modelo-doc-permission-set-group` | — |
+| SharingRules | `modelo-doc-sharing-rules` | OWD do objeto (CustomObject processado) |
+| Role | `modelo-doc-role` | hierarquia (outros papéis processados) e regras que compartilham com o papel |
+| PublicGroup | `modelo-doc-public-group` | regras que compartilham com o grupo |
+| OrgSecurity | `modelo-doc-org-security` | OWD dos CustomObject processados |
 | ApexClass | `modelo-doc-apex-class` + subdocumentos `modelo-doc-apex-batch`, `modelo-doc-apex-queueable`, `modelo-doc-apex-scheduler` e `modelo-doc-apex-future` (um por método) | — |
 | ApexTrigger | `modelo-doc-apex-trigger` | Flows record-triggered, regras de validação e outras triggers do mesmo objeto (coexistência) |
 | LightningComponentBundle | `modelo-doc-lwc` + subdocumentos `modelo-doc-lwc-quick-action` e `modelo-doc-lwc-flow-screen` | — (métodos Apex conferidos nas classes processadas) |

@@ -1,0 +1,109 @@
+{
+  "metadataType": "SecuritySettings",
+  "apiVersion": "67.0",
+  "documentStrategy": "ONE_DOCUMENT_PER_ORG",
+  "xmlFilePattern": "**/settings/Security.settings-meta.xml",
+  "template": "modelo-doc-org-security-vapi-{apiMajor}.md",
+  "titlePath": "@fullName",
+  "referenceDoc": "_sf_utilities/ajudAI/contexto-seg-controle-acesso-gov.md",
+  "classification": "Documento único da org: SecuritySettings + OWD dos objetos processados + Organization.",
+  "properties": [
+    {
+      "name": "Componente",
+      "placeholder": "settings_name",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação",
+      "notes": "Settings:Security (settings/Security.settings-meta.xml)."
+    }
+  ],
+  "tables": [
+    {
+      "markdownSection": "Sessão",
+      "builder": "child_properties",
+      "source": "XML",
+      "args": {
+        "path": "sessionSettings",
+        "keyPlaceholder": "session_key",
+        "valuePlaceholder": "session_value"
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Filhos de <sessionSettings> como estão no XML."
+    },
+    {
+      "markdownSection": "Senhas",
+      "builder": "child_properties",
+      "source": "XML",
+      "args": {
+        "path": "passwordPolicies",
+        "keyPlaceholder": "password_key",
+        "valuePlaceholder": "password_value"
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Filhos de <passwordPolicies> como estão no XML."
+    },
+    {
+      "markdownSection": "Faixas de IP confiáveis",
+      "builder": "list_values",
+      "source": "XML",
+      "args": {
+        "path": "networkAccess.ipRanges",
+        "valuePlaceholder": "ip_range"
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "<networkAccess><ipRanges>."
+    },
+    {
+      "markdownSection": "Padrão de compartilhamento por objeto (OWD)",
+      "builder": "index_record_rows",
+      "source": "XML",
+      "args": {
+        "metadataType": "CustomObject",
+        "namePlaceholder": "owd_object",
+        "columns": {
+          "owd_label": "label",
+          "owd_internal": "sharingModel",
+          "owd_external": "externalSharingModel"
+        }
+      },
+      "emptyValue": "Não informado",
+      "notes": "Do XML de cada CustomObject processado na execução."
+    },
+    {
+      "markdownSection": "Dados internos",
+      "builder": "internal_record_properties",
+      "source": "Objeto interno",
+      "args": {
+        "keyPlaceholder": "internal_property",
+        "valuePlaceholder": "internal_value"
+      },
+      "emptyValue": "Não informado"
+    },
+    {
+      "markdownSection": "Acesso e configuração",
+      "builder": "access_rows",
+      "source": "XML",
+      "args": {
+        "notApplicable": "Configuração global da org; não é concedida por perfil ou permission set"
+      },
+      "emptyValue": "Não informado",
+      "notes": "Sem concessão por perfil/permission set."
+    }
+  ],
+  "internalData": {
+    "enabled": true,
+    "source": "Objeto interno",
+    "object": "Organization",
+    "useToolingApi": false,
+    "query": "SELECT Id, Name, OrganizationType, IsSandbox, InstanceName, DefaultAccountAccess, DefaultContactAccess, DefaultOpportunityAccess, DefaultCaseAccess, DefaultLeadAccess, DefaultCalendarAccess, DefaultPricebookAccess, DefaultCampaignAccess FROM Organization",
+    "expectSingleRecord": true,
+    "blocking": false,
+    "validationPending": "Objeto Organization: confirmar campos no piloto."
+  },
+  "evidence": [
+    "Metadata API SecuritySettings (rede, senha, login, sessão) — developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_securitysettings.htm",
+    "Metadata API Settings — developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_settings.htm",
+    "External OWD — developer.salesforce.com/docs/atlas.en-us.securityImplGuide.meta/securityImplGuide/security_owd_external_setting.htm"
+  ]
+}
