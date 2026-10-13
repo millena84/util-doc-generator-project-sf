@@ -1,4 +1,4 @@
-"""Parsers de arquivos-fonte não XML recuperados junto do metadata (ex.: `.cls`).
+"""Parsers de arquivos-fonte não XML recuperados junto do metadata (ex.: `.cls`, `.trigger`).
 
 Configuração em `metadataTypeSettings.<Tipo>.sourceParser` (config/metadata-types-mvp.json):
 `{"name": "apex", "suffix": ".cls", "key": "apex"}` — o resultado do parser entra no JSON
@@ -8,9 +8,11 @@ normalizado do componente, em `data[<key>]`. O arquivo-fonte (raw) nunca é alte
 from __future__ import annotations
 
 from salesforce_docs.parsing.apex_parser import parse_apex_source
+from salesforce_docs.parsing.apex_trigger_parser import parse_apex_trigger
 
 SOURCE_PARSERS = {
     "apex": parse_apex_source,
+    "apex-trigger": parse_apex_trigger,
 }
 
 

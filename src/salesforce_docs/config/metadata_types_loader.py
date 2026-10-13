@@ -91,6 +91,8 @@ class MetadataTypesConfig:
         self.omit_from_documentation = set(data.get("omitFromDocumentation") or [])
         # Onde cada componente está configurado (perfis, permission sets, filas...): ver accessSources.
         self.access_sources = data.get("accessSources") or {}
+        # Automações por objeto e ordem oficial de execução (documento de Apex Trigger).
+        self.automation_index = data.get("automationIndex") or {}
         if self.access_sources and not isinstance(self.access_sources.get("retrieveTypes"), list):
             raise ConfigError("metadata-types-mvp.json: accessSources.retrieveTypes deve ser uma lista")
         groups = data.get("metadataTypeGroups")

@@ -8,6 +8,7 @@ executado) a tabela fica "Não informado" — nunca "sem acesso".
 from __future__ import annotations
 
 from salesforce_docs.parsing.xml_parser import as_list
+from salesforce_docs.rendering.context import resolve
 
 ACCESS_PLACEHOLDERS = ("origin_type", "origin_name", "access_granted", "access_via")
 SHARING_PLACEHOLDERS = ("sharing_kind", "sharing_name", "shared_to", "sharing_access_level")
@@ -46,6 +47,8 @@ def access_rows(ctx, args):
       ownFields — {campo do XML do próprio componente: tipo de origem} (ex.: ConnectedApp);
       relatedFields — {metadataType, fields} em componente relacionado (ex.: políticas da ECA);
       relatedAccess — {metadataType, accessKey, prefixMatch}: acesso via relacionado (ex.: NC → EC);
+      byPath — [{path, itemField?, accessKey, via}]: acesso a componentes que o próprio
+        componente referencia (ex.: trigger -> objeto e classes chamadas);
       notApplicable — motivo quando o tipo não tem atribuição por perfil/permission set.
     """
     if args.get("notApplicable"):
@@ -79,6 +82,19 @@ def access_rows(ctx, args):
                 via = f"{ra['metadataType']} {rel['fullName']}"
                 if ra.get("prefixMatch"):
                     via += f" (principal {gname.split('-', 1)[1]})"
+                if r.get("via"):
+                    via += f"; {r['via']}"
+                rows.append(_row(r["originType"], r["origin"], r["access"], via))
+    for bp in args.get("byPath") or []:
+        # Acesso a componentes que o próprio componente referencia (ex.: trigger -> objeto e
+        # classes chamadas). bp: {path, itemField?, accessKey, via ("Objeto {name}")}.
+        needs_index = True
+        value, _ = resolve(root, bp["path"])
+        names = [v.get(bp["itemField"]) if isinstance(v, dict) else v
+                 for v in as_list(value)] if bp.get("itemField") else _split(value)
+        for name in [n for n in names if n]:
+            for _gname, r in _lookup(root.access_index, bp["accessKey"], name):
+                via = bp.get("via", "{name}").format(name=name)
                 if r.get("via"):
                     via += f"; {r['via']}"
                 rows.append(_row(r["originType"], r["origin"], r["access"], via))

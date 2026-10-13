@@ -1,0 +1,20 @@
+[
+  {
+    "fullName": "PedidoAuditoriaTrigger",
+    "type": "ApexTrigger",
+    "fileName": "triggers/PedidoAuditoriaTrigger.trigger",
+    "id": "01q000000000000AAA",
+    "namespacePrefix": "",
+    "manageableState": "unmanaged",
+    "lastModifiedDate": "2026-10-01T00:00:00.000Z"
+  },
+  {
+    "fullName": "PedidoTrigger",
+    "type": "ApexTrigger",
+    "fileName": "triggers/PedidoTrigger.trigger",
+    "id": "01q000000000000AAA",
+    "namespacePrefix": "",
+    "manageableState": "unmanaged",
+    "lastModifiedDate": "2026-10-01T00:00:00.000Z"
+  }
+]

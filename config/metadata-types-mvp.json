@@ -28,6 +28,12 @@
       "documentSlug": "apex-class",
       "sourceParser": { "name": "apex", "suffix": ".cls", "key": "apex" }
     },
+    "ApexTrigger": {
+      "folder": "apex-triggers",
+      "contract": "apex-trigger.schema.json",
+      "documentSlug": "apex-trigger",
+      "sourceParser": { "name": "apex-trigger", "suffix": ".trigger", "key": "apex" }
+    },
     "CustomField": { "retrievedWith": "CustomObject" },
     "RecordType": { "retrievedWith": "CustomObject" },
     "ValidationRule": { "retrievedWith": "CustomObject" },
@@ -88,6 +94,31 @@
       "accessLevel": "accessLevel"
     },
     "validationPending": "objectPermissions, PermissionSetGroup.permissionSets, SharingRules.sharedTo e o formato de externalCredentialPrincipal não confirmados nesta adaptação; confirmar no piloto (documentation/piloto-org-real.md)."
+  },
+  "automationIndex": {
+    "notes": "Automações que convivem no mesmo objeto (documento de Apex Trigger). Fonte: XML/código dos componentes processados na execução. Fases na ordem oficial de execução; 'order' null = posição relativa não confirmada nesta adaptação.",
+    "officialReference": "https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_triggers_order_of_execution.htm",
+    "phases": [
+      { "key": "flowBeforeSave", "order": 1, "label": "Flow before-save (antes de salvar)", "orderValueLabel": "triggerOrder", "note": "Entre flows do objeto: triggerOrder 1–1000, depois sem valor, depois 1001–2000; empate pelo nome de API" },
+      { "key": "triggerBefore", "order": 2, "label": "Trigger before (insert/update)", "note": "Sem ordem garantida entre triggers do mesmo objeto e evento" },
+      { "key": "validation", "order": 3, "label": "Regras de validação", "note": "Após as triggers before; só em insert/update" },
+      { "key": "triggerAfter", "order": 4, "label": "Trigger after (insert/update)", "note": "Sem ordem garantida entre triggers do mesmo objeto e evento" },
+      { "key": "flowAfterSave", "order": 5, "label": "Flow after-save (após salvar)", "orderValueLabel": "triggerOrder", "note": "Entre flows do objeto: triggerOrder 1–1000, depois sem valor, depois 1001–2000; empate pelo nome de API" },
+      { "key": "flowBeforeDelete", "order": null, "label": "Flow before-delete (antes de excluir)", "orderValueLabel": "triggerOrder" },
+      { "key": "triggerBeforeDelete", "order": null, "label": "Trigger before delete", "note": "Sem ordem garantida entre triggers do mesmo objeto e evento" },
+      { "key": "triggerAfterDelete", "order": null, "label": "Trigger after delete", "note": "Sem ordem garantida entre triggers do mesmo objeto e evento" },
+      { "key": "triggerAfterUndelete", "order": null, "label": "Trigger after undelete", "note": "Sem ordem garantida entre triggers do mesmo objeto e evento" }
+    ],
+    "sources": [
+      { "metadataType": "Flow", "label": "Record-Triggered Flow", "objectPath": "start.object",
+        "phaseByPath": { "path": "start.triggerType", "map": { "RecordBeforeSave": "flowBeforeSave", "RecordAfterSave": "flowAfterSave", "RecordBeforeDelete": "flowBeforeDelete" } },
+        "eventsPath": "start.recordTriggerType", "statusPath": "status", "orderPath": "triggerOrder" },
+      { "metadataType": "ApexTrigger", "label": "Apex Trigger", "objectPath": "apex.sObject",
+        "phaseByEvent": { "path": "apex.events", "map": { "before insert": "triggerBefore", "before update": "triggerBefore", "after insert": "triggerAfter", "after update": "triggerAfter", "before delete": "triggerBeforeDelete", "after delete": "triggerAfterDelete", "after undelete": "triggerAfterUndelete" } },
+        "eventsPath": "apex.events", "statusPath": "status" },
+      { "metadataType": "ValidationRule", "label": "Regra de validação", "objectPath": "@parent", "phase": "validation", "statusPath": "active" }
+    ],
+    "validationPending": "Flow.triggerOrder e a posição relativa das fases de exclusão (delete/undelete) não confirmados nesta adaptação; confirmar no piloto (documentation/piloto-org-real.md)."
   },
   "metadataTypeGroups": [
     {
@@ -232,6 +263,20 @@
           "documentSuffix": "apex-future"
         }
       ]
+    },
+    {
+      "group": "ApexTrigger",
+      "primaryMetadataType": "ApexTrigger",
+      "relatedMetadataTypes": [],
+      "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+      "referenceDoc": "_sf_utilities/ajudAI/contexto-apex-trigger.md",
+      "usesRunIndex": true,
+      "lookupInventories": ["ApexClass"],
+      "componentFilter": {
+        "excludeRegex": "^[A-Za-z0-9]+__",
+        "notes": "Triggers de pacote gerenciado (ns__Trigger) não têm código-fonte recuperável."
+      },
+      "notes": "Processado depois dos demais grupos: a seção de coexistência mostra Flows, regras de validação e triggers do mesmo objeto processados na execução (automationIndex). lookupInventories lista ApexClass só para conferir se o nome chamado é classe da org."
     },
     {
       "group": "PermissionSet",

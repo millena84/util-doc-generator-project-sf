@@ -138,6 +138,14 @@
       },
       {
         "childXmlNames": [],
+        "directoryName": "triggers",
+        "inFolder": false,
+        "metaFile": true,
+        "suffix": "trigger",
+        "xmlName": "ApexTrigger"
+      },
+      {
+        "childXmlNames": [],
         "directoryName": "profiles",
         "inFolder": false,
         "metaFile": false,

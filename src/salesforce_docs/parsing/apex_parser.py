@@ -328,6 +328,71 @@ def _apexdoc(raw: str) -> str | None:
 
 
 # ---------------------------------------------------------------------------
+# Leituras de configuração e padrões de segurança (classes e triggers)
+# ---------------------------------------------------------------------------
+CUSTOM_SETTING_CALL_RE = re.compile(
+    rf"\b({IDENT}__c)\s*\.\s*(getInstance|getOrgDefaults|getValues|getAll)\s*\(", re.I)
+CUSTOM_METADATA_CALL_RE = re.compile(rf"\b({IDENT}__mdt)\s*\.\s*(getInstance|getAll)\s*\(", re.I)
+SOQL_FROM_MDT_RE = re.compile(rf"\[\s*SELECT\b[^\]]*?\bFROM\s+({IDENT}__mdt)\b", re.I | re.S)
+
+
+def config_reads(code: str, literals):
+    """Leituras de Custom Permission, Custom Setting e Custom Metadata Type no código.
+
+    Só registra a leitura (onde e o quê). Se ela desativa a lógica (bypass) não é inferido.
+    """
+    out, seen = [], set()
+
+    def add(mechanism, component, call, record=None):
+        key = (mechanism, (component or "").lower(), call, (record or "").lower())
+        if key not in seen:
+            seen.add(key)
+            out.append({"mechanism": mechanism, "component": component, "call": call,
+                        "record": record, "dynamic": component is None})
+
+    for args in _calls_named(code, r"\bFeatureManagement\s*\.\s*checkPermission\s*\("):
+        add("Custom Permission", _literal(args[0], literals) if args else None,
+            "FeatureManagement.checkPermission")
+    for m in CUSTOM_SETTING_CALL_RE.finditer(code):
+        open_at = m.end() - 1
+        close = _match_close(code, open_at, "(", ")")
+        args = _split_top(code[open_at + 1:close]) if close > 0 else []
+        add("Custom Setting", m.group(1), f"{m.group(1)}.{m.group(2)}",
+            _literal(args[0], literals) if args and m.group(2).lower() == "getvalues" else None)
+    for m in CUSTOM_METADATA_CALL_RE.finditer(code):
+        open_at = m.end() - 1
+        close = _match_close(code, open_at, "(", ")")
+        args = _split_top(code[open_at + 1:close]) if close > 0 else []
+        add("Custom Metadata Type", m.group(1), f"{m.group(1)}.{m.group(2)}",
+            _literal(args[0], literals) if args else None)
+    for m in SOQL_FROM_MDT_RE.finditer(code):
+        add("Custom Metadata Type", m.group(1), "SOQL")
+    return out
+
+
+SECURITY_PATTERNS = (
+    ("WITH USER_MODE", re.compile(r"\bWITH\s+USER_MODE\b", re.I)),
+    ("WITH SYSTEM_MODE", re.compile(r"\bWITH\s+SYSTEM_MODE\b", re.I)),
+    ("WITH SECURITY_ENFORCED", re.compile(r"\bWITH\s+SECURITY_ENFORCED\b", re.I)),
+    ("AccessLevel.USER_MODE", re.compile(r"\bAccessLevel\s*\.\s*USER_MODE\b", re.I)),
+    ("AccessLevel.SYSTEM_MODE", re.compile(r"\bAccessLevel\s*\.\s*SYSTEM_MODE\b", re.I)),
+    ("Security.stripInaccessible", re.compile(r"\bSecurity\s*\.\s*stripInaccessible\s*\(", re.I)),
+    ("Describe (isAccessible/isCreateable/isUpdateable/isDeletable)",
+     re.compile(r"\.\s*is(?:Accessible|Createable|Updateable|Deletable)\s*\(", re.I)),
+)
+
+
+def security_patterns(code: str):
+    """Controles explícitos de modo de acesso/CRUD/FLS encontrados no código (com contagem)."""
+    out = []
+    for label, rx in SECURITY_PATTERNS:
+        n = len(rx.findall(code))
+        if n:
+            out.append({"pattern": label, "occurrences": n})
+    return out
+
+
+# ---------------------------------------------------------------------------
 # Entrada principal
 # ---------------------------------------------------------------------------
 CLASS_RE = re.compile(rf"\bclass\s+({IDENT})(\s+extends\s+({QUALIFIED}(?:<[^{{]*?>)?))?"
@@ -343,7 +408,8 @@ def parse_apex_source(text: str) -> dict:
         return {"parser": PARSER_ID, "parsed": True, "kind": other.group(1).lower(),
                 "className": other.group(2), "implements": [], "implementsDeclared": [],
                 "methods": [], "futureMethods": [], "asyncInvocations": [],
-                "batch": None, "queueable": None, "schedulable": None}
+                "batch": None, "queueable": None, "schedulable": None,
+                "configReads": [], "securityPatterns": []}
     if not m:
         return {"parser": PARSER_ID, "parsed": False, "error": "declaração de classe não encontrada"}
     head_start = max(code.rfind(";", 0, m.start()), code.rfind("}", 0, m.start())) + 1
@@ -409,6 +475,8 @@ def parse_apex_source(text: str) -> dict:
         "batch": None,
         "queueable": None,
         "schedulable": None,
+        "configReads": config_reads(body, literals),
+        "securityPatterns": security_patterns(body),
     }
     for info in methods:
         fut = next((a for a in info["annotations"] if a["name"].lower() == "future"), None)

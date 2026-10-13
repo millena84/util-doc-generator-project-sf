@@ -84,6 +84,19 @@ bin/sf-docs.sh run --group ApexClass --component <Classe> --non-interactive
 - **`INVALID_FIELD` em `IsValid` ou `LengthWithoutComments`:** relate; o campo sai do contrato `apex-class.schema.json`.
 - **Classe com papel assíncrono:** confira se o subdocumento esperado (`-apex-batch`, `-apex-queueable`, `-apex-scheduler`, `-apex-future`) foi gerado. Classe com papel não detectado: relate a declaração da classe (só a linha `class ... implements ...`, sem o corpo).
 
+## 5b. Apex Trigger (Onda 02)
+
+```bash
+sf data query --target-org dev --json --query "SELECT Id, Name, TableEnumOrId, ApiVersion, Status, IsValid, UsageBeforeInsert, UsageAfterInsert, UsageBeforeUpdate, UsageAfterUpdate, UsageBeforeDelete, UsageAfterDelete, UsageAfterUndelete FROM ApexTrigger WHERE Name = '<Trigger>'"
+bin/sf-docs.sh run --group ApexTrigger --group Flow --group CustomObject --group ApexClass --non-interactive
+```
+
+- **Esperado:** `status: 0` na consulta; no run, `apex-triggers/components/triggers/<Trigger>.trigger` e o documento `doc-<trigger>-apex-trigger.md`.
+- **`INVALID_FIELD` em `TableEnumOrId`, `IsValid` ou `Usage*`:** relate; o campo sai do contrato `apex-trigger.schema.json`.
+- **Coexistência:** compare a seção "Coexistência no objeto e ordem de execução" com o Setup (Object Manager → objeto → Triggers e Flow Trigger Explorer). Flow record-triggered do objeto que não aparece = falha (relate `start.triggerType` e `start.object` do XML). Confirme se `triggerOrder` vem no XML do Flow.
+- **Classes chamadas:** classe chamada que não aparece, ou nome que não é classe e aparece, = falha; relate só a linha da chamada (sem o corpo).
+- **Modo de acesso:** confirme na página *Apex Versioned Behavior Changes* se o user mode padrão da API 67.0 vale para triggers.
+
 ## 6. Acesso e configuração
 
 O ponto mais importante: confirmar se o XML de Profile/PermissionSet traz as permissões **só** dos componentes recuperados no mesmo pedido. O utilitário já recupera tudo junto (passo 6b), mas o resultado precisa ser conferido:

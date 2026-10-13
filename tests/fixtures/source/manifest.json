@@ -273,5 +273,41 @@
       "fullName": "Pedido__c",
       "path": "sharingRules/Pedido__c.sharingRules-meta.xml"
     }
+  ],
+  "ApexClass:PedidoTriggerHandler": [
+    {
+      "type": "ApexClass",
+      "fullName": "PedidoTriggerHandler",
+      "path": "classes/PedidoTriggerHandler.cls"
+    },
+    {
+      "type": "ApexClass",
+      "fullName": "PedidoTriggerHandler",
+      "path": "classes/PedidoTriggerHandler.cls-meta.xml"
+    }
+  ],
+  "ApexTrigger:PedidoTrigger": [
+    {
+      "type": "ApexTrigger",
+      "fullName": "PedidoTrigger",
+      "path": "triggers/PedidoTrigger.trigger"
+    },
+    {
+      "type": "ApexTrigger",
+      "fullName": "PedidoTrigger",
+      "path": "triggers/PedidoTrigger.trigger-meta.xml"
+    }
+  ],
+  "ApexTrigger:PedidoAuditoriaTrigger": [
+    {
+      "type": "ApexTrigger",
+      "fullName": "PedidoAuditoriaTrigger",
+      "path": "triggers/PedidoAuditoriaTrigger.trigger"
+    },
+    {
+      "type": "ApexTrigger",
+      "fullName": "PedidoAuditoriaTrigger",
+      "path": "triggers/PedidoAuditoriaTrigger.trigger-meta.xml"
+    }
   ]
 }

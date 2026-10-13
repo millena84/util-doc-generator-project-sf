@@ -54,6 +54,15 @@
     "lastModifiedDate": "2026-10-01T00:00:00.000Z"
   },
   {
+    "fullName": "PedidoTriggerHandler",
+    "type": "ApexClass",
+    "fileName": "classes/PedidoTriggerHandler.cls",
+    "id": "01p000000000001AAA",
+    "namespacePrefix": "",
+    "manageableState": "unmanaged",
+    "lastModifiedDate": "2026-10-01T00:00:00.000Z"
+  },
+  {
     "fullName": "pkg__ClasseGerenciada",
     "type": "ApexClass",
     "fileName": "classes/pkg__ClasseGerenciada.cls",

@@ -15,7 +15,8 @@ import re
 
 from salesforce_docs import status as st
 from salesforce_docs.parsing import (access_builders, custom_metadata_parser, custom_object_parser,
-                                     external_client_app_parser, flow_parser, generic_builders)
+                                     external_client_app_parser, flow_parser, generic_builders,
+                                     trigger_builders)
 from salesforce_docs.rendering.context import empty_text, format_value, resolve
 
 PLACEHOLDER_RE = re.compile(r"\{\{\s*(\w+)\s*\}\}")
@@ -23,7 +24,7 @@ PLACEHOLDER_RE = re.compile(r"\{\{\s*(\w+)\s*\}\}")
 TABLE_BUILDERS = {}
 BLOCK_BUILDERS = {}
 for _mod in (access_builders, generic_builders, flow_parser, external_client_app_parser,
-             custom_object_parser, custom_metadata_parser):
+             custom_object_parser, custom_metadata_parser, trigger_builders):
     TABLE_BUILDERS.update(_mod.TABLE_BUILDERS)
     BLOCK_BUILDERS.update(_mod.BLOCK_BUILDERS)
 

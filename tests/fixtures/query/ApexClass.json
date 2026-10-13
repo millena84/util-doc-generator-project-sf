@@ -1,6 +1,6 @@
 {
   "done": true,
-  "totalSize": 6,
+  "totalSize": 7,
   "records": [
     {
       "attributes": {
@@ -77,6 +77,19 @@
       "Status": "Active",
       "IsValid": true,
       "LengthWithoutComments": 405,
+      "CreatedDate": "2026-01-01T00:00:00.000+0000",
+      "LastModifiedDate": "2026-10-01T00:00:00.000+0000"
+    },
+    {
+      "attributes": {
+        "type": "ApexClass"
+      },
+      "Id": "01p000000000006AAA",
+      "Name": "PedidoTriggerHandler",
+      "ApiVersion": 67.0,
+      "Status": "Active",
+      "IsValid": true,
+      "LengthWithoutComments": 406,
       "CreatedDate": "2026-01-01T00:00:00.000+0000",
       "LastModifiedDate": "2026-10-01T00:00:00.000+0000"
     }

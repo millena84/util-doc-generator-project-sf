@@ -17,7 +17,7 @@ from salesforce_docs.errors import ConfigError, GlobalFailure, SessionExpiredErr
 from salesforce_docs.extraction import (access_extractor, inventory_extractor, metadata_types_extractor,
                                         schema_extractor)
 from salesforce_docs.extraction.internal_data_extractor import developer_name, extract_internal_data
-from salesforce_docs.pipeline import deviation_handler
+from salesforce_docs.pipeline import deviation_handler, run_index
 from salesforce_docs.pipeline.component_pipeline import ComponentProcessor, normalize_record
 from salesforce_docs.rendering.context import RenderContext
 from salesforce_docs.rendering.markdown_renderer import MarkdownRenderer
@@ -64,6 +64,8 @@ class PipelineContext:
         self.discovered_types = None   # passo 4 (None = listagem não executada)
         self.access_index = None       # passo 6b (None = índice de acesso indisponível)
         self.prefetched = {}           # (tipo, nome) -> arquivos já recuperados no retrieve de acesso
+        self.run_index = None          # automações por objeto e classes processadas (run_index.py)
+        self.class_inventory = None    # nomes de ApexClass da org (lookupInventories); None = não listado
         self.processed_types = set()   # retrieve + normalização com sucesso
         self.contracts = ContractStore(app.contracts_dir, mvp)
         self.templates = None
@@ -709,8 +711,27 @@ class DocumentPipeline:
                     p.log.warn(f"Passo 6: {t} -> {res['status']}: {res.get('error')}")
                 else:
                     p.log.info(f"Passo 6: {t} -> {len(res['components'])} componente(s)")
+        self._lookup_inventories(p, enabled, inventories)
         p.run_state.step("6-list-metadata", st.SUCCESS, f"{len(inventories)} tipo(s)")
         return inventories
+
+    def _lookup_inventories(self, p, enabled, inventories):
+        """Inventários só para conferência (grupo.lookupInventories), ex.: ApexClass para a trigger
+        saber se o nome referenciado é uma classe da org. Não documenta nem recupera componentes."""
+        available = getattr(p, "discovered_types", None) or set()
+        for group_name in enabled:
+            for t in self.mvp.group(group_name).data.get("lookupInventories") or []:
+                if t in inventories or t not in available:
+                    continue
+                type_dir = p.inventory_dir / self.mvp.folder(t)
+                res = inventory_extractor.extract_inventory(p.runner, p.session, t, type_dir, p.errors_dir)
+                if res["status"] in (st.SUCCESS, st.NO_COMPONENTS):
+                    inventories[t] = res["components"]
+                    p.log.info(f"Passo 6: {t} (conferência) -> {len(res['components'])} componente(s)")
+                else:
+                    p.log.warn(f"Passo 6: inventário de conferência {t} falhou: {self.masker(res.get('error'))}")
+        if "ApexClass" in inventories:
+            p.class_inventory = [i["fullName"] for i in inventories["ApexClass"]]
 
     # Passo 6b -----------------------------------------------------------
     def _doc_specs(self, enabled, inventories, effective):
@@ -887,10 +908,15 @@ class DocumentPipeline:
                     p.log.info(f"{unit['unitId']}: SUCCESS em execução anterior, ignorado")
                     continue
                 plan.append((group, types, unit))
+        # Grupos que usam o índice da execução (ex.: ApexTrigger) vão por último: os documentos
+        # deles mostram automações de outros grupos processados antes nesta execução.
+        plan.sort(key=lambda item: bool(item[0].data.get("usesRunIndex")))
         progress = {"planned": len(plan), "completed": 0, "pending": [u["unitId"] for _, _, u in plan]}
         p.run_state.data.update(ignoredByFilter=ignored, notSelected=not_selected, progress=progress)
         p.run_state.save()
         for index, (group, types, unit) in enumerate(plan, start=1):
+            if group.data.get("usesRunIndex") and p.run_index is None:
+                self._prepare_run_index(p, plan, processor)
             entry = {"unitId": unit["unitId"], "group": group.name, "role": "primary",
                      "metadataType": unit["documentType"], "component": unit["fullName"],
                      "status": st.IN_PROGRESS}
@@ -912,6 +938,29 @@ class DocumentPipeline:
             p.run_state.save()
             current_unit["entry"] = None
             self._record_processed(p, processor)
+
+    def _prepare_run_index(self, p, plan, processor):
+        """Processa antes (retrieve + normalização) todas as unidades dos grupos que usam o índice,
+        para que cada documento enxergue as demais (ex.: outras triggers do mesmo objeto), e
+        monta o índice com tudo o que foi processado ou herdado (retomada)."""
+        for group, _types, unit in plan:
+            if not group.data.get("usesRunIndex"):
+                continue
+            try:
+                processor.process(unit["metadataType"], unit["fullName"], unit["inventoryItem"],
+                                  folder_type=unit["documentType"])
+            except SessionExpiredError:
+                raise
+            except Exception as exc:  # a falha reaparece (e é registrada) no processamento da unidade
+                p.log.warn(f"{unit['unitId']}: pré-processamento para o índice falhou: "
+                           f"{self.masker(str(exc))}")
+        records = [r for rec in processor._cache.values() if rec.get("status") == st.SUCCESS
+                   for r in run_index.records_of(rec)]
+        cached = set(processor._cache)
+        carried = [e for e in p.run_state.data.get("components", [])
+                   if e.get("role") == "primary" and (e.get("metadataType"), e.get("component")) not in cached]
+        records.extend(run_index.records_from_entries(carried, self.root))
+        p.run_index = run_index.build_run_index(records, self.mvp.automation_index, p.class_inventory)
 
     def _metrics(self):
         """Chamadas e duração por tipo de comando e por metadata type (CLI)."""
@@ -1058,6 +1107,7 @@ class DocumentPipeline:
                             developer_name=developer_name(unit["fullName"], primary.get("namespacePrefix")))
         ctx.unresolved_related = set(unresolved_types)
         ctx.access_index = p.access_index
+        ctx.run_index = p.run_index
         result = self.renderer.render(template, contract, ctx)
         if not result.ok:
             p.log.error(f"{unit['unitId']}: documento inválido: {result.errors}")
@@ -1134,6 +1184,14 @@ class DocumentPipeline:
                         "template": p.templates.resolve_name(contract["template"])})
         return out
 
+    def _regenerate_class_inventory(self, p):
+        """Inventário de ApexClass da execução de origem (raw), se foi listado."""
+        type_dir = p.inventory_dir / self.mvp.folder("ApexClass")
+        if not (type_dir / "inventory.raw.json").is_file():
+            return None
+        index = inventory_extractor.regenerate_inventory_index("ApexClass", type_dir)
+        return [c["fullName"] for c in index["components"]]
+
     # ==================================================================
     def regenerate(self, run_id="latest"):
         """Regera derivados e documentos SOMENTE a partir dos raws/XMLs (sem org)."""
@@ -1161,6 +1219,7 @@ class DocumentPipeline:
         units = {}
         for c in source.data["components"]:
             units.setdefault(c.get("unitId"), []).append(c)
+        prepared = []
         for unit_id, entries in units.items():
             primary_entry = next((e for e in entries if e.get("role") == "primary"), None)
             if not primary_entry or not primary_entry.get("xml"):
@@ -1193,6 +1252,14 @@ class DocumentPipeline:
                 rec["role"] = "related"
                 normalize_record(p, rec)
                 related.append(deviation_handler._related_from_record(rec))
+            prepared.append((unit_id, group, primary_entry, primary, related))
+        # Índice da execução só depois de normalizar tudo: um documento pode mostrar outros
+        # componentes (ex.: automações no mesmo objeto da trigger).
+        if any(g.data.get("usesRunIndex") for _, g, _, _, _ in prepared):
+            p.class_inventory = self._regenerate_class_inventory(p)
+            records = [r for _, _, _, prim, _ in prepared for r in run_index.records_of(prim)]
+            p.run_index = run_index.build_run_index(records, self.mvp.automation_index, p.class_inventory)
+        for unit_id, group, primary_entry, primary, related in prepared:
             internal = {"status": None, "records": None, "raw": None}
             if primary_entry.get("internalData") and (self.root / primary_entry["internalData"]).is_file():
                 raw = read_json(self.root / primary_entry["internalData"])

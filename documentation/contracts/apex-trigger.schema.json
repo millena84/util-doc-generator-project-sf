@@ -1,0 +1,180 @@
+{
+  "metadataType": "ApexTrigger",
+  "apiVersion": "67.0",
+  "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+  "xmlFilePattern": "**/*.trigger-meta.xml",
+  "codeFilePattern": "**/*.trigger",
+  "template": "modelo-doc-apex-trigger-vapi-{apiMajor}.md",
+  "titlePath": "@fullName",
+  "referenceDoc": "_sf_utilities/ajudAI/contexto-apex-trigger.md",
+  "classification": "Documento de toda trigger Apex: eventos, variáveis de contexto, classes chamadas, leituras de configuração, coexistência com outras automações do objeto e acesso.",
+  "properties": [
+    {
+      "name": "TriggerName",
+      "placeholder": "trigger_name",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação",
+      "notes": "fullName da trigger (nome do arquivo recuperado)."
+    },
+    {
+      "name": "Objeto",
+      "placeholder": "trigger_sobject",
+      "path": "apex.sObject",
+      "source": "Código Apex",
+      "required": true,
+      "markdownSection": "Identificação",
+      "notes": "Objeto da declaração `trigger X on <Objeto>`; o .trigger-meta.xml não traz o objeto."
+    },
+    {
+      "name": "ApiVersion",
+      "placeholder": "api_version",
+      "path": "apiVersion",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Status",
+      "placeholder": "status",
+      "path": "status",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação",
+      "notes": "Active/Inactive/Deleted (ApexCodeUnitStatus)."
+    },
+    {
+      "name": "Description",
+      "placeholder": "description",
+      "path": "apex.description",
+      "source": "Código Apex",
+      "required": false,
+      "markdownSection": "Identificação",
+      "notes": "Texto do bloco ApexDoc (/** */) imediatamente acima da declaração."
+    }
+  ],
+  "tables": [
+    {
+      "markdownSection": "Eventos",
+      "builder": "path_rows",
+      "source": "Código Apex",
+      "args": {
+        "path": "apex.eventRows",
+        "columns": {
+          "trigger_event": "event",
+          "event_timing": "timing",
+          "event_operation": "operation"
+        }
+      },
+      "emptyValue": "Não informado"
+    },
+    {
+      "markdownSection": "Variáveis de contexto usadas",
+      "builder": "list_values",
+      "source": "Código Apex",
+      "args": {
+        "path": "apex.contextVariables",
+        "valuePlaceholder": "context_variable"
+      },
+      "emptyValue": "Não aplicável"
+    },
+    {
+      "markdownSection": "Classes chamadas pela trigger",
+      "builder": "referenced_class_rows",
+      "source": "Código Apex",
+      "args": {
+        "path": "apex.referencedClasses"
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Referências textuais (`new X(`, `X.metodo(`, variável local do tipo X). Nome fora do inventário de ApexClass (sObject, classe de sistema) é descartado; sem inventário: 'Não verificado'."
+    },
+    {
+      "markdownSection": "Leituras de configuração",
+      "builder": "code_fact_rows",
+      "source": "Código Apex",
+      "args": {
+        "path": "apex.configReads",
+        "classKey": "configReads",
+        "classesPath": "apex.referencedClasses",
+        "locationPlaceholder": "read_location",
+        "columns": {
+          "read_mechanism": "mechanism",
+          "read_component": "component",
+          "read_call": "call",
+          "read_record": "record"
+        }
+      },
+      "emptyValue": "Não informado",
+      "notes": "Custom Permission (FeatureManagement.checkPermission), Custom Setting (getInstance/getOrgDefaults/getValues/getAll) e Custom Metadata Type (getInstance/getAll/SOQL) lidos na trigger e nas classes chamadas processadas na execução. Se a leitura desativa a lógica (bypass) não é inferido."
+    },
+    {
+      "markdownSection": "Controles de segurança",
+      "builder": "code_fact_rows",
+      "source": "Código Apex",
+      "args": {
+        "path": "apex.securityPatterns",
+        "classKey": "securityPatterns",
+        "classesPath": "apex.referencedClasses",
+        "locationPlaceholder": "security_location",
+        "columns": {
+          "security_pattern": "pattern",
+          "security_occurrences": "occurrences"
+        }
+      },
+      "emptyValue": "Não informado",
+      "notes": "WITH USER_MODE/SYSTEM_MODE/SECURITY_ENFORCED, AccessLevel, Security.stripInaccessible e describe isAccessible/isCreateable/isUpdateable/isDeletable na trigger e nas classes chamadas processadas. O modo de acesso padrão depende da apiVersion (ver referência)."
+    },
+    {
+      "markdownSection": "Coexistência no objeto e ordem de execução",
+      "builder": "automation_rows",
+      "source": "Derivado",
+      "args": {
+        "objectPath": "apex.sObject",
+        "metadataType": "ApexTrigger"
+      },
+      "emptyValue": "Não informado",
+      "notes": "Flows record-triggered, regras de validação e triggers do mesmo objeto processados na execução (automationIndex), na ordem oficial de execução."
+    },
+    {
+      "markdownSection": "Dados internos",
+      "builder": "internal_record_properties",
+      "source": "Objeto interno",
+      "args": {
+        "keyPlaceholder": "internal_property",
+        "valuePlaceholder": "internal_value"
+      },
+      "emptyValue": "Não informado"
+    },
+    {
+      "markdownSection": "Acesso e configuração",
+      "builder": "access_rows",
+      "source": "XML",
+      "args": {
+        "byPath": [
+          { "path": "apex.sObject", "accessKey": "CustomObject", "via": "Objeto {name}" },
+          { "path": "apex.referencedClasses", "itemField": "className", "accessKey": "ApexClass", "via": "Classe chamada {name}" }
+        ]
+      },
+      "emptyValue": "Não informado",
+      "notes": "Trigger não tem acesso próprio por perfil/permission set: dispara na DML do objeto. Lista quem tem acesso ao objeto e às classes chamadas (XML, accessSources, passo 6b)."
+    }
+  ],
+  "internalData": {
+    "enabled": true,
+    "source": "Objeto interno",
+    "object": "ApexTrigger",
+    "useToolingApi": false,
+    "query": "SELECT Id, Name, TableEnumOrId, ApiVersion, Status, IsValid, UsageBeforeInsert, UsageAfterInsert, UsageBeforeUpdate, UsageAfterUpdate, UsageBeforeDelete, UsageAfterDelete, UsageAfterUndelete, CreatedDate, LastModifiedDate FROM ApexTrigger WHERE Name = '{developerName}'",
+    "expectSingleRecord": true,
+    "blocking": false,
+    "validationPending": "Objeto ApexTrigger (Object Reference): campos TableEnumOrId, IsValid e Usage* não confirmados na documentação oficial nesta adaptação; confirmar no piloto."
+  },
+  "evidence": [
+    "Metadata API ApexTrigger: apiVersion, packageVersions, status — developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_triggers.htm",
+    "Ordem de execução: flows before-save antes das triggers before; regras de validação depois; triggers after; flows after-save — developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_triggers_order_of_execution.htm",
+    "Sem ordem garantida entre triggers do mesmo objeto e evento — help.salesforce.com/s/articleView?id=000005694",
+    "Ordem entre record-triggered flows (triggerOrder 1–2000) — help.salesforce.com/s/articleView?id=sf.flow_task_trigger_run_order.htm",
+    "Modo de acesso padrão do Apex muda na API 67.0 (user mode) — developer.salesforce.com/docs/atlas.en-us.apexref.meta/apexref/versioned_behavior_changes.htm"
+  ]
+}

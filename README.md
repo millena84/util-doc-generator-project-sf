@@ -134,6 +134,7 @@ Registro da auditoria de segurança de 2026-10-11 (10 riscos: 1 crítico, 2 alto
 | ExternalCredential, ConnectedApp, RemoteSiteSetting, Certificate | `ONE_DOCUMENT_PER_COMPONENT` | — (Certificate: só o `.crt-meta.xml` é lido; o `.crt` fica só como raw) |
 | PermissionSet | `ONE_DOCUMENT_PER_COMPONENT` | — (XML do retrieve de acesso, passo 6b) |
 | ApexClass | `ONE_DOCUMENT_PER_COMPONENT` + subdocumentos por papel | — (o `.cls` é lido pelo parser estrutural configurado em `sourceParser`; classes de pacote gerenciado `ns__*` são excluídas por `componentFilter`) |
+| ApexTrigger | `ONE_DOCUMENT_PER_COMPONENT` | — (o `.trigger` é lido pelo parser `apex-trigger`; grupo com `usesRunIndex`: processado por último, mostra Flows, regras de validação e triggers do mesmo objeto; `lookupInventories` lista ApexClass só para conferência) |
 
 Cada componente (principal ou relacionado) é extraído e normalizado de forma independente; a agregação acontece apenas no documento.
 
@@ -214,6 +215,17 @@ Adaptação de `_sf_utilities/ajudAI/contexto-apex.md` (ver a matriz em `documen
 - **Conteúdo genérico** (limites de governança, exemplos de invocação, monitoramento, boas práticas) não entra nos documentos por classe: está em [`documentation/referencia-apex-assincrono.md`](documentation/referencia-apex-assincrono.md), com links oficiais e o que ainda está a confirmar.
 - **Próximas entregas**: índice entre classes ("invocado por", tamanho de lote e cron usados por outras classes) e dados internos de execução/agendamento (`AsyncApexJob`, `CronTrigger`) após o piloto.
 
+## Apex Trigger — Onda 02
+
+Adaptação de `_sf_utilities/ajudAI/contexto-apex-trigger.md` (ver a matriz em `documentation/refatoracao-1-matriz-ajudai.md`).
+
+- **Documento por trigger** (`modelo-doc-apex-trigger`): `apiVersion`/`status` do `.trigger-meta.xml` (fonte `XML`); objeto, eventos, variáveis de contexto `Trigger.*` usadas, classes chamadas, leituras de configuração e controles de segurança (fonte `Código Apex`); coexistência no objeto (fonte `Derivado`); dados internos do objeto `ApexTrigger` (`validationPending`); acesso via objeto e classes chamadas (fonte `XML`).
+- **Parser** (`src/salesforce_docs/parsing/apex_trigger_parser.py`): mesmas regras do parser de classes (raw não alterado, comentários e strings neutralizados, corpo nunca renderizado). Classe chamada = `new X(`, `X.metodo(` ou variável local `X v`; o nome só é mantido se estiver no inventário de ApexClass (descarta sObjects e classes de sistema). Sem inventário, a linha fica "Não verificado".
+- **Leituras de configuração** (trigger e classes chamadas): `FeatureManagement.checkPermission` (Custom Permission), `X__c.getInstance/getOrgDefaults/getValues/getAll` (Custom Setting) e `X__mdt.getInstance/getAll` ou SOQL em `__mdt` (Custom Metadata Type). O documento mostra a leitura; **não infere** que ela é um bypass. O parser de classes passou a registrar o mesmo (`configReads`, `securityPatterns`).
+- **Coexistência e ordem de execução** (`automationIndex` em `config/metadata-types-mvp.json`): fases na ordem oficial (*Triggers and Order of Execution*): flow before-save → trigger before → regras de validação → trigger after → flow after-save. Fases de exclusão ficam com ordem "Não confirmado". Fontes: Flow (`start.object`, `start.triggerType`, `start.recordTriggerType`, `triggerOrder`), ApexTrigger (objeto e eventos do código) e ValidationRule (`active`). Só entram componentes processados na execução (ou herdados na retomada); a regeneração monta o índice depois de normalizar todas as unidades.
+- **Acesso**: trigger não tem acesso próprio por perfil/permission set. A seção lista quem tem acesso ao objeto (`objectPermissions`) e às classes chamadas (`classAccesses`), com a via.
+- **Conteúdo genérico** (variáveis de contexto, boas práticas, modo de execução por API version): [`documentation/referencia-apex-trigger.md`](documentation/referencia-apex-trigger.md).
+
 ## Refatoração 1 — modelos adaptados das referências `ajudAI`
 
 A matriz de rastreabilidade, as divergências entre `ajudAI`, o utilitário e a documentação Salesforce, as decisões aplicadas e as pendências estão em [`documentation/refatoracao-1-matriz-ajudai.md`](documentation/refatoracao-1-matriz-ajudai.md). Cada contrato registra `referenceDoc`, `evidence` e o que ficou `notSupported`/`pendingVerification`.
@@ -253,11 +265,11 @@ Os testes usam uma Salesforce CLI **simulada** (`tests/fixtures/bin/sf`) e respo
 ### Simulação de todas as documentações do MVP
 
 ```bash
-python3 -m unittest tests.test_mvp_simulation        # verifica os 18 modelos e os 19 metadata types
+python3 -m unittest tests.test_mvp_simulation        # verifica os 19 modelos e os 20 metadata types
 python3 -m tests.simulate_mvp --out /tmp/sim-mvp     # executa e gera o relatório passo a passo
 ```
 
-O cenário `mvp_complete` da CLI simulada sobrepõe `tests/fixtures/mvp-complete/` às fixtures base, de modo que todo metadata type do MVP tenha ao menos um componente. O relatório versionado em `documentation/simulacao/relatorio-simulacao-mvp.md` mostra, para essa simulação, a saída no terminal, os comandos por passo, a situação de cada tipo, a árvore de arquivos e o conteúdo dos 30 documentos gerados.
+O cenário `mvp_complete` da CLI simulada sobrepõe `tests/fixtures/mvp-complete/` às fixtures base, de modo que todo metadata type do MVP tenha ao menos um componente. O relatório versionado em `documentation/simulacao/relatorio-simulacao-mvp.md` mostra, para essa simulação, a saída no terminal, os comandos por passo, a situação de cada tipo, a árvore de arquivos e o conteúdo dos 33 documentos gerados.
 
 | Grupo | Documento(s) / modelo | Tipos que aparecem dentro do documento |
 |---|---|---|
@@ -272,6 +284,7 @@ O cenário `mvp_complete` da CLI simulada sobrepõe `tests/fixtures/mvp-complete
 | CustomMetadata | `modelo-doc-custom-metadata` | campos e records do tipo `__mdt` |
 | PermissionSet | `modelo-doc-permission-set` | grupos que incluem o permission set |
 | ApexClass | `modelo-doc-apex-class` + subdocumentos `modelo-doc-apex-batch`, `modelo-doc-apex-queueable`, `modelo-doc-apex-scheduler` e `modelo-doc-apex-future` (um por método) | — |
+| ApexTrigger | `modelo-doc-apex-trigger` | Flows record-triggered, regras de validação e outras triggers do mesmo objeto (coexistência) |
 
 ## Estrutura
 
