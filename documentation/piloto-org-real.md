@@ -1,65 +1,397 @@
-# Roteiro de piloto com org real
+# Primeiro teste do MVP em org real (roteiro do piloto)
 
-Os testes automatizados usam uma Salesforce CLI **simulada**. Este roteiro confirma, numa org real, as premissas que o código ainda não pôde validar. Cada item indica o que rodar, o que se espera e o que muda no utilitário conforme o resultado.
+Os testes automatizados usam uma Salesforce CLI **simulada**: provam o pipeline, não a org. Este roteiro conduz o **primeiro teste numa org real**, em fases curtas. Cada fase tem um critério de passagem. Ele responde a três perguntas:
 
-> **Segurança:** nenhum comando abaixo imprime o access token. Não cole tokens, senhas ou o conteúdo de `inventory/**/components/` ao relatar resultados. Use uma org de desenvolvimento ou sandbox aprovada em `approvedOrgs`.
+1. O utilitário roda de ponta a ponta na org e produz documentos utilizáveis?
+2. As premissas marcadas *a confirmar* (nomes de elemento, consultas, formatos da CLI) valem na org?
+3. Nada que não deveria (token, segredo, usuário, e-mail, dado de exemplo) aparece nos documentos?
 
-Substitua `dev` pelo alias da org e `<Nome>` pelo nome de API de um componente real.
+> ⚠️ **Somente org não produtiva.** Por ora **não é permitido login em produção**, e o MVP precisa de login em todos os passos de coleta. O cenário produtivo (projeto do clone do repositório Flosum mais dados internos exportados pelo Salesforce Inspector) **ainda não é suportado**; o plano está em [`como-testar-o-mvp.md`](como-testar-o-mvp.md), seção 3.
 
-## 1. Token pelo comando novo da CLI (DA-14)
+> **Segurança:** use uma org de desenvolvimento ou sandbox com autorização do responsável. Nenhum comando abaixo imprime o access token. Ao relatar, **não cole** tokens, senhas, `consumerSecret`, o conteúdo de `inventory/**/components/`, usuários, e-mails, `propertySetConfig` nem dados de registros.
 
-Confirma o formato de `sf org auth show-access-token --json` mostrando só a **estrutura** da resposta:
+Convenções: troque `dev` pelo alias da org e `<Nome>` pelo nome de API de um componente real. Os comandos rodam na raiz do utilitário. Os caminhos de saída usam `inventory/org-<alias>/api-v<N>/`; ajuste e defina uma vez por sessão:
 
 ```bash
-sf org auth show-access-token --target-org dev --json | python3 -c "import json,sys; d=json.load(sys.stdin); r=d.get('result'); print('status:', d.get('status'), '| result:', type(r).__name__, sorted(r) if isinstance(r, dict) else '(texto)')"
+INV=inventory/org-dev/api-v67
 ```
 
-- **Esperado:** `status: 0 | result: dict ['accessToken', ...]` ou `result: str (texto)`. O utilitário aceita os dois.
-- **Se for diferente:** a execução para com `ACCESS_TOKEN_UNAVAILABLE`. Relate a lista de chaves para ajustar `_acquire_token`.
+## Escopo do MVP
 
-## 2. `connectedStatus` por tipo de autenticação (DA-10)
+O que está configurado em `config/metadata-types-mvp.json`: 37 grupos e 46 modelos. Os grupos de **Profile, PermissionSet, PermissionSetGroup, SharingRules e Queue** usam o XML do retrieve de acesso (passo 6b). **SecuritySettings** e **LeadConvertSettings** são componentes fixos, sem listagem.
+
+| Fase do roteiro | Grupos | Origem |
+|---|---|---|
+| C0 — base | Flow, ExternalClientApp, ExternalCredential, ConnectedApp, CustomObject, CustomMetadata, NamedCredential, RemoteSiteSetting, Certificate | MVP original |
+| C1 | ApexClass | Onda 01 |
+| C2 | ApexTrigger | Onda 02 |
+| C3 | LightningComponentBundle | Onda 03 |
+| C4 | FlexiPage | Onda 04 |
+| C5 | OrgSecurity, Profile, PermissionSet, PermissionSetGroup, SharingRules, Role, PublicGroup | Onda 05 |
+| C6 | PlatformEvent, ChangeDataCapture | Onda 06 |
+| C7 | AssignmentRules, AutoResponseRules, EscalationRules, Queue | Onda 07 |
+| C8 | BusinessProcess, LeadConvertSettings, Territory2Model, OpportunitySplitType | Onda 08 |
+| C9 | Network, CustomSite, ExperienceBundle | Onda 09 |
+| C10 | OmniDataTransform, OmniIntegrationProcedure, OmniScript, OmniUiCard | Onda 10 |
+
+Tipos da org sem grupo configurado **não** são documentados. O `resumo.md` lista esses tipos em "Descobertos e não configurados".
+
+## 0. Antes de começar
+
+- [ ] Autorização escrita do responsável pela org e pelos dados; org de desenvolvimento ou sandbox.
+- [ ] Commit aprovado do utilitário (registre o hash: `git rev-parse --short HEAD`).
+- [ ] Python ≥ 3.8 e Salesforce CLI ≥ 2.0.0 (registre `python3 --version` e `sf --version`).
+- [ ] Usuário da org com *View Setup and Configuration* e permissão de retrieve (Modify Metadata ou equivalente aprovado). Registre o perfil usado.
+- [ ] Pasta de trabalho em armazenamento aprovado e com acesso restrito. `catalog/`, `inventory/`, `runs/` e `saida/` nunca vão para o Git nem para artifacts (ver `protecao-de-dados.md`).
+- [ ] Combinado quem revisa os documentos e quando os dados locais serão removidos (seção 10).
+- [ ] Componentes do piloto escolhidos por fase (nomes de API), anotados antes de começar.
+
+### Escopo de cada execução: `--component` sempre
+
+Durante todo o piloto, mantenha `selection.mode = "ALL"` (padrão) e **informe `--component` em todo `run`** das fases A a C:
+
+- Com `--component`, o retrieve de acesso (passo 6b) e o retrieve por componente pedem só `Tipo:Nome` dos componentes informados (minimização de dados; correção ADD-01). Sem `--component`, o `ALL` recupera o tipo inteiro (todo o código Apex, todos os Flows...).
+- `--component` vale para todos os `--group` do mesmo comando: um nome que não pertence a um grupo é ignorado nele. Componentes fixos também precisam ser informados: `Security` (OrgSecurity) e `LeadConvertSettings`.
+- **Confira na lista "Documentados" do `resumo.md`** se todos os componentes pedidos aparecem. No `ALL`, um nome digitado errado não gera aviso de "não encontrado".
+- Relações comprovadas lendo o XML de candidatos ainda recuperam esses candidatos: os record types do objeto (BusinessProcess), as Networks (CustomSite) e os candidatos da External Client App. O resultado aparece no documento.
+- **Não use `selection.mode = SELECTED` no piloto:** a seleção é feita por metadata type e `CustomObject` é o tipo principal de dois grupos (CustomObject e PlatformEvent). Com `SELECTED`, o grupo PlatformEvent (fase C6) não é selecionável (achado ADD-09, pendente).
+
+## 1. Validação sem org
+
+```bash
+bin/sf-docs.sh validate-config --strict
+python3 -m unittest discover -s tests -t .
+```
+
+**Passa se:** "Configuração válida." e todos os testes `OK`. Qualquer falha aqui encerra o piloto: o problema é do utilitário, não da org.
+
+## 2. Conectar e aprovar a org
+
+```bash
+sf org login web --alias dev
+```
+
+**2.1 `connectedStatus` (DA-10).** Repita para cada forma de login usada (web, JWT, scratch org):
 
 ```bash
 sf org display --target-org dev --json | python3 -c "import json,sys; r=json.load(sys.stdin)['result']; print(r.get('connectedStatus'), '| chaves:', sorted(r))"
 ```
 
-- **Esperado:** `Connected`. Repita para cada forma de login usada (web, JWT, scratch org).
-- **Se vier outro valor ou nada:** o passo 3 para com `ORG_DISPLAY_INCOMPLETE`/`ORG_NOT_CONNECTED`. Relate o valor para ampliar a regra.
+- **Esperado:** `Connected`. Outro valor ou ausência faz a execução parar com `ORG_DISPLAY_INCOMPLETE`/`ORG_NOT_CONNECTED`. Relate o valor.
 
-## 3. Dados internos (`validationPending` nos contratos)
+**2.2 Formato do comando de token (DA-14).** Mostra só a **estrutura** da resposta:
 
-Para cada consulta, rode com um componente real e anote: funcionou? quantos registros? Execute só as consultas dos tipos existentes na org.
+```bash
+sf org auth show-access-token --target-org dev --json | python3 -c "import json,sys; d=json.load(sys.stdin); r=d.get('result'); print('status:', d.get('status'), '| result:', type(r).__name__, sorted(r) if isinstance(r, dict) else '(texto)')"
+```
 
-| Contrato | Comando |
+- **Esperado:** `status: 0 | result: dict ['accessToken', ...]` ou `result: str (texto)`; o utilitário aceita os dois. Outra estrutura: relate a lista de chaves.
+
+**2.3 Aprovar a org.** A primeira execução para em `ORG_NOT_APPROVED` antes de qualquer inventário ou retrieve, e mostra `orgId`, alias, usuário e instance URL:
+
+```bash
+bin/sf-docs.sh run --group RemoteSiteSetting --component <Site> --non-interactive
+```
+
+Confira se é a org pretendida e registre-a em `config/config.json`:
+
+```json
+"approvedOrgs": [ { "orgId": "00D...", "alias": "dev", "note": "piloto MVP - sandbox X" } ]
+```
+
+**Passa se:** a org aparece corretamente e, depois do registro, a execução segue.
+
+## 3. Fase A — execução mínima
+
+Um grupo pequeno, sem relacionados nem dados internos, para provar o caminho principal (inventário, retrieve, normalização, retrieve de acesso, Markdown):
+
+```bash
+bin/sf-docs.sh run --group RemoteSiteSetting --component <Site> --non-interactive
+```
+
+Abra `runs/<runId>/resumo.md` (o `runId` aparece no fim do log) e confira:
+
+- [ ] **Status** `SUCCESS` ou `PARTIAL_SUCCESS` com motivo claro; **Cobertura** e "Com falha (0)".
+- [ ] **Org-alvo** e **Aprovação** corretas; "Token obtido via" diz que o token nunca é persistido.
+- [ ] Documento em `saida/docs/doc-dev-MMDDAA/` com toda linha de tabela terminando numa fonte (`XML`, `Objeto interno`...).
+- [ ] Raws gravados: `$INV/remote-site-settings/inventory.raw.json` e `retrieve/*.raw.json`.
+- [ ] Revisão de proteção de dados da seção 7 sem achados.
+
+Para ver o que o retrieve trouxe sem abrir os XMLs (vale para qualquer fase; troque a pasta e o arquivo):
+
+```bash
+python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print(sorted((f['type'], f['fullName'], f['filePath'].split('/main/default/',1)[-1]) for f in d['result'].get('files', [])))" $INV/remote-site-settings/retrieve/<nome>.raw.json
+```
+
+**Passa se:** todos os itens acima estão OK. Sem a Fase A, não siga.
+
+## 4. Fase B — acesso e configuração (passo 6b)
+
+É a premissa de maior impacto: toda seção "Acesso e configuração" depende de o XML de Profile e PermissionSet trazer as permissões **dos componentes recuperados no mesmo pedido**.
+
+```bash
+bin/sf-docs.sh run --group ApexClass --component <Classe> --non-interactive
+```
+
+- [ ] `$INV/access/components/profiles/*.profile-meta.xml` contém `<classAccesses>` da classe.
+- [ ] O documento da classe termina com "Acesso e configuração" listando os perfis e permission sets que liberam a classe no Setup. **Compare com o Setup** (perfil → Acesso a classes Apex). Perfil que libera e não aparece = falha. Relate o perfil e só o trecho `<classAccesses>`.
+- [ ] Elementos não vazios quando deveriam ter valor: `objectPermissions`, `fieldPermissions`, `recordTypeVisibilities`, `customPermissions` (`name`/`enabled`), `userPermissions`, `PermissionSetGroup.permissionSets`, `SharingRules.sharedTo` e o formato de `externalCredentialPrincipal` (`<ExternalCredential>-<Principal>`).
+- [ ] **Volume:** anote o tempo do passo 6b no log e o tamanho de `$INV/access/` (`du -sh`). O retrieve de acesso traz **todos** os Profile, PermissionSet, PermissionSetGroup, Queue, SharingRules, CustomApplication e PlatformEventSubscriberConfig da org a cada execução, mais só os componentes informados em `--component`. Confira na primeira linha `project retrieve start` do log que a classe aparece como `ApexClass:<Classe>`, e não como `ApexClass` (tipo inteiro).
+
+**Passa se:** as concessões batem com o Setup para a classe escolhida.
+
+## 5. Fase C — confirmação por grupo
+
+Rode uma fase por vez, sempre com `--component` (seção 0), e só avance quando a anterior passar. Os comandos abaixo mostram os grupos da fase; troque os `<...>` pelos componentes escolhidos. Em cada fase:
+
+- **Rodar:** o comando indicado.
+- **Conferir:** o documento contra o Setup e o `resumo.md`: "Com falha", "Dados internos indisponíveis" e "Relacionados não verificados".
+- **Confirmar premissas:** os itens *a confirmar*. Se uma consulta de dados interno falhar, o Apêndice A tem a consulta para repetir à mão.
+- **Classificar:** OK, falha do utilitário (relatar) ou premissa errada (relatar o nome/formato real).
+
+### C0 — Tipos da base do MVP
+
+```bash
+bin/sf-docs.sh run --group Flow --group CustomObject --group CustomMetadata --component <Flow> --component <Objeto__c> --component <Tipo__mdt> --non-interactive
+bin/sf-docs.sh run --group ExternalClientApp --group ExternalCredential --group NamedCredential --group ConnectedApp --group Certificate --component <ECA> --component <EC> --component <NC> --component <App> --component <Certificado> --non-interactive
+```
+
+- **Flow:** versões e status batem com o Setup; o `FlowDefinition` relacionado aparece.
+- **Objeto e CMDT:** campos, record types e regras de validação do objeto. Componentes de pacote (`ns__`) são excluídos por `componentFilter`; confira o "Ignorados por componentFilter" no resumo.
+- **Integrações:** nenhum segredo (`consumerSecret`, chave privada, certificado, `parameterValue`) aparece; os avisos "elementos sensíveis... omitidos do Markdown" no log são esperados.
+- **Connected App (DA-13):** veja o Apêndice C.
+- **Namespace (DA-05):** veja o Apêndice B.
+
+### C1 — Apex (Onda 01)
+
+```bash
+bin/sf-docs.sh run --group ApexClass --component <Classe> --component <ClasseBatch> --non-interactive
+```
+
+- `$INV/apex-classes/components/classes/` tem `<Classe>.cls` e `.cls-meta.xml`; o documento traz interfaces e métodos.
+- **Papéis assíncronos:** o subdocumento esperado foi gerado (`-apex-batch`, `-apex-queueable`, `-apex-scheduler`, `-apex-future`). Papel não detectado: relate só a linha `class ... implements ...`.
+- **Consulta:** `IsValid` e `LengthWithoutComments` existem em `ApexClass`? (`INVALID_FIELD` = o campo sai do contrato.)
+
+### C2 — Apex Trigger (Onda 02)
+
+```bash
+bin/sf-docs.sh run --group ApexTrigger --group Flow --group CustomObject --group ApexClass --component <Trigger> --component <Objeto__c> --component <FlowDoObjeto> --component <ClasseHandler> --non-interactive
+```
+
+- **Escopo:** a coexistência só mostra o que foi processado. Informe a trigger, o objeto, os Flows record-triggered do objeto e as classes chamadas; Flow não informado não aparece (o documento avisa).
+- **Coexistência:** compare "Coexistência no objeto e ordem de execução" com o Object Manager (Triggers) e o Flow Trigger Explorer. Flow record-triggered ausente = falha (relate `start.triggerType` e `start.object`). `triggerOrder` vem no XML do Flow?
+- **Classes chamadas:** classe ausente, ou nome que não é classe e aparece = falha; relate só a linha da chamada.
+- **Consulta:** `TableEnumOrId`, `IsValid` e `Usage*` existem em `ApexTrigger`?
+- **Modo de acesso:** confirme na página *Apex Versioned Behavior Changes* se o user mode padrão da API 67.0 vale para triggers.
+
+### C3 — Lightning Web Components (Onda 03)
+
+```bash
+bin/sf-docs.sh run --group LightningComponentBundle --group ApexClass --component <componente> --non-interactive
+```
+
+- `$INV/lwc/components/lwc/<componente>/` tem `.js`, `.html` e `.js-meta.xml`; todos os arquivos do bundle vêm com o `fullName` do componente no raw do retrieve?
+- Targets e `targetConfigs` iguais ao `.js-meta.xml`; métodos Apex chamados e a verificação `@AuraEnabled`.
+- A permissão importada aparece em perfil/permission set no formato `<customPermissions><enabled>`/`<name>`?
+
+### C4 — Páginas Lightning (Onda 04)
+
+```bash
+bin/sf-docs.sh run --group FlexiPage --group CustomObject --group LightningComponentBundle --component <Pagina> --component <Objeto__c> --component <componente> --non-interactive
+```
+
+- Regiões e componentes iguais ao Lightning App Builder.
+- **Ativação:** compare "Acesso e configuração" com o botão *Activation*. Confira no XML do app (`$INV/access/components/applications/`) o formato de `profileActionOverrides` (`profile`, `recordType`, `formFactor`) e, no objeto, `actionOverrides` de View com `type` Flexipage.
+- **Visibilidade:** relate o formato real de `leftValue` (ex.: `{!Record.Campo__c}`).
+
+### C5 — Segurança e governança (Onda 05)
+
+```bash
+bin/sf-docs.sh run --group OrgSecurity --group CustomObject --group Profile --group Role --group PublicGroup --group SharingRules --group PermissionSetGroup --component Security --component <Objeto__c> --component <Perfil> --component <Papel> --component <Grupo> --component <PSG> --non-interactive
+```
+
+- **Settings:** o raw `$INV/org-security/retrieve/*.raw.json` traz `type: Settings` e `fullName: Security`? Se vier outro tipo, ajuste `fixedComponents.retrieveType`. Se `SecuritySettings` não aparecer em `sf org list metadata-types` (só `Settings`), o grupo fica `NOT_ENABLED`: relate.
+- **Perfis padrão:** o filtro de dados internos usa o fullName do metadata (`Admin`), mas o `Name` é "System Administrator". Relate o par fullName/Name.
+- **Confira** `sessionSettings`, `passwordPolicies` e `networkAccess` contra o Setup; `parentRole` e níveis de acesso do Role; `doesIncludeBosses` do Group; `mutingPermissionSets` do PSG.
+
+### C6 — Objetos de evento (Onda 06)
+
+```bash
+bin/sf-docs.sh run --group PlatformEvent --group ChangeDataCapture --group ApexTrigger --group ApexClass --group Flow --component <Evento__e> --component <MembroDoCanal> --component <TriggerDoEvento> --component <ClassePublicadora> --component <FlowDoEvento> --non-interactive
+```
+
+- **Platform event:** o retrieve de `CustomObject:<Evento>__e` traz os campos? `eventType` e `publishBehavior` batem com o Setup?
+- **CDC:** a seleção do Setup aparece como `PlatformEventChannelMember` no canal `ChangeEvents`? Relate o formato do fullName dos membros e o nome do change event de objeto customizado (`X__ChangeEvent`).
+- **PlatformEventSubscriberConfig:** `platformEventConsumer`, `batchSize` e `user` no XML. O valor de `user` nunca vai para o documento; **não cole**.
+- **Permissões:** nomes de API `ViewAllData` e `ViewAllUsers` no XML de perfil.
+
+### C7 — Service Cloud (Onda 07)
+
+```bash
+bin/sf-docs.sh run --group AssignmentRules --group AutoResponseRules --group EscalationRules --group Queue --component Case --component <Fila> --non-interactive
+```
+
+- Ordem das entradas, critérios e destinos iguais ao Setup. Elemento que só aparece em "Outras configurações" = nome real diferente do esperado; relate.
+- **Tooling:** `AutoResponseRule`/`EscalationRule` existem como objetos? O filtro `SobjectType` funciona?
+- **Fila:** contêineres de `queueMembers` (papéis, grupos) e se `queueRoutingConfig` vem no XML.
+
+### C8 — Sales Cloud (Onda 08)
+
+```bash
+bin/sf-docs.sh run --group BusinessProcess --group LeadConvertSettings --group Territory2Model --group OpportunitySplitType --component <Objeto.Processo> --component LeadConvertSettings --component <Modelo> --component <TipoDeDivisao> --non-interactive
+```
+
+- **Processo de vendas:** o `<businessProcess>` do RecordType traz só o nome do processo (sem o objeto)? Os record types listados batem com o Setup?
+- **LeadConvertSettings:** o raw `$INV/lead-convert-settings/retrieve/*.raw.json` traz o componente com `fullName` `LeadConvertSettings`? Nomes de `objectMapping`/`mappingFields`; relate se os pares não aparecerem na tabela de-para.
+- **Territórios:** fullName `Modelo.Territorio` e `Modelo.Regra`? Elementos de nível de acesso e `ruleAssociations`.
+- **Permissões:** nomes de API `ConvertLeads`, `ManageTerritories`, `ManageOpportunitySplits` nos XMLs de perfil.
+- **Split type:** elemento real do "total deve somar 100%" (`isTotalValidated`?).
+
+### C9 — Experience Cloud (Onda 09)
+
+```bash
+bin/sf-docs.sh run --group Network --group CustomSite --group ExperienceBundle --group LightningComponentBundle --group SharingRules --component <Site> --component <Bundle> --component <lwcDoSite> --component <ObjetoComRegraGuest__c> --non-interactive
+```
+
+- **Network:** membros em `networkMemberGroups/profile` e `permissionSet`? O site é o elemento `<site>`? Existe `<label>`? Nome dos elementos de remetente (`emailSenderAddress`?).
+- **CustomSite:** existe `<guestProfile>`? O nome do perfil de convidado bate com o Setup?
+- **Regras para convidado:** `sharingGuestRules` com `sharedTo/guestUser`: qual é o valor (nome do site)? O documento do site lista a regra?
+- **ExperienceBundle:** liste as pastas do bundle pelo raw `$INV/experiences/retrieve/*.raw.json` (comando da Fase A). Campos `pageAccess`, `urlPrefix` e `activeViewId` das rotas; como a audiência aparece nos componentes das views. Site LWR aprimorado (`DigitalExperienceBundle`) não é coberto: relate se for o caso.
+
+### C10 — OmniStudio (Onda 10)
+
+```bash
+sf org list metadata-types --target-org dev --json | python3 -c "import json,sys; print(sorted(t['xmlName'] for t in json.load(sys.stdin)['result']['metadataObjects'] if t['xmlName'].startswith('Omni')))"
+bin/sf-docs.sh run --group OmniDataTransform --group OmniIntegrationProcedure --group OmniScript --group OmniUiCard --component <DataRaptor> --component <IntegrationProcedure> --component <OmniScript> --component <FlexCard> --non-interactive
+```
+
+- **Formato:** a org usa o OmniStudio padrão (os quatro tipos `Omni*` aparecem no primeiro comando) ou o pacote gerenciado Vlocity (datapacks, fora do escopo)? Sem os tipos, os grupos ficam `NOT_ENABLED`.
+- **Nomes:** formato do fullName (`Type_SubType_Language_Version`?); sufixos `.rpt`, `.oip`, `.os`, `.ouc` no raw do retrieve; elementos `omniProcessElements`/`childElements` e `omniDataTransformItem` (`inputObjectName`, `outputFieldName`...).
+- **Referências:** as chaves `bundle`, `integrationProcedureKey`, `ipMethod`, `remoteClass`, `namedCredential` existem no `propertySetConfig`? Como um FlexCard lança um OmniScript?
+- **Segurança do DataRaptor:** qual elemento corresponde a "verificar FLS" / "ignorar segurança"?
+
+**Passa se** (para cada fase C): nenhum componente em "Com falha" sem causa entendida, e os documentos batem com o Setup nos pontos conferidos. Premissa errada não reprova a fase: vira ajuste de contrato, que é o objetivo do piloto.
+
+## 6. Execução completa
+
+Só depois das fases A, B e C, e só com aprovação explícita de recuperar a org inteira (todos os componentes dos 37 grupos). Sem `--component`, o modo `ALL` recupera os tipos inteiros:
+
+```bash
+bin/sf-docs.sh run --non-interactive
+```
+
+- [ ] Anote o tempo total, o número de chamadas e os segundos por tipo (tabela "Chamadas à CLI" do resumo) e o tamanho de `inventory/` e `saida/`.
+- [ ] Interrupção (sessão expirada, timeout): retome com `bin/sf-docs.sh run --resume latest` e confira se nenhum componente `SUCCESS` foi reprocessado.
+- [ ] Rode `bin/sf-docs.sh regenerate --run latest`: os documentos devem ser regenerados sem nenhuma chamada à org.
+
+## 7. Revisão de proteção de dados (obrigatória em toda fase)
+
+Os comandos abaixo só **contam** ocorrências por arquivo; não imprimem o conteúdo.
+
+```bash
+# e-mails nos documentos
+grep -rIlE "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}" saida/docs | head
+# marcadores de credencial nos documentos e no estado da execução
+grep -rIicE "bearer |access_token|refresh_token|client_secret|BEGIN [A-Z ]*PRIVATE KEY" saida/docs runs | grep -v ":0$" | head
+# texto de configuração do OmniStudio nunca deve chegar ao Markdown
+grep -rIlE "propertySetConfig|dataSourceConfig|sampleDataSourceResponse" saida/docs | head
+```
+
+- **Esperado:** nenhuma saída nos três comandos. Não procure por `password`: o documento de segurança da org mostra a política de senhas (`passwordPolicies`) de propósito. O `runs/` guarda o **usuário da execução** (seção "Org-alvo" do resumo), por isso fica fora da busca de e-mails.
+- Qualquer outro achado **para o piloto**: não compartilhe os arquivos, relate só o caminho e o tipo do achado.
+- Nunca documentados, por desenho: usuários (filas, regras, territórios, site, subscriber config), e-mails e remetentes, segredos de integração, corpo de código, configuração interna do OmniStudio e dados de exemplo do FlexCard.
+
+## 8. Critérios de aprovação e de parada
+
+| Situação | Decisão |
 |---|---|
-| Flow (versões) | `sf data query --use-tooling-api --target-org dev --json --query "SELECT Id, VersionNumber, Status FROM Flow WHERE Definition.DeveloperName = '<Nome>' ORDER BY VersionNumber"` |
-| Custom Object / Custom Metadata | `sf data query --use-tooling-api --target-org dev --json --query "SELECT QualifiedApiName, Label, PluralLabel, KeyPrefix, LastModifiedDate FROM EntityDefinition WHERE QualifiedApiName = '<Objeto__c>'"` |
-| Connected App | `sf data query --target-org dev --json --query "SELECT Id, Name, OptionsAllowAdminApprovedUsersOnly FROM ConnectedApplication WHERE Name = '<Nome>'"` |
-| Named Credential | `sf data query --target-org dev --json --query "SELECT Id, DeveloperName FROM NamedCredential WHERE DeveloperName = '<Nome>'"` |
-| Certificate | `sf data query --use-tooling-api --target-org dev --json --query "SELECT DeveloperName, ExpirationDate, KeySize FROM Certificate WHERE DeveloperName = '<Nome>'"` |
-| External Credential | `sf data query --target-org dev --json --query "SELECT Id, DeveloperName, MasterLabel, CreatedDate, LastModifiedDate FROM ExternalCredential WHERE DeveloperName = '<Nome>'"` |
+| Seção 1, 2 ou Fase A falha | **Parar.** Corrigir o utilitário ou o ambiente antes de continuar |
+| Achado na revisão de proteção de dados (seção 7) | **Parar** e tratar como incidente de dados conforme a política local |
+| Fase B: concessões diferentes do Setup | **Parar** as fases C; todas as seções de acesso dependem dela |
+| Fase C: premissa *a confirmar* diferente na org | Seguir; registrar para ajuste de contrato/parser |
+| Fase C: componente `FAILED` sem causa entendida | Seguir com as outras fases; relatar com o erro do `resumo.md` |
+| Execução completa inviável em tempo/volume | Aprovar com escopo `SELECTED`; registrar a limitação |
 
-- **Esperado:** `status: 0` e `totalSize` = 1 (ou o número de versões, no Flow).
-- **Erro `INVALID_FIELD` ou `INVALID_TYPE`:** o objeto ou campo não existe na org/API. Relate a mensagem; o contrato será ajustado (a execução não para: a seção fica "Não informado").
-- **Erro de permissão:** relate o perfil usado; a seção depende de acesso à configuração (ex.: *View Setup and Configuration*).
+O MVP é **aprovado no piloto** quando: seções 1–4 passam, toda fase C executada tem os pontos conferidos OK ou com ajuste registrado, a seção 7 não tem achados e o responsável pela org aceita o resultado.
 
-### Connected App: `Name` é o nome de API? (DA-13)
+## 9. Como relatar
+
+Um registro por item, sem dados da org:
+
+| Campo | Exemplo |
+|---|---|
+| Item | `C8 — LeadConvertSettings` |
+| Commit / versões | `44475ba`, `sf 2.x`, Python 3.x, login web |
+| Comando | `bin/sf-docs.sh run --group LeadConvertSettings --component LeadConvertSettings --non-interactive` |
+| Resultado | `SUCCESS`; 1 documento; tabela de-para vazia |
+| Premissa | `objectMapping` → nome real `<...>` (só o nome do elemento) |
+| Decisão | ajustar parser `lead-convert` |
+
+Não inclua token, senha, `consumerSecret`, usuários, e-mails, conteúdo de XML/JSON recuperado ou dados de registros.
+
+## 10. Limpeza
+
+Ao fim do piloto, conforme a retenção combinada (seção 0):
 
 ```bash
-sf sobject describe --sobject ConnectedApplication --target-org dev --json | python3 -c "import json,sys; f={x['name']: x['label'] for x in json.load(sys.stdin)['result']['fields']}; print({k: f[k] for k in f if 'Name' in k})"
+bin/sf-docs.sh purge --older-than-days 0                              # lista o que seria marcado
+bin/sf-docs.sh purge --older-than-days 0 --apply --delete-sensitive   # marca e apaga os artefatos sensíveis
 ```
 
-E compare o valor de `Name` (consulta acima, sem filtro, com `LIMIT 5`) com o nome do arquivo `*.connectedApp-meta.xml` recuperado:
+Remova também, se combinado, `saida/` e a autorização da CLI (`sf org logout --target-org dev --no-prompt`).
+
+## Apêndice A — consultas de dados internos
+
+O utilitário roda estas consultas sozinho no `run`; falha não para a execução (a seção fica "Não informado" e o componente aparece em "Dados internos indisponíveis"). Para investigar uma falha, repita a consulta à mão com um componente real (Tooling: acrescente `--use-tooling-api`):
 
 ```bash
-sf data query --target-org dev --json --query "SELECT Name FROM ConnectedApplication LIMIT 5"
+sf data query --target-org dev --json --query "<consulta com os placeholders preenchidos>" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('status'), (d.get('result') or {}).get('totalSize'), d.get('name'), d.get('message'))"
 ```
 
-- **Se `Name` for o rótulo (com espaços, por exemplo):** a consulta por `DeveloperName` do metadata não encontra o app. Relate quais campos existem para trocar o filtro.
+- **Esperado:** `0 1` (no Flow, o número de versões).
+- **`INVALID_FIELD`/`INVALID_TYPE`:** campo ou objeto não existe na org/API. Relate a mensagem; o contrato é ajustado.
+- **Erro de permissão:** relate o perfil usado (ex.: falta *View Setup and Configuration*).
 
-## 4. Campos de namespace (DA-05)
+Placeholders: `{fullName}` = nome do metadata; `{developerName}` = nome sem namespace; `{objectName}`/`{shortName}` = partes antes/depois do ponto (`Objeto.Nome`).
 
-O filtro de namespace só entra nos contratos depois de confirmar que o campo existe em cada objeto. Rode uma vez por objeto:
+| Contrato | API | Consulta (placeholders preenchidos pelo utilitário) | Pendência (`validationPending`) |
+|---|---|---|---|
+| `apex-class` | Dados | `SELECT Id, Name, ApiVersion, Status, IsValid, LengthWithoutComments, CreatedDate, LastModifiedDate FROM ApexClass WHERE Name = '{developerName}'` | Objeto ApexClass (SOAP/REST API): confirmar no piloto os campos IsValid e LengthWithoutComments. |
+| `apex-trigger` | Dados | `SELECT Id, Name, TableEnumOrId, ApiVersion, Status, IsValid, UsageBeforeInsert, UsageAfterInsert, UsageBeforeUpdate, UsageAfterUpdate, UsageBeforeDelete, UsageAfterDelete, UsageAfterUndelete, CreatedDate, LastModifiedDate FROM ApexTrigger WHERE Name = '{developerName}'` | Objeto ApexTrigger (Object Reference): campos TableEnumOrId, IsValid e Usage* não confirmados na documentação oficial nesta adaptação; confirmar no piloto. |
+| `assignment-rules` | Tooling | `SELECT Id, Name, Active FROM AssignmentRule WHERE SobjectType = '{fullName}'` | Objeto AssignmentRule (Tooling API): confirmar nome do objeto e o filtro SobjectType no piloto. |
+| `auto-response-rules` | Tooling | `SELECT Id, Name, Active FROM AutoResponseRule WHERE SobjectType = '{fullName}'` | Objeto AutoResponseRule (Tooling API): confirmar nome do objeto e o filtro SobjectType no piloto. |
+| `business-process` | Dados | `SELECT Id, Name, TableEnumOrId, IsActive, Description FROM BusinessProcess WHERE Name = '{shortName}' AND TableEnumOrId = '{objectName}'` | Objeto BusinessProcess: confirmar campos e o filtro por objeto (TableEnumOrId) no piloto. |
+| `certificate` | Tooling | `SELECT DeveloperName, ExpirationDate, KeySize FROM Certificate WHERE DeveloperName = '{developerName}'` | Tooling API (Certificate, API 37.0+). Confirmar no piloto. |
+| `change-data-capture` | Tooling | `SELECT Id, DeveloperName, EventChannel, SelectedEntity FROM PlatformEventChannelMember WHERE DeveloperName = '{developerName}'` | PlatformEventChannelMember (Tooling API): confirmar campos no piloto. |
+| `connected-app` | Dados | `SELECT Id, Name, OptionsAllowAdminApprovedUsersOnly FROM ConnectedApplication WHERE Name = '{developerName}'` | Object Reference (ConnectedApplication, query()). Confirmar no piloto se Name corresponde ao fullName do metadata ConnectedApp. |
+| `custom-metadata` | Tooling | `SELECT QualifiedApiName, Label, PluralLabel, KeyPrefix, LastModifiedDate FROM EntityDefinition WHERE QualifiedApiName = '{fullName}'` | Campos conforme Tooling API e Field Reference (EntityDefinition); confirmar no piloto que a consulta é aceita pela org. |
+| `custom-object` | Tooling | `SELECT QualifiedApiName, Label, PluralLabel, KeyPrefix, LastModifiedDate FROM EntityDefinition WHERE QualifiedApiName = '{fullName}'` | Campos conforme Tooling API e Field Reference (EntityDefinition); confirmar no piloto que a consulta é aceita pela org. |
+| `custom-site` | Dados | `SELECT Id, Name, MasterLabel, Status, SiteType, UrlPathPrefix FROM Site WHERE Name = '{fullName}'` | Objeto Site: confirmar campos no piloto. |
+| `escalation-rules` | Tooling | `SELECT Id, Name, Active FROM EscalationRule WHERE SobjectType = '{fullName}'` | Objeto EscalationRule (Tooling API): confirmar nome do objeto e o filtro SobjectType no piloto. |
+| `external-credential` | Dados | `SELECT Id, DeveloperName, MasterLabel, CreatedDate, LastModifiedDate FROM ExternalCredential WHERE DeveloperName = '{developerName}'` | Confirmar no piloto que o objeto ExternalCredential é consultável via SOQL na org. |
+| `flexipage` | Tooling | `SELECT Id, DeveloperName, MasterLabel, Type, EntityDefinitionId, Description, NamespacePrefix, CreatedDate, LastModifiedDate FROM FlexiPage WHERE DeveloperName = '{developerName}'` | Objeto FlexiPage (Tooling API): confirmar campos no piloto. |
+| `flow` | Tooling | `SELECT Id, VersionNumber, Status FROM Flow WHERE Definition.DeveloperName = '{developerName}' ORDER BY VersionNumber` | Confirmar no piloto que o filtro Definition.DeveloperName é aceito pela Tooling API da org. |
+| `lwc` | Tooling | `SELECT Id, DeveloperName, MasterLabel, ApiVersion, IsExposed, Description, NamespacePrefix, CreatedDate, LastModifiedDate FROM LightningComponentBundle WHERE DeveloperName = '{developerName}'` | Objeto LightningComponentBundle (Tooling API): campos não confirmados na documentação oficial nesta adaptação; confirmar no piloto. |
+| `named-credential` | Dados | `SELECT Id, DeveloperName FROM NamedCredential WHERE DeveloperName = '{developerName}'` | Object Reference (NamedCredential, query(); exige View Setup and Configuration). Confirmar no piloto. |
+| `network` | Dados | `SELECT Id, Name, Status, UrlPathPrefix FROM Network WHERE Name = '{fullName}'` | Objeto Network: confirmar campos e se Name é o nome de API (fullName) no piloto. |
+| `omni-data-transform` | Dados | `SELECT Id, Name, Type, IsActive, VersionNumber FROM OmniDataTransform WHERE Name = '{fullName}'` | Objeto OmniDataTransform: confirmar campos e se Name é o fullName no piloto. |
+| `omni-integration-procedure` | Dados | `SELECT Id, UniqueName, Type, SubType, Language, VersionNumber, IsActive, IsIntegrationProcedure FROM OmniProcess WHERE UniqueName = '{fullName}'` | Objeto OmniProcess: confirmar campos e o filtro UniqueName = fullName no piloto. |
+| `omni-script` | Dados | `SELECT Id, UniqueName, Type, SubType, Language, VersionNumber, IsActive, IsIntegrationProcedure FROM OmniProcess WHERE UniqueName = '{fullName}'` | Objeto OmniProcess: confirmar campos e o filtro UniqueName = fullName no piloto. |
+| `omni-ui-card` | Dados | `SELECT Id, UniqueName, Name, VersionNumber, IsActive FROM OmniUiCard WHERE UniqueName = '{fullName}'` | Objeto OmniUiCard: confirmar campos e o filtro UniqueName = fullName no piloto. |
+| `opportunity-split-type` | Dados | `SELECT Id, DeveloperName, MasterLabel FROM OpportunitySplitType WHERE DeveloperName = '{developerName}'` | Objeto OpportunitySplitType (API 37+): confirmar campos no piloto. |
+| `org-security` | Dados | `SELECT Id, Name, OrganizationType, IsSandbox, InstanceName, DefaultAccountAccess, DefaultContactAccess, DefaultOpportunityAccess, DefaultCaseAccess, DefaultLeadAccess, DefaultCalendarAccess, DefaultPricebookAccess, DefaultCampaignAccess FROM Organization` | Objeto Organization: confirmar campos no piloto. |
+| `permission-set-group` | Dados | `SELECT Id, DeveloperName, MasterLabel, Status, HasActivationRequired, CreatedDate, LastModifiedDate FROM PermissionSetGroup WHERE DeveloperName = '{developerName}'` | Objeto PermissionSetGroup: confirmar campos no piloto. |
+| `permission-set` | Dados | `SELECT Id, Name, Label, IsOwnedByProfile, CreatedDate, LastModifiedDate FROM PermissionSet WHERE Name = '{developerName}'` | Objeto PermissionSet (SOAP/REST API): confirmar campos no piloto. |
+| `platform-event` | Tooling | `SELECT QualifiedApiName, Label, PluralLabel, KeyPrefix, LastModifiedDate FROM EntityDefinition WHERE QualifiedApiName = '{fullName}'` | EntityDefinition para objeto __e: confirmar no piloto. |
+| `profile` | Dados | `SELECT Id, Name, UserType, UserLicense.Name, Description, CreatedDate, LastModifiedDate FROM Profile WHERE Name = '{fullName}'` | Objeto Profile: perfis padrão têm Name (ex.: System Administrator) diferente do fullName do metadata (ex.: Admin); confirmar filtro e campos no piloto. |
+| `public-group` | Dados | `SELECT Id, Name, DeveloperName, Type, DoesIncludeBosses, CreatedDate, LastModifiedDate FROM Group WHERE DeveloperName = '{developerName}'` | Objeto Group: confirmar campos no piloto. Membros (GroupMember) não são consultados. |
+| `queue` | Dados | `SELECT Id, Name, DeveloperName, Type, DoesSendEmailToMembers FROM Group WHERE DeveloperName = '{developerName}'` | Fila é um Group com Type Queue: confirmar no piloto. E-mail e membros não são consultados. |
+| `role` | Dados | `SELECT Id, Name, DeveloperName, ParentRoleId, RollupDescription, CaseAccessForAccountOwner, ContactAccessForAccountOwner, OpportunityAccessForAccountOwner FROM UserRole WHERE DeveloperName = '{developerName}'` | Objeto UserRole: confirmar campos no piloto. |
+| `territory2-model` | Dados | `SELECT Id, DeveloperName, Name, State, ActivatedDate FROM Territory2Model WHERE DeveloperName = '{developerName}'` | Objeto Territory2Model: confirmar campos (State, ActivatedDate) no piloto. |
+
+## Apêndice B — campos de namespace (DA-05)
+
+O filtro de namespace só entra nos contratos depois de confirmar que o campo existe em cada objeto:
 
 ```bash
 sf data query --use-tooling-api --target-org dev --json --query "SELECT Id, Definition.NamespacePrefix FROM Flow LIMIT 1"
@@ -71,156 +403,11 @@ sf data query --target-org dev --json --query "SELECT Id, NamespacePrefix FROM E
 - **Sucesso:** o campo existe; o contrato passa a filtrar `NamespacePrefix` e o aviso "pode incluir componente homônimo de outro namespace" deixa de aparecer.
 - **`INVALID_FIELD`:** o objeto não tem o campo; o aviso continua para componentes de pacote.
 
-## 5. Apex (Onda 01)
-
-Confirma que o retrieve traz o código e que a consulta de dados internos funciona:
+## Apêndice C — Connected App: `Name` é o nome de API? (DA-13)
 
 ```bash
-sf data query --target-org dev --json --query "SELECT Id, Name, ApiVersion, Status, IsValid, LengthWithoutComments, CreatedDate, LastModifiedDate FROM ApexClass WHERE Name = '<Classe>'"
-bin/sf-docs.sh run --group ApexClass --component <Classe> --non-interactive
+sf sobject describe --sobject ConnectedApplication --target-org dev --json | python3 -c "import json,sys; f={x['name']: x['label'] for x in json.load(sys.stdin)['result']['fields']}; print({k: f[k] for k in f if 'Name' in k})"
+sf data query --target-org dev --json --query "SELECT Name FROM ConnectedApplication LIMIT 5"
 ```
 
-- **Esperado:** `status: 0` na consulta; no run, `inventory/org-<alias>/api-v<N>/apex-classes/components/classes/` com `<Classe>.cls` e `<Classe>.cls-meta.xml`, e o documento `doc-<classe>-apex-class.md` com interfaces e métodos preenchidos.
-- **`INVALID_FIELD` em `IsValid` ou `LengthWithoutComments`:** relate; o campo sai do contrato `apex-class.schema.json`.
-- **Classe com papel assíncrono:** confira se o subdocumento esperado (`-apex-batch`, `-apex-queueable`, `-apex-scheduler`, `-apex-future`) foi gerado. Classe com papel não detectado: relate a declaração da classe (só a linha `class ... implements ...`, sem o corpo).
-
-## 5b. Apex Trigger (Onda 02)
-
-```bash
-sf data query --target-org dev --json --query "SELECT Id, Name, TableEnumOrId, ApiVersion, Status, IsValid, UsageBeforeInsert, UsageAfterInsert, UsageBeforeUpdate, UsageAfterUpdate, UsageBeforeDelete, UsageAfterDelete, UsageAfterUndelete FROM ApexTrigger WHERE Name = '<Trigger>'"
-bin/sf-docs.sh run --group ApexTrigger --group Flow --group CustomObject --group ApexClass --non-interactive
-```
-
-- **Esperado:** `status: 0` na consulta; no run, `apex-triggers/components/triggers/<Trigger>.trigger` e o documento `doc-<trigger>-apex-trigger.md`.
-- **`INVALID_FIELD` em `TableEnumOrId`, `IsValid` ou `Usage*`:** relate; o campo sai do contrato `apex-trigger.schema.json`.
-- **Coexistência:** compare a seção "Coexistência no objeto e ordem de execução" com o Setup (Object Manager → objeto → Triggers e Flow Trigger Explorer). Flow record-triggered do objeto que não aparece = falha (relate `start.triggerType` e `start.object` do XML). Confirme se `triggerOrder` vem no XML do Flow.
-- **Classes chamadas:** classe chamada que não aparece, ou nome que não é classe e aparece, = falha; relate só a linha da chamada (sem o corpo).
-- **Modo de acesso:** confirme na página *Apex Versioned Behavior Changes* se o user mode padrão da API 67.0 vale para triggers.
-
-## 5c. Lightning Web Components (Onda 03)
-
-```bash
-sf data query --use-tooling-api --target-org dev --json --query "SELECT Id, DeveloperName, MasterLabel, ApiVersion, IsExposed, Description, NamespacePrefix FROM LightningComponentBundle WHERE DeveloperName = '<componente>'"
-bin/sf-docs.sh run --group LightningComponentBundle --group ApexClass --component <componente> --non-interactive
-```
-
-- **Esperado:** `status: 0`; no run, `lwc/components/lwc/<componente>/` com `.js`, `.html` e `.js-meta.xml`, e o documento `doc-<componente>-lwc.md` (mais `-lwc-quick-action`/`-lwc-flow-screen` conforme os targets).
-- **`INVALID_FIELD`:** relate; o campo sai do contrato `lwc.schema.json`.
-- **Confira:** `fullName` dos arquivos no retrieve do bundle (todos com o nome do componente?); targets e propriedades de `targetConfigs` iguais ao `.js-meta.xml`; métodos Apex chamados e a verificação `@AuraEnabled`; perfil/permission set com `customPermissions` da permissão importada (formato `<customPermissions><enabled>`/`<name>`).
-
-## 5d. Páginas Lightning — FlexiPage (Onda 04)
-
-```bash
-sf data query --use-tooling-api --target-org dev --json --query "SELECT Id, DeveloperName, MasterLabel, Type, EntityDefinitionId, Description FROM FlexiPage WHERE DeveloperName = '<Pagina>'"
-bin/sf-docs.sh run --group FlexiPage --group CustomObject --group LightningComponentBundle --non-interactive
-```
-
-- **Esperado:** `status: 0`; documento `doc-<pagina>-flexipage.md` com regiões e componentes iguais ao Lightning App Builder.
-- **Ativação:** compare a seção "Acesso e configuração" com o botão *Activation* da página. Confirme no XML do app (`access/components/applications/*.app-meta.xml`) o formato de `profileActionOverrides` (`profile`, `recordType`, `formFactor`) e, no do objeto, o `actionOverrides` de View com `type` Flexipage.
-- **Visibilidade:** relate o formato real de `leftValue` (ex.: `{!Record.Campo__c}`, `{!$Permission.CustomPermission.X}`).
-- **Volume:** `CustomApplication` entrou no retrieve de acesso (passo 6b); anote o tempo numa org grande.
-
-## 5e. Segurança e governança (Onda 05)
-
-```bash
-sf project retrieve start --metadata Settings:Security --target-org dev --json | python3 -c "import json,sys; r=json.load(sys.stdin)['result']; print([(f['type'], f['fullName']) for f in r.get('files', [])])"
-sf org list metadata-types --target-org dev --json | python3 -c "import json,sys; print(sorted(t['xmlName'] for t in json.load(sys.stdin)['result']['metadataObjects'] if 'Settings' in t['xmlName'])[:20])"
-sf data query --target-org dev --json --query "SELECT Id, Name, OrganizationType, IsSandbox, DefaultAccountAccess FROM Organization"
-bin/sf-docs.sh run --group OrgSecurity --group CustomObject --group Profile --group Role --group PublicGroup --group SharingRules --group PermissionSetGroup --non-interactive
-```
-
-- **Retrieve de Settings:** o arquivo vem como `type: Settings` e `fullName: Security`? Se vier outro tipo, ajuste `fixedComponents.retrieveType` em `config/metadata-types-mvp.json`.
-- **`SecuritySettings` na lista de metadata types:** se não aparecer (e aparecer só `Settings`), troque `primaryMetadataType` do grupo `OrgSecurity`; o grupo fica `NOT_ENABLED` até isso.
-- **Perfis padrão:** a consulta de dados internos filtra `Profile.Name` pelo fullName do metadata (`Admin`), mas o Name é "System Administrator": relate o par fullName/Name para ajustar o filtro.
-- **Confira** os elementos de `sessionSettings`, `passwordPolicies` e `networkAccess` contra o Setup; `parentRole` e níveis de acesso do Role; `doesIncludeBosses` do Group; `mutingPermissionSets` do PSG.
-
-## 5f. Objetos de evento (Onda 06)
-
-```bash
-bin/sf-docs.sh run --group PlatformEvent --group ChangeDataCapture --group ApexTrigger --group ApexClass --group Flow --non-interactive
-sf data query --use-tooling-api --target-org dev --json --query "SELECT Id, DeveloperName, EventChannel, SelectedEntity FROM PlatformEventChannelMember"
-```
-
-- **Platform event:** o retrieve de `CustomObject:<Evento>__e` traz os campos? Compare `eventType`/`publishBehavior` com o Setup.
-- **CDC:** a seleção do Setup (Change Data Capture) aparece como `PlatformEventChannelMember` no canal `ChangeEvents`? Relate o fullName dos membros (formato `Canal_Entidade`?) e o nome do change event de objeto customizado (`X__ChangeEvent`).
-- **PlatformEventSubscriberConfig:** confira `platformEventConsumer`, `batchSize` e `user` no XML (o valor de `user` nunca vai para o documento; não o cole no relato).
-- **Permissões:** confirme o nome de API das permissões View All Data / View All Users no XML de perfil (`ViewAllData`, `ViewAllUsers`).
-
-## 5g. Service Cloud (Onda 07)
-
-```bash
-bin/sf-docs.sh run --group AssignmentRules --group AutoResponseRules --group EscalationRules --group Queue --non-interactive
-sf data query --use-tooling-api --target-org dev --json --query "SELECT Id, Name, Active FROM AssignmentRule WHERE SobjectType = 'Case'"
-```
-
-- **Confira** contra o Setup a ordem das entradas, critérios e destinos; relate se algum elemento aparecer só em "Outras configurações" (nome real diferente do esperado).
-- **Proteção de dados:** procure nos documentos gerados qualquer e-mail ou nome de usuário (`grep -i "@" saida/docs/...`). Deve vir vazio.
-- **Tooling:** relate se `AutoResponseRule`/`EscalationRule` existem como objetos e se o filtro `SobjectType` funciona.
-- **Fila:** confira os contêineres de `queueMembers` (papéis, grupos) e se `queueRoutingConfig` vem no XML.
-
-## 5h. Sales Cloud (Onda 08)
-
-```bash
-bin/sf-docs.sh run --group BusinessProcess --group LeadConvertSettings --group Territory2Model --group OpportunitySplitType --non-interactive
-sf project retrieve start --metadata LeadConvertSettings --target-org dev --json | python3 -c "import json,sys; print([(f['type'], f['fullName']) for f in json.load(sys.stdin)['result'].get('files', [])])"
-```
-
-- **Processo de vendas:** o `<businessProcess>` do RecordType traz só o nome do processo (sem o objeto)? Os record types listados batem com o Setup?
-- **LeadConvertSettings:** fullName do componente e nomes de `objectMapping`/`mappingFields`; relate se os pares não aparecerem na tabela de-para.
-- **Territórios:** fullName `Modelo.Territorio` e `Modelo.Regra`? Elementos de nível de acesso e `ruleAssociations`. **Não cole usuários** no relato.
-- **Permissões:** nomes de API `ConvertLeads`, `ManageTerritories`, `ManageOpportunitySplits` nos XMLs de perfil.
-- **Split type:** elemento real do "total deve somar 100%" (`isTotalValidated`?).
-
-## 5i. Experience Cloud (Onda 09)
-
-```bash
-bin/sf-docs.sh run --group Network --group CustomSite --group ExperienceBundle --group LightningComponentBundle --non-interactive
-sf project retrieve start --metadata "ExperienceBundle:<site>" --target-org dev --json | python3 -c "import json,sys; print(sorted(f['filePath'].split('experiences/',1)[-1] for f in json.load(sys.stdin)['result'].get('files', [])))"
-```
-
-- **Network:** os membros vêm em `networkMemberGroups/profile` e `permissionSet`? O site é o elemento `<site>`? Existe `<label>`? Nome dos elementos de remetente (`emailSenderAddress`?). **Não cole e-mails** no relato.
-- **CustomSite:** existe `<guestProfile>`? Nome do perfil de convidado bate com o Setup? **Não cole usuários** (`siteAdmin`, `siteGuestRecordDefaultOwner`).
-- **Regras para convidado:** `sharingGuestRules` com `sharedTo/guestUser` — qual é o valor (nome do site)? O documento do site lista a regra?
-- **ExperienceBundle:** estrutura de pastas (`config`, `views`, `routes`, `themes`, `brandingSets`...); campos `pageAccess`, `urlPrefix`, `activeViewId` das rotas; como a audiência aparece nos componentes das views (chaves com `audience`/`visibility`?). Relate se o site é LWR aprimorado (`DigitalExperienceBundle`), que não é coberto.
-- **Objetos internos:** `Network` (Name é o nome de API?) e `Site` (campos `SiteType`, `UrlPathPrefix`).
-
-## 5j. OmniStudio (Onda 10)
-
-```bash
-sf org list metadata --metadata-type OmniIntegrationProcedure --target-org dev --json | python3 -c "import json,sys; print([r['fullName'] for r in json.load(sys.stdin).get('result') or []][:10])"
-bin/sf-docs.sh run --group OmniDataTransform --group OmniIntegrationProcedure --group OmniScript --group OmniUiCard --non-interactive
-```
-
-- **Formato:** a org usa o OmniStudio padrão (objetos `OmniProcess`, `OmniDataTransform`, `OmniUiCard`) ou o pacote gerenciado Vlocity (datapacks, fora do escopo)? Relate se os tipos não aparecem em `org list metadata-types`.
-- **Nomes:** formato do fullName (`Type_SubType_Language_Version`?); sufixos `.rpt`, `.oip`, `.os`, `.ouc`; elementos `omniProcessElements`/`childElements`, `omniDataTransformItem` (`inputObjectName`, `outputFieldName`...), `dataSourceConfig`.
-- **Referências:** as chaves `bundle`, `integrationProcedureKey`, `ipMethod`, `remoteClass`, `namedCredential` existem no `propertySetConfig`? Como um FlexCard lança um OmniScript? **Não cole o `propertySetConfig`** no relato: pode ter cabeçalhos e valores fixos.
-- **Segurança do DataRaptor:** qual elemento corresponde a "verificar FLS" / "ignorar segurança"?
-- **Objetos internos:** filtro `UniqueName = fullName` funciona em `OmniProcess` e `OmniUiCard`? `Name = fullName` em `OmniDataTransform`?
-
-## 6. Acesso e configuração
-
-O ponto mais importante: confirmar se o XML de Profile/PermissionSet traz as permissões **só** dos componentes recuperados no mesmo pedido. O utilitário já recupera tudo junto (passo 6b), mas o resultado precisa ser conferido:
-
-```bash
-bin/sf-docs.sh run --group ApexClass --component <Classe> --non-interactive
-```
-
-- **Esperado:** `inventory/org-<alias>/api-v<N>/access/components/profiles/*.profile-meta.xml` com `<classAccesses>` da classe; o documento da classe termina com "Acesso e configuração" listando os perfis/permission sets que a liberam no Setup.
-- **Compare com o Setup** (perfil → Acesso a classes Apex): perfil que libera a classe e não aparece no documento = falha; relate o perfil e o trecho `<classAccesses>` do XML.
-- **Confirmar elementos** (relate se algum vier vazio quando deveria ter valor): `objectPermissions` (objeto), `recordTypeVisibilities`, `PermissionSetGroup.permissionSets`, `SharingRules` (`sharedTo`) e o formato de `externalCredentialPrincipal` (`<ExternalCredential>-<Principal>`).
-- **Volume:** anote o tempo do passo 6b e o tamanho de `access/` numa org grande; se ficar inviável, o retrieve pode ser dividido por tipo.
-
-## 7. Execução completa
-
-Depois dos itens acima:
-
-```bash
-bin/sf-docs.sh validate-config
-bin/sf-docs.sh run --group Flow --non-interactive
-```
-
-Confira em `runs/<runId>/resumo.md`: cobertura, `tokenSource`, avisos de dados internos e a pasta `saida/docs/doc-<alias>-MMDDAA/`.
-
-## Como relatar
-
-Para cada item: comando, resultado (`status`, `totalSize`, mensagem de erro) e a forma de login. Não inclua token, senha, `consumerSecret` nem conteúdo dos XMLs recuperados.
+Compare o `Name` com o nome dos arquivos `*.connectedApp-meta.xml` no raw do retrieve. Se `Name` for o rótulo (com espaços, por exemplo), a consulta por nome do metadata não encontra o app: relate quais campos existem para trocar o filtro.

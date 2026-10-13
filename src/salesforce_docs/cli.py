@@ -31,6 +31,9 @@ def build_parser():
                         help="Em erro inesperado, mostra o traceback (sempre mascarado)")
     sub = parser.add_subparsers(dest="command", required=True)
 
+    # `run` exige org autenticada (Salesforce CLI). Por ora, login em org produtiva NÃO é permitido:
+    # use só desenvolvimento/sandbox. O modo sem login (clone do repositório Flosum + exportações do
+    # Salesforce Inspector) ainda não existe — ver documentation/como-testar-o-mvp.md, seção 3.
     run = sub.add_parser("run", help="Executa o pipeline completo (passos 1–10)")
     run.add_argument("--target-org", "-o", help="Alias da org (padrão: config.json orgAlias)")
     run.add_argument("--api-version", help="Sobrepõe a API version detectada em `sf org display`")

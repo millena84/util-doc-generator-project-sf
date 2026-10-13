@@ -77,6 +77,18 @@ class OmniDocumentsTest(P3Base):
                                   "sampleDataSourceResponse", "Bearer"):
                     self.assertNotIn(forbidden, text, c["unitId"])
 
+    def test_normalized_has_no_config_text(self):
+        # ADD-02: o JSON de configuração (cabeçalho HTTP, dados de exemplo) é redigido no normalizado;
+        # as referências continuam extraídas do XML bruto.
+        for name in ("Pedido_EnviarERP_Procedure_1", "CartaoPedido_1"):
+            e = self.primary(self.state, name)
+            text = (self.root / e["normalized"]).read_text()
+            for forbidden in ("SEGREDO_SIMULADO", "Bearer", "sentinela", "@example.invalid"):
+                self.assertNotIn(forbidden, text, name)
+            self.assertIn("[REDACTED]", text, name)
+        norm = json.loads((self.root / self.primary(self.state, "Pedido_EnviarERP_Procedure_1")["normalized"]).read_text())
+        self.assertEqual(norm["data"]["omni"]["namedCredentials"], ["Minha_NC"])
+
     def test_data_raptor(self):
         doc = self.doc("ExtrairPedido")
         self.assertIn("| 1 | Pedido__c | Id | Não informado | Pedido | = PedidoId | Não informado | XML |", doc)

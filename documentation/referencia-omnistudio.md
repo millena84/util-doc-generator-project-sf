@@ -4,7 +4,7 @@ Conteúdo **genérico da plataforma** sobre OmniStudio (DataRaptor, Integration 
 
 > **Origem:** adaptado de `_sf_utilities/ajudAI/contexto-doc-industries-omni.md` (Onda 10), na versão `ca067b0` do repositório `millena84/_sf_utilities`. É material de referência, não normativo.
 >
-> O acesso direto à documentação oficial não estava disponível no ambiente da adaptação (2026-10-13). Nenhum item abaixo foi conferido na página oficial: os itens *a confirmar* ficam para o piloto (`piloto-org-real.md`, item 5j).
+> O acesso direto à documentação oficial não estava disponível no ambiente da adaptação (2026-10-13). Nenhum item abaixo foi conferido na página oficial: os itens *a confirmar* ficam para o piloto (`piloto-org-real.md`, fase C10).
 
 ## Fontes oficiais
 

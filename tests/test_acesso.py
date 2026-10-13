@@ -151,6 +151,14 @@ class AccessUnavailableTest(P3Base):
         self.assertNotIn("OrderCleanupBatch", call)
         self.assertNotIn("--metadata CustomObject", call)
 
+    def test_cli_component_in_all_mode_does_not_retrieve_whole_type(self):
+        # ADD-01: `--component` no modo ALL não pode trazer o código do tipo inteiro no passo 6b.
+        code, state = self.run_pipeline(groups=["ApexClass"], components=["PedidoService"])
+        call = [ln for ln in self.calls().splitlines() if "--metadata Profile" in ln][0]
+        self.assertIn("--metadata ApexClass:PedidoService", call)
+        self.assertNotIn("--metadata ApexClass ", call)
+        self.assertNotIn("OrderCleanupBatch", call)
+
 
 class AccessRuleTest(P3Base):
     def store(self):
