@@ -1,0 +1,130 @@
+{
+  "metadataType": "LightningComponentBundle",
+  "apiVersion": "67.0",
+  "documentStrategy": "SUB_DOCUMENT_OF_LWC",
+  "xmlFilePattern": "**/lwc/*/*.js-meta.xml",
+  "codeFilePattern": "**/lwc/*/*.js",
+  "template": "modelo-doc-lwc-quick-action-vapi-{apiMajor}.md",
+  "titlePath": "@fullName",
+  "referenceDoc": "_sf_utilities/ajudAI/contexto-lwc.md",
+  "classification": "Target lightning__RecordAction (config: subDocuments.when contains).",
+  "properties": [
+    {
+      "name": "ComponentName",
+      "placeholder": "component_api_name",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "MasterLabel",
+      "placeholder": "master_label",
+      "path": "masterLabel",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "ApiVersion",
+      "placeholder": "api_version",
+      "path": "apiVersion",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "ActionType",
+      "placeholder": "action_type",
+      "path": "lwc.quickAction.actionType",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação",
+      "emptyValue": "Não declarado (padrão: ScreenAction)",
+      "notes": "<actionType> no targetConfig de lightning__RecordAction: ScreenAction (modal) ou Action (headless). Sem o elemento, a ação é ScreenAction."
+    },
+    {
+      "name": "@api invoke() declarado",
+      "placeholder": "has_invoke",
+      "path": "lwc.quickAction.hasInvoke",
+      "source": "Código LWC",
+      "required": false,
+      "markdownSection": "Identificação",
+      "notes": "Obrigatório em ação headless (Action): a plataforma chama invoke() a cada execução."
+    },
+    {
+      "name": "Verificação headless",
+      "placeholder": "headless_check",
+      "path": "lwc.quickAction.headlessCheck",
+      "source": "Derivado",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "@api recordId declarado",
+      "placeholder": "record_id_api",
+      "path": "lwc.quickAction.recordIdApi",
+      "source": "Código LWC",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Propriedades no targetConfig da ação",
+      "placeholder": "action_properties",
+      "path": "lwc.quickAction.propertiesDeclared",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação",
+      "notes": "O target lightning__RecordAction não suporta propriedades de componente; valor > 0 merece revisão."
+    }
+  ],
+  "tables": [
+    {
+      "markdownSection": "Eventos de ação usados",
+      "builder": "list_values",
+      "source": "Código LWC",
+      "args": {
+        "path": "lwc.quickAction.closeEvents",
+        "valuePlaceholder": "action_event"
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Eventos importados de lightning/actions (ex.: CloseActionScreenEvent)."
+    },
+    {
+      "markdownSection": "Dados internos",
+      "builder": "internal_record_properties",
+      "source": "Objeto interno",
+      "args": {
+        "keyPlaceholder": "internal_property",
+        "valuePlaceholder": "internal_value"
+      },
+      "emptyValue": "Não informado"
+    },
+    {
+      "markdownSection": "Acesso e configuração",
+      "builder": "access_rows",
+      "source": "XML",
+      "args": {
+        "byPath": [
+          {
+            "path": "lwc.apexClasses",
+            "accessKey": "ApexClass",
+            "via": "Classe Apex chamada {name}"
+          },
+          {
+            "path": "lwc.customPermissions",
+            "accessKey": "CustomPermission",
+            "via": "Custom Permission {name}"
+          }
+        ]
+      },
+      "emptyValue": "Não informado",
+      "notes": "Igual ao documento do componente: classes Apex chamadas e Custom Permissions verificadas no JS."
+    }
+  ],
+  "evidence": [
+    "Configure a Component for Quick Actions (actionType ScreenAction/Action; padrão ScreenAction) — developer.salesforce.com/docs/platform/lwc/guide/use-config-for-quick-actions.html",
+    "Create Headless Quick Actions (@api invoke()) — developer.salesforce.com/docs/platform/lwc/guide/use-quick-actions-headless.html",
+    "lightning__RecordAction Target (sem propriedades de componente) — developer.salesforce.com/docs/platform/lwc/guide/targets-lightning-record-action.html"
+  ]
+}

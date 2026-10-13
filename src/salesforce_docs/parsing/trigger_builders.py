@@ -1,4 +1,4 @@
-"""Builders do documento de Apex Trigger que usam o índice da execução (`run_index`).
+"""Builders que usam o índice da execução (`run_index`): documentos de Apex Trigger e LWC.
 
 - `automation_rows`: automações no mesmo objeto, na ordem oficial de execução
   (fases em `automationIndex.phases`, config/metadata-types-mvp.json);
@@ -19,6 +19,8 @@ BUILDER_PLACEHOLDERS = {
     "automation_rows": ("exec_order", "exec_phase", "automation_type", "automation_name",
                         "automation_events", "automation_status", "automation_order_detail"),
     "referenced_class_rows": ("class_name", "class_reference", "class_members", "class_in_org"),
+    "apex_method_check_rows": ("apex_class", "apex_method", "aura_enabled", "method_modifiers",
+                               "apex_check"),
 }
 
 
@@ -134,6 +136,55 @@ def code_fact_rows(ctx, args):
     return rows
 
 
+def apex_method_check_rows(ctx, args):
+    """Métodos Apex chamados (ex.: LWC) conferidos no código da classe processada na execução.
+
+    Regras (LWC Developer Guide, "Call Apex Methods" / "Wire Apex Methods to Components"): o método
+    precisa ser `static`, `public` ou `global` e ter `@AuraEnabled`; com `@wire`, `cacheable=true`.
+    args: path (lista com className, method, wire).
+    """
+    index = _index(ctx)
+    value, _ = resolve(ctx, args.get("path", "lwc.apexMethods"))
+    if index is None:
+        return []
+    calls = {}
+    for item in value or []:
+        if not isinstance(item, dict) or not item.get("className") or not item.get("method"):
+            continue
+        key = (item["className"], item["method"])
+        calls[key] = calls.get(key, False) or bool(item.get("wire"))
+    rows = []
+    for (cls, method), wired in calls.items():
+        row = {"apex_class": cls, "apex_method": method}
+        info = index["classes"].get(cls.lower())
+        if info is None:
+            row["aura_enabled"] = "Classe não processada nesta execução"
+            rows.append(row)
+            continue
+        m = (info.get("methods") or {}).get(method.lower())
+        if m is None:
+            row["aura_enabled"] = "Método não encontrado na leitura da classe"
+            rows.append(row)
+            continue
+        aura = next((a for a in m["annotations"] if str(a.get("name", "")).lower() == "auraenabled"), None)
+        cacheable = aura is not None and (aura.get("params") or {}).get("cacheable") == "true"
+        mods = m.get("modifiers") or []
+        problems = []
+        if aura is None:
+            problems.append("sem @AuraEnabled")
+        if wired and not cacheable:
+            problems.append("@wire exige @AuraEnabled(cacheable=true)")
+        if "static" not in mods:
+            problems.append("método não é static")
+        if not {"public", "global"} & set(mods):
+            problems.append("método não é public/global")
+        row.update(aura_enabled=("Sim (cacheable=true)" if cacheable else "Sim") if aura else "Não",
+                   method_modifiers=", ".join(mods) or DASH,
+                   apex_check="Atende" if not problems else "Não atende: " + "; ".join(problems))
+        rows.append(row)
+    return rows
+
+
 TABLE_BUILDERS = {"automation_rows": automation_rows, "referenced_class_rows": referenced_class_rows,
-                  "code_fact_rows": code_fact_rows}
+                  "code_fact_rows": code_fact_rows, "apex_method_check_rows": apex_method_check_rows}
 BLOCK_BUILDERS = {}

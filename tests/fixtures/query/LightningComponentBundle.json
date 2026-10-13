@@ -1,0 +1,48 @@
+{
+  "done": true,
+  "totalSize": 3,
+  "records": [
+    {
+      "attributes": {
+        "type": "LightningComponentBundle"
+      },
+      "Id": "0Rb000000000000AAA",
+      "DeveloperName": "pedidoAcaoRapida",
+      "MasterLabel": "Enviar Pedido",
+      "ApiVersion": 67.0,
+      "IsExposed": true,
+      "Description": null,
+      "NamespacePrefix": null,
+      "CreatedDate": "2026-01-01T00:00:00.000+0000",
+      "LastModifiedDate": "2026-10-01T00:00:00.000+0000"
+    },
+    {
+      "attributes": {
+        "type": "LightningComponentBundle"
+      },
+      "Id": "0Rb000000000001AAA",
+      "DeveloperName": "pedidoPainel",
+      "MasterLabel": "Painel de Pedidos",
+      "ApiVersion": 67.0,
+      "IsExposed": true,
+      "Description": null,
+      "NamespacePrefix": null,
+      "CreatedDate": "2026-01-01T00:00:00.000+0000",
+      "LastModifiedDate": "2026-10-01T00:00:00.000+0000"
+    },
+    {
+      "attributes": {
+        "type": "LightningComponentBundle"
+      },
+      "Id": "0Rb000000000002AAA",
+      "DeveloperName": "pedidoTelaFlow",
+      "MasterLabel": "Tela de Pedido no Flow",
+      "ApiVersion": 66.0,
+      "IsExposed": true,
+      "Description": null,
+      "NamespacePrefix": null,
+      "CreatedDate": "2026-01-01T00:00:00.000+0000",
+      "LastModifiedDate": "2026-10-01T00:00:00.000+0000"
+    }
+  ]
+}

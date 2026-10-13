@@ -1,0 +1,38 @@
+[
+  {
+    "fullName": "pedidoAcaoRapida",
+    "type": "LightningComponentBundle",
+    "fileName": "lwc/pedidoAcaoRapida",
+    "id": "0Rb000000000000AAA",
+    "namespacePrefix": "",
+    "manageableState": "unmanaged",
+    "lastModifiedDate": "2026-10-01T00:00:00.000Z"
+  },
+  {
+    "fullName": "pedidoPainel",
+    "type": "LightningComponentBundle",
+    "fileName": "lwc/pedidoPainel",
+    "id": "0Rb000000000001AAA",
+    "namespacePrefix": "",
+    "manageableState": "unmanaged",
+    "lastModifiedDate": "2026-10-01T00:00:00.000Z"
+  },
+  {
+    "fullName": "pedidoTelaFlow",
+    "type": "LightningComponentBundle",
+    "fileName": "lwc/pedidoTelaFlow",
+    "id": "0Rb000000000002AAA",
+    "namespacePrefix": "",
+    "manageableState": "unmanaged",
+    "lastModifiedDate": "2026-10-01T00:00:00.000Z"
+  },
+  {
+    "fullName": "pkg__componenteGerenciado",
+    "type": "LightningComponentBundle",
+    "fileName": "lwc/pkg__componenteGerenciado",
+    "id": "01p000000000000AAA",
+    "namespacePrefix": "pkg",
+    "manageableState": "installed",
+    "lastModifiedDate": "2026-10-01T00:00:00.000Z"
+  }
+]

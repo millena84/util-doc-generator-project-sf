@@ -1,10 +1,11 @@
 """Índice da execução: fatos de OUTROS componentes usados por um documento.
 
-Usado pelo documento de Apex Trigger para mostrar:
+Usado pelos documentos de Apex Trigger e LWC para mostrar:
 - automações que convivem no mesmo objeto (Flows record-triggered, regras de validação e
   outras triggers), na ordem oficial de execução (config `automationIndex`);
 - leituras de configuração e controles de segurança das classes chamadas pela trigger;
-- se a classe referenciada existe no inventário de ApexClass da org.
+- se a classe referenciada existe no inventário de ApexClass da org;
+- anotações dos métodos Apex chamados por um LWC (`@AuraEnabled(cacheable=true)`).
 
 Fonte: JSON normalizado (XML e código lidos) dos componentes processados na execução
 (ou herdados na retomada). Nada é consultado fora do que foi recuperado: componente fora
@@ -102,6 +103,10 @@ def build_run_index(records, cfg, class_inventory=None, class_type="ApexClass", 
                 "name": key[1], "sharing": code.get("sharing"),
                 "configReads": code.get("configReads") or [],
                 "securityPatterns": code.get("securityPatterns") or [],
+                # Métodos por nome (minúsculas): anotações e modificadores (ex.: @AuraEnabled do LWC).
+                "methods": {m["name"].lower(): {"name": m["name"], "annotations": m.get("annotations") or [],
+                                                "modifiers": m.get("modifiers") or []}
+                            for m in code.get("methods") or [] if m.get("name")},
             }
     return index
 

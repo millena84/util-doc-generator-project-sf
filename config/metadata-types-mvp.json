@@ -34,6 +34,12 @@
       "documentSlug": "apex-trigger",
       "sourceParser": { "name": "apex-trigger", "suffix": ".trigger", "key": "apex" }
     },
+    "LightningComponentBundle": {
+      "folder": "lwc",
+      "contract": "lwc.schema.json",
+      "documentSlug": "lwc",
+      "sourceParser": { "name": "lwc", "suffix": [".js", ".html", ".css", ".svg", ".js-meta.xml"], "key": "lwc", "bundle": true }
+    },
     "CustomField": { "retrievedWith": "CustomObject" },
     "RecordType": { "retrievedWith": "CustomObject" },
     "ValidationRule": { "retrievedWith": "CustomObject" },
@@ -83,7 +89,8 @@
         "flags": { "readable": "Ler", "editable": "Editar" } },
       { "element": "recordTypeVisibilities", "nameField": "recordType", "enabledField": "visible", "accessKey": "RecordType", "accessLabel": "Visível" },
       { "element": "customMetadataTypeAccesses", "nameField": "name", "enabledField": "enabled", "accessKey": "CustomMetadataType", "accessLabel": "Ler" },
-      { "element": "externalCredentialPrincipalAccesses", "nameField": "externalCredentialPrincipal", "enabledField": "enabled", "accessKey": "ExternalCredentialPrincipal", "accessLabel": "Usar principal" }
+      { "element": "externalCredentialPrincipalAccesses", "nameField": "externalCredentialPrincipal", "enabledField": "enabled", "accessKey": "ExternalCredentialPrincipal", "accessLabel": "Usar principal" },
+      { "element": "customPermissions", "nameField": "name", "enabledField": "enabled", "accessKey": "CustomPermission", "accessLabel": "Habilitada" }
     ],
     "permissionSetGroups": { "metadataType": "PermissionSetGroup", "element": "permissionSets", "label": "Permission Set Group" },
     "queues": { "metadataType": "Queue", "element": "queueSobject", "field": "sobjectType", "label": "Fila" },
@@ -93,7 +100,7 @@
       "sharedTo": "sharedTo",
       "accessLevel": "accessLevel"
     },
-    "validationPending": "objectPermissions, PermissionSetGroup.permissionSets, SharingRules.sharedTo e o formato de externalCredentialPrincipal não confirmados nesta adaptação; confirmar no piloto (documentation/piloto-org-real.md)."
+    "validationPending": "objectPermissions, PermissionSetGroup.permissionSets, SharingRules.sharedTo, customPermissions (name/enabled) e o formato de externalCredentialPrincipal não confirmados nesta adaptação; confirmar no piloto (documentation/piloto-org-real.md)."
   },
   "automationIndex": {
     "notes": "Automações que convivem no mesmo objeto (documento de Apex Trigger). Fonte: XML/código dos componentes processados na execução. Fases na ordem oficial de execução; 'order' null = posição relativa não confirmada nesta adaptação.",
@@ -277,6 +284,31 @@
         "notes": "Triggers de pacote gerenciado (ns__Trigger) não têm código-fonte recuperável."
       },
       "notes": "Processado depois dos demais grupos: a seção de coexistência mostra Flows, regras de validação e triggers do mesmo objeto processados na execução (automationIndex). lookupInventories lista ApexClass só para conferir se o nome chamado é classe da org."
+    },
+    {
+      "group": "LightningComponentBundle",
+      "primaryMetadataType": "LightningComponentBundle",
+      "relatedMetadataTypes": [],
+      "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+      "referenceDoc": "_sf_utilities/ajudAI/contexto-lwc.md",
+      "usesRunIndex": true,
+      "componentFilter": {
+        "excludeRegex": "^[A-Za-z0-9]+__",
+        "notes": "Componentes de pacote gerenciado (ns__componente) não têm código-fonte recuperável."
+      },
+      "notes": "Bundle lido inteiro (sourceParser bundle). Processado depois dos demais grupos: a verificação dos métodos Apex chamados usa as classes processadas na execução (usesRunIndex).",
+      "subDocuments": [
+        {
+          "contract": "lwc-quick-action.schema.json",
+          "when": { "path": "lwc.targets", "contains": "lightning__RecordAction" },
+          "documentSuffix": "lwc-quick-action"
+        },
+        {
+          "contract": "lwc-flow-screen.schema.json",
+          "when": { "path": "lwc.targets", "contains": "lightning__FlowScreen" },
+          "documentSuffix": "lwc-flow-screen"
+        }
+      ]
     },
     {
       "group": "PermissionSet",

@@ -1,0 +1,110 @@
+{
+  "metadataType": "LightningComponentBundle",
+  "apiVersion": "67.0",
+  "documentStrategy": "SUB_DOCUMENT_OF_LWC",
+  "xmlFilePattern": "**/lwc/*/*.js-meta.xml",
+  "codeFilePattern": "**/lwc/*/*.js",
+  "template": "modelo-doc-lwc-flow-screen-vapi-{apiMajor}.md",
+  "titlePath": "@fullName",
+  "referenceDoc": "_sf_utilities/ajudAI/contexto-lwc.md",
+  "classification": "Target lightning__FlowScreen (config: subDocuments.when contains).",
+  "properties": [
+    {
+      "name": "ComponentName",
+      "placeholder": "component_api_name",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "MasterLabel",
+      "placeholder": "master_label",
+      "path": "masterLabel",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "ApiVersion",
+      "placeholder": "api_version",
+      "path": "apiVersion",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "@api validate() declarado",
+      "placeholder": "has_validate",
+      "path": "lwc.flowScreen.hasValidate",
+      "source": "Código LWC",
+      "required": false,
+      "markdownSection": "Identificação",
+      "notes": "Validação customizada da tela: o Flow chama validate() antes de avançar."
+    }
+  ],
+  "tables": [
+    {
+      "markdownSection": "Propriedades expostas ao Flow",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "lwc.flowScreen.properties",
+        "columns": {
+          "flow_property": "name",
+          "flow_type": "type",
+          "flow_label": "label",
+          "flow_role": "roleText",
+          "flow_has_api": "hasApi"
+        }
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "<property> do targetConfig de lightning__FlowScreen. role: inputOnly ou outputOnly; sem role = entrada e saída. O nome precisa corresponder a uma propriedade @api do JS (coluna conferida no código)."
+    },
+    {
+      "markdownSection": "Eventos de Flow disparados",
+      "builder": "list_values",
+      "source": "Código LWC",
+      "args": {
+        "path": "lwc.flowScreen.flowEvents",
+        "valuePlaceholder": "flow_event"
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Eventos importados de lightning/flowSupport e criados com new no JS."
+    },
+    {
+      "markdownSection": "Dados internos",
+      "builder": "internal_record_properties",
+      "source": "Objeto interno",
+      "args": {
+        "keyPlaceholder": "internal_property",
+        "valuePlaceholder": "internal_value"
+      },
+      "emptyValue": "Não informado"
+    },
+    {
+      "markdownSection": "Acesso e configuração",
+      "builder": "access_rows",
+      "source": "XML",
+      "args": {
+        "byPath": [
+          {
+            "path": "lwc.apexClasses",
+            "accessKey": "ApexClass",
+            "via": "Classe Apex chamada {name}"
+          },
+          {
+            "path": "lwc.customPermissions",
+            "accessKey": "CustomPermission",
+            "via": "Custom Permission {name}"
+          }
+        ]
+      },
+      "emptyValue": "Não informado",
+      "notes": "Igual ao documento do componente: classes Apex chamadas e Custom Permissions verificadas no JS."
+    }
+  ],
+  "evidence": [
+    "Configure a Component for Flow Screens / XML Configuration File Elements (role inputOnly/outputOnly; sem role = entrada e saída) — developer.salesforce.com/docs/platform/lwc/guide/use-config-for-flow-screens.html"
+  ]
+}

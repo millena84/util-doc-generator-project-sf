@@ -146,6 +146,13 @@
       },
       {
         "childXmlNames": [],
+        "directoryName": "lwc",
+        "inFolder": false,
+        "metaFile": false,
+        "xmlName": "LightningComponentBundle"
+      },
+      {
+        "childXmlNames": [],
         "directoryName": "profiles",
         "inFolder": false,
         "metaFile": false,

@@ -11,7 +11,7 @@ from salesforce_docs import status as st
 
 API = "inventory/org-dev/api-v67"
 
-# Documento -> modelo esperado (os 19 modelos de documentation/models/api-v67).
+# Documento -> modelo esperado (os 22 modelos de documentation/models/api-v67).
 EXPECTED_DOCS = {
     "doc-meu-flow-flow.md": "modelo-doc-flow-vapi-67.md",
     "doc-tela-cadastro-flow.md": "modelo-doc-flow-vapi-67.md",
@@ -46,6 +46,13 @@ EXPECTED_DOCS = {
     # Apex Trigger (Onda 02)
     "doc-pedidotrigger-apex-trigger.md": "modelo-doc-apex-trigger-vapi-67.md",
     "doc-pedidoauditoriatrigger-apex-trigger.md": "modelo-doc-apex-trigger-vapi-67.md",
+    "doc-pedidocontroller-apex-class.md": "modelo-doc-apex-class-vapi-67.md",
+    # Lightning Web Component (Onda 03)
+    "doc-pedidopainel-lwc.md": "modelo-doc-lwc-vapi-67.md",
+    "doc-pedidoacaorapida-lwc.md": "modelo-doc-lwc-vapi-67.md",
+    "doc-pedidoacaorapida-lwc-quick-action.md": "modelo-doc-lwc-quick-action-vapi-67.md",
+    "doc-pedidotelaflow-lwc.md": "modelo-doc-lwc-vapi-67.md",
+    "doc-pedidotelaflow-lwc-flow-screen.md": "modelo-doc-lwc-flow-screen-vapi-67.md",
     # Permission Set (XML do retrieve de acesso)
     "doc-integracao-api-permission-set.md": "modelo-doc-permission-set-vapi-67.md",
     "doc-leitura-pedidos-permission-set.md": "modelo-doc-permission-set-vapi-67.md",
@@ -81,7 +88,7 @@ LISTED_TYPES = {
     "CustomObject": "custom-objects", "CustomMetadata": "custom-metadata",
     "NamedCredential": "named-credentials", "RemoteSiteSetting": "remote-site-settings",
     "Certificate": "certificates", "ApexClass": "apex-classes", "PermissionSet": "permission-sets",
-    "ApexTrigger": "apex-triggers",
+    "ApexTrigger": "apex-triggers", "LightningComponentBundle": "lwc",
 }
 # Tipos documentados cujo XML vem do retrieve das fontes de acesso (passo 6b).
 PREFETCHED_TYPES = {"PermissionSet"}

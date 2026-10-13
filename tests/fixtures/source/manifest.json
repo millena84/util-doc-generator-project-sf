@@ -309,5 +309,73 @@
       "fullName": "PedidoAuditoriaTrigger",
       "path": "triggers/PedidoAuditoriaTrigger.trigger-meta.xml"
     }
+  ],
+  "ApexClass:PedidoController": [
+    {
+      "type": "ApexClass",
+      "fullName": "PedidoController",
+      "path": "classes/PedidoController.cls"
+    },
+    {
+      "type": "ApexClass",
+      "fullName": "PedidoController",
+      "path": "classes/PedidoController.cls-meta.xml"
+    }
+  ],
+  "LightningComponentBundle:pedidoPainel": [
+    {
+      "type": "LightningComponentBundle",
+      "fullName": "pedidoPainel",
+      "path": "lwc/pedidoPainel/__tests__/pedidoPainel.test.js"
+    },
+    {
+      "type": "LightningComponentBundle",
+      "fullName": "pedidoPainel",
+      "path": "lwc/pedidoPainel/pedidoPainel.css"
+    },
+    {
+      "type": "LightningComponentBundle",
+      "fullName": "pedidoPainel",
+      "path": "lwc/pedidoPainel/pedidoPainel.html"
+    },
+    {
+      "type": "LightningComponentBundle",
+      "fullName": "pedidoPainel",
+      "path": "lwc/pedidoPainel/pedidoPainel.js"
+    },
+    {
+      "type": "LightningComponentBundle",
+      "fullName": "pedidoPainel",
+      "path": "lwc/pedidoPainel/pedidoPainel.js-meta.xml"
+    }
+  ],
+  "LightningComponentBundle:pedidoAcaoRapida": [
+    {
+      "type": "LightningComponentBundle",
+      "fullName": "pedidoAcaoRapida",
+      "path": "lwc/pedidoAcaoRapida/pedidoAcaoRapida.js"
+    },
+    {
+      "type": "LightningComponentBundle",
+      "fullName": "pedidoAcaoRapida",
+      "path": "lwc/pedidoAcaoRapida/pedidoAcaoRapida.js-meta.xml"
+    }
+  ],
+  "LightningComponentBundle:pedidoTelaFlow": [
+    {
+      "type": "LightningComponentBundle",
+      "fullName": "pedidoTelaFlow",
+      "path": "lwc/pedidoTelaFlow/pedidoTelaFlow.html"
+    },
+    {
+      "type": "LightningComponentBundle",
+      "fullName": "pedidoTelaFlow",
+      "path": "lwc/pedidoTelaFlow/pedidoTelaFlow.js"
+    },
+    {
+      "type": "LightningComponentBundle",
+      "fullName": "pedidoTelaFlow",
+      "path": "lwc/pedidoTelaFlow/pedidoTelaFlow.js-meta.xml"
+    }
   ]
 }

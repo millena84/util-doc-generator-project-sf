@@ -135,6 +135,7 @@ Registro da auditoria de segurança de 2026-10-11 (10 riscos: 1 crítico, 2 alto
 | PermissionSet | `ONE_DOCUMENT_PER_COMPONENT` | — (XML do retrieve de acesso, passo 6b) |
 | ApexClass | `ONE_DOCUMENT_PER_COMPONENT` + subdocumentos por papel | — (o `.cls` é lido pelo parser estrutural configurado em `sourceParser`; classes de pacote gerenciado `ns__*` são excluídas por `componentFilter`) |
 | ApexTrigger | `ONE_DOCUMENT_PER_COMPONENT` | — (o `.trigger` é lido pelo parser `apex-trigger`; grupo com `usesRunIndex`: processado por último, mostra Flows, regras de validação e triggers do mesmo objeto; `lookupInventories` lista ApexClass só para conferência) |
+| LightningComponentBundle | `ONE_DOCUMENT_PER_COMPONENT` + subdocumentos por target | — (o bundle inteiro — `.js`, `.html`, `.css`, `.svg`, `.js-meta.xml` — é lido pelo parser `lwc` com `sourceParser.bundle`; `usesRunIndex` para conferir os métodos Apex chamados nas classes processadas) |
 
 Cada componente (principal ou relacionado) é extraído e normalizado de forma independente; a agregação acontece apenas no documento.
 
@@ -226,6 +227,17 @@ Adaptação de `_sf_utilities/ajudAI/contexto-apex-trigger.md` (ver a matriz em 
 - **Acesso**: trigger não tem acesso próprio por perfil/permission set. A seção lista quem tem acesso ao objeto (`objectPermissions`) e às classes chamadas (`classAccesses`), com a via.
 - **Conteúdo genérico** (variáveis de contexto, boas práticas, modo de execução por API version): [`documentation/referencia-apex-trigger.md`](documentation/referencia-apex-trigger.md).
 
+## Lightning Web Components — Onda 03
+
+Adaptação de `_sf_utilities/ajudAI/contexto-lwc.md` (ver a matriz em `documentation/refatoracao-1-matriz-ajudai.md`).
+
+- **Documento por componente** (`modelo-doc-lwc`): `masterLabel`, `apiVersion`, `isExposed`, `description`, targets (com o uso de cada um, descrito no contrato), propriedades e restrições de `targetConfigs` (fonte `XML`); arquivos do bundle, membros `@api`, hooks de ciclo de vida, métodos Apex importados (`@wire` ou imperativo), dados usados (LDS, `@salesforce/schema`, componentes base de formulário), comunicação (eventos, message channels, componentes filhos) e permissões importadas (fonte `Código LWC`); verificação dos métodos Apex no código das classes (fonte `Código Apex`); dados internos do objeto `LightningComponentBundle` (Tooling, `validationPending`).
+- **Subdocumentos por target**, escolhidos pelo `.js-meta.xml`, nunca pelo nome: `lightning__RecordAction` → `modelo-doc-lwc-quick-action` (`actionType`, `@api invoke()` exigido em ação headless); `lightning__FlowScreen` → `modelo-doc-lwc-flow-screen` (propriedades com `role`, `@api validate()`, eventos de `lightning/flowSupport`). Página, utilitário e demais targets ficam no documento principal.
+- **Parser do bundle** (`src/salesforce_docs/parsing/lwc_parser.py`, `sourceParser.bundle: true`): recebe todos os arquivos do componente; testes Jest (`__tests__/`) são ignorados; comentários e strings do JS e comentários do HTML não contam como evidência; o código nunca é renderizado. Lê os **atributos** do `.js-meta.xml` (`targetConfig targets=`, `property name/type/role`), que o normalizador XML genérico não guarda.
+- **Verificação nas classes Apex**: para cada método importado, confere no código da classe processada na execução se ele é `static`, `public`/`global`, tem `@AuraEnabled` e, com `@wire`, `cacheable=true`. Classe fora do escopo: "Classe não processada nesta execução".
+- **Acesso**: LWC não tem acesso próprio por perfil/permission set. A seção lista quem acessa as classes Apex chamadas (`classAccesses`, exigido para métodos `@AuraEnabled`) e quem tem as Custom Permissions importadas no JS (`customPermissions`, nova concessão em `accessSources.grants`).
+- **Conteúdo genérico** (ciclo de vida, comunicação, LDS, APIs de plataforma): [`documentation/referencia-lwc.md`](documentation/referencia-lwc.md). Onde o componente é colocado (FlexiPage) entra na Onda 04.
+
 ## Refatoração 1 — modelos adaptados das referências `ajudAI`
 
 A matriz de rastreabilidade, as divergências entre `ajudAI`, o utilitário e a documentação Salesforce, as decisões aplicadas e as pendências estão em [`documentation/refatoracao-1-matriz-ajudai.md`](documentation/refatoracao-1-matriz-ajudai.md). Cada contrato registra `referenceDoc`, `evidence` e o que ficou `notSupported`/`pendingVerification`.
@@ -265,11 +277,11 @@ Os testes usam uma Salesforce CLI **simulada** (`tests/fixtures/bin/sf`) e respo
 ### Simulação de todas as documentações do MVP
 
 ```bash
-python3 -m unittest tests.test_mvp_simulation        # verifica os 19 modelos e os 20 metadata types
+python3 -m unittest tests.test_mvp_simulation        # verifica os 22 modelos e os 21 metadata types
 python3 -m tests.simulate_mvp --out /tmp/sim-mvp     # executa e gera o relatório passo a passo
 ```
 
-O cenário `mvp_complete` da CLI simulada sobrepõe `tests/fixtures/mvp-complete/` às fixtures base, de modo que todo metadata type do MVP tenha ao menos um componente. O relatório versionado em `documentation/simulacao/relatorio-simulacao-mvp.md` mostra, para essa simulação, a saída no terminal, os comandos por passo, a situação de cada tipo, a árvore de arquivos e o conteúdo dos 33 documentos gerados.
+O cenário `mvp_complete` da CLI simulada sobrepõe `tests/fixtures/mvp-complete/` às fixtures base, de modo que todo metadata type do MVP tenha ao menos um componente. O relatório versionado em `documentation/simulacao/relatorio-simulacao-mvp.md` mostra, para essa simulação, a saída no terminal, os comandos por passo, a situação de cada tipo, a árvore de arquivos e o conteúdo dos 39 documentos gerados.
 
 | Grupo | Documento(s) / modelo | Tipos que aparecem dentro do documento |
 |---|---|---|
@@ -285,6 +297,7 @@ O cenário `mvp_complete` da CLI simulada sobrepõe `tests/fixtures/mvp-complete
 | PermissionSet | `modelo-doc-permission-set` | grupos que incluem o permission set |
 | ApexClass | `modelo-doc-apex-class` + subdocumentos `modelo-doc-apex-batch`, `modelo-doc-apex-queueable`, `modelo-doc-apex-scheduler` e `modelo-doc-apex-future` (um por método) | — |
 | ApexTrigger | `modelo-doc-apex-trigger` | Flows record-triggered, regras de validação e outras triggers do mesmo objeto (coexistência) |
+| LightningComponentBundle | `modelo-doc-lwc` + subdocumentos `modelo-doc-lwc-quick-action` e `modelo-doc-lwc-flow-screen` | — (métodos Apex conferidos nas classes processadas) |
 
 ## Estrutura
 

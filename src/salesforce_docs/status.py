@@ -35,6 +35,7 @@ ALLOWED_SOURCES = (
     "Salesforce CLI",
     "Derivado",
     "Código Apex",
+    "Código LWC",
 )
 
 # Valores permitidos para dado ausente (prompt, seção 6.2).

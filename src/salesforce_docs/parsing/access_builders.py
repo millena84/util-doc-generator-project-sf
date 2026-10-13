@@ -92,7 +92,7 @@ def access_rows(ctx, args):
         value, _ = resolve(root, bp["path"])
         names = [v.get(bp["itemField"]) if isinstance(v, dict) else v
                  for v in as_list(value)] if bp.get("itemField") else _split(value)
-        for name in [n for n in names if n]:
+        for name in dict.fromkeys(n for n in names if n):
             for _gname, r in _lookup(root.access_index, bp["accessKey"], name):
                 via = bp.get("via", "{name}").format(name=name)
                 if r.get("via"):

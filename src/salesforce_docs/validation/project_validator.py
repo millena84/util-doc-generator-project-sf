@@ -225,7 +225,7 @@ def table_placeholders(table):
     builder = table.get("builder")
     if builder == "code_fact_rows":
         return set(args.get("columns") or {}) | {args.get("locationPlaceholder", "fact_location")}
-    if builder in ("automation_rows", "referenced_class_rows"):
+    if builder in ("automation_rows", "referenced_class_rows", "apex_method_check_rows"):
         from salesforce_docs.parsing.trigger_builders import BUILDER_PLACEHOLDERS
         return set(BUILDER_PLACEHOLDERS[builder])
     if "columns" in args:
@@ -241,7 +241,8 @@ def table_placeholders(table):
         from salesforce_docs.parsing.access_builders import SHARING_PLACEHOLDERS
         return set(SHARING_PLACEHOLDERS)
     if builder == "list_values":
-        return {args.get("valuePlaceholder", "value")}
+        return {args.get("valuePlaceholder", "value")} | (
+            {args["labelPlaceholder"]} if args.get("labelPlaceholder") else set())
     if builder in ("child_properties", "internal_record_properties"):
         return {args.get("keyPlaceholder", "property"), args.get("valuePlaceholder", "value")}
     return None
