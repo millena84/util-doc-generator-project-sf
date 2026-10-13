@@ -1,0 +1,163 @@
+{
+  "metadataType": "LightningComponentBundle",
+  "apiVersion": "67.0",
+  "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+  "xmlFilePattern": "**/lwc/*/*.js-meta.xml",
+  "codeFilePattern": "**/lwc/*/*.{js,html,css,svg}",
+  "template": "modelo-doc-lwc-vapi-{apiMajor}.md",
+  "titlePath": "@fullName",
+  "referenceDoc": "_sf_utilities/ajudAI/contexto-lwc.md",
+  "classification": "Documento de todo Lightning Web Component. Targets de Quick Action e Flow Screen geram subdocumentos (config: subDocuments.when).",
+  "properties": [
+    { "name": "ComponentName", "placeholder": "component_api_name", "path": "@fullName", "source": "XML", "required": true, "markdownSection": "Identificação", "notes": "Nome da pasta do bundle (fullName)." },
+    { "name": "MasterLabel", "placeholder": "master_label", "path": "masterLabel", "source": "XML", "required": false, "markdownSection": "Identificação" },
+    { "name": "ApiVersion", "placeholder": "api_version", "path": "apiVersion", "source": "XML", "required": true, "markdownSection": "Identificação" },
+    { "name": "IsExposed", "placeholder": "is_exposed", "path": "isExposed", "source": "XML", "required": false, "markdownSection": "Identificação", "notes": "true = disponível nos builders (Lightning App Builder, Experience Builder, Flow Builder)." },
+    { "name": "Description", "placeholder": "description", "path": "description", "source": "XML", "required": false, "markdownSection": "Identificação" }
+  ],
+  "tables": [
+    {
+      "markdownSection": "Arquivos do bundle",
+      "builder": "path_rows",
+      "source": "Código LWC",
+      "args": { "path": "lwc.files", "columns": { "bundle_file": "path", "bundle_file_kind": "kind" } },
+      "emptyValue": "Não informado",
+      "notes": "Testes Jest (__tests__/) não entram. O conteúdo dos arquivos nunca é renderizado."
+    },
+    {
+      "markdownSection": "Targets (onde o componente pode ser usado)",
+      "builder": "list_values",
+      "source": "XML",
+      "args": {
+        "path": "lwc.targets",
+        "valuePlaceholder": "lwc_target",
+        "labelPlaceholder": "lwc_target_label",
+        "labels": {
+          "lightning__RecordPage": "Página de registro (Lightning App Builder)",
+          "lightning__AppPage": "Página de aplicativo (Lightning App Builder)",
+          "lightning__HomePage": "Página inicial (Lightning App Builder)",
+          "lightning__RecordAction": "Quick Action na página de registro",
+          "lightning__GlobalAction": "Ação global",
+          "lightning__FlowScreen": "Componente de tela de Flow",
+          "lightning__FlowAction": "Ação de Flow",
+          "lightning__UtilityBar": "Barra de utilitários",
+          "lightning__Tab": "Guia (tab)",
+          "lightning__UrlAddressable": "Navegação por URL",
+          "lightningCommunity__Page": "Página do Experience Builder",
+          "lightningCommunity__Default": "Componente configurável no Experience Builder"
+        },
+        "unknownLabel": "Target não mapeado no contrato"
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Lido de <targets> no .js-meta.xml. Rótulos são descrição do contrato; target fora da lista aparece como 'não mapeado'."
+    },
+    {
+      "markdownSection": "Propriedades configuráveis (targetConfigs)",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "lwc.targetProperties",
+        "columns": { "config_targets": "targets", "config_property": "name", "config_type": "type", "config_label": "label", "config_role": "roleText", "config_required": "required", "config_default": "default", "config_has_api": "hasApi" }
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Atributos de <property> em <targetConfig> (o normalizador XML genérico não guarda atributos; o parser do bundle lê o .js-meta.xml). @api no JS vem do código."
+    },
+    {
+      "markdownSection": "Restrições por target",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": { "path": "lwc.targetRestrictions", "columns": { "restriction_targets": "targets", "restriction_kind": "kind", "restriction_value": "value" } },
+      "emptyValue": "Não aplicável"
+    },
+    {
+      "markdownSection": "Propriedades e métodos públicos (@api)",
+      "builder": "path_rows",
+      "source": "Código LWC",
+      "args": { "path": "lwc.apiMembers", "columns": { "api_member": "name", "api_kind": "kind" } },
+      "emptyValue": "Não aplicável"
+    },
+    {
+      "markdownSection": "Ciclo de vida implementado",
+      "builder": "list_values",
+      "source": "Código LWC",
+      "args": { "path": "lwc.lifecycleHooks", "valuePlaceholder": "lifecycle_hook" },
+      "emptyValue": "Não aplicável"
+    },
+    {
+      "markdownSection": "Métodos Apex chamados",
+      "builder": "path_rows",
+      "source": "Código LWC",
+      "args": { "path": "lwc.apexMethods", "columns": { "called_class": "className", "called_method": "method", "called_import": "importName", "called_usage": "usage" } },
+      "emptyValue": "Não aplicável",
+      "notes": "Imports @salesforce/apex/Classe.metodo; @wire ou chamada imperativa no JS."
+    },
+    {
+      "markdownSection": "Verificação nas classes Apex",
+      "builder": "apex_method_check_rows",
+      "source": "Código Apex",
+      "args": { "path": "lwc.apexMethods" },
+      "emptyValue": "Não informado",
+      "notes": "Conferido no código das classes processadas na execução: @AuraEnabled, cacheable=true para @wire, static e public/global."
+    },
+    {
+      "markdownSection": "Dados do Salesforce usados",
+      "builder": "path_rows",
+      "source": "Código LWC",
+      "args": { "path": "lwc.dataAccess", "columns": { "data_kind": "kind", "data_name": "name", "data_detail": "detail" } },
+      "emptyValue": "Não aplicável",
+      "notes": "Módulos lightning/ui* (Lightning Data Service), adaptadores @wire desses módulos, imports @salesforce/schema e componentes base de formulário de registro no HTML."
+    },
+    {
+      "markdownSection": "Comunicação",
+      "builder": "path_rows",
+      "source": "Código LWC",
+      "args": { "path": "lwc.communication", "columns": { "comm_kind": "kind", "comm_name": "name", "comm_detail": "detail" } },
+      "emptyValue": "Não aplicável",
+      "notes": "CustomEvent com nome literal, eventos de módulos lightning/*, message channels importados e componentes c-* do HTML."
+    },
+    {
+      "markdownSection": "Permissões verificadas no código",
+      "builder": "path_rows",
+      "source": "Código LWC",
+      "args": { "path": "lwc.permissionChecks", "columns": { "perm_kind": "kind", "perm_name": "name" } },
+      "emptyValue": "Não aplicável",
+      "notes": "Imports @salesforce/customPermission e @salesforce/userPermission. O uso (esconder botão etc.) não é inferido."
+    },
+    {
+      "markdownSection": "Dados internos",
+      "builder": "internal_record_properties",
+      "source": "Objeto interno",
+      "args": { "keyPlaceholder": "internal_property", "valuePlaceholder": "internal_value" },
+      "emptyValue": "Não informado"
+    },
+    {
+      "markdownSection": "Acesso e configuração",
+      "builder": "access_rows",
+      "source": "XML",
+      "args": {
+        "byPath": [
+          { "path": "lwc.apexClasses", "accessKey": "ApexClass", "via": "Classe Apex chamada {name}" },
+          { "path": "lwc.customPermissions", "accessKey": "CustomPermission", "via": "Custom Permission {name}" }
+        ]
+      },
+      "emptyValue": "Não informado",
+      "notes": "LWC não tem acesso próprio por perfil/permission set. Lista quem acessa as classes Apex chamadas (exigido para métodos @AuraEnabled) e quem tem as Custom Permissions verificadas no JS."
+    }
+  ],
+  "internalData": {
+    "enabled": true,
+    "source": "Objeto interno",
+    "object": "LightningComponentBundle",
+    "useToolingApi": true,
+    "query": "SELECT Id, DeveloperName, MasterLabel, ApiVersion, IsExposed, Description, NamespacePrefix, CreatedDate, LastModifiedDate FROM LightningComponentBundle WHERE DeveloperName = '{developerName}'",
+    "expectSingleRecord": true,
+    "blocking": false,
+    "validationPending": "Objeto LightningComponentBundle (Tooling API): campos não confirmados na documentação oficial nesta adaptação; confirmar no piloto."
+  },
+  "evidence": [
+    "XML Configuration File Elements (targets, targetConfig, property role inputOnly/outputOnly) — developer.salesforce.com/docs/platform/lwc/guide/reference-configuration-tags.html",
+    "Wire Apex Methods: método static, public/global, @AuraEnabled(cacheable=true) — developer.salesforce.com/docs/platform/lwc/guide/apex-wire-method.html",
+    "Secure Apex Classes: acesso à classe por perfil/permission set exigido para @AuraEnabled — developer.salesforce.com/docs/platform/lwc/guide/apex-security.html",
+    "@salesforce/customPermission — developer.salesforce.com/docs/platform/lwc/guide/create-get-permissions.html"
+  ]
+}

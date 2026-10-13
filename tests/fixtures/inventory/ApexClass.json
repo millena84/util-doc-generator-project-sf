@@ -45,6 +45,15 @@
     "lastModifiedDate": "2026-10-01T00:00:00.000Z"
   },
   {
+    "fullName": "PedidoController",
+    "type": "ApexClass",
+    "fileName": "classes/PedidoController.cls",
+    "id": "01p000000000007AAA",
+    "namespacePrefix": "",
+    "manageableState": "unmanaged",
+    "lastModifiedDate": "2026-10-01T00:00:00.000Z"
+  },
+  {
     "fullName": "PedidoService",
     "type": "ApexClass",
     "fileName": "classes/PedidoService.cls",

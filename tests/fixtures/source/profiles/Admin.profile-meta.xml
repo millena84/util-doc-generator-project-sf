@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Profile xmlns="http://soap.sforce.com/2006/04/metadata">
     <classAccesses><apexClass>OrderCleanupBatch</apexClass><enabled>true</enabled></classAccesses>
+    <classAccesses><apexClass>PedidoController</apexClass><enabled>true</enabled></classAccesses>
     <classAccesses><apexClass>PedidoService</apexClass><enabled>true</enabled></classAccesses>
     <custom>false</custom>
     <customMetadataTypeAccesses><enabled>true</enabled><name>Config__mdt</name></customMetadataTypeAccesses>

@@ -97,6 +97,17 @@ bin/sf-docs.sh run --group ApexTrigger --group Flow --group CustomObject --group
 - **Classes chamadas:** classe chamada que não aparece, ou nome que não é classe e aparece, = falha; relate só a linha da chamada (sem o corpo).
 - **Modo de acesso:** confirme na página *Apex Versioned Behavior Changes* se o user mode padrão da API 67.0 vale para triggers.
 
+## 5c. Lightning Web Components (Onda 03)
+
+```bash
+sf data query --use-tooling-api --target-org dev --json --query "SELECT Id, DeveloperName, MasterLabel, ApiVersion, IsExposed, Description, NamespacePrefix FROM LightningComponentBundle WHERE DeveloperName = '<componente>'"
+bin/sf-docs.sh run --group LightningComponentBundle --group ApexClass --component <componente> --non-interactive
+```
+
+- **Esperado:** `status: 0`; no run, `lwc/components/lwc/<componente>/` com `.js`, `.html` e `.js-meta.xml`, e o documento `doc-<componente>-lwc.md` (mais `-lwc-quick-action`/`-lwc-flow-screen` conforme os targets).
+- **`INVALID_FIELD`:** relate; o campo sai do contrato `lwc.schema.json`.
+- **Confira:** `fullName` dos arquivos no retrieve do bundle (todos com o nome do componente?); targets e propriedades de `targetConfigs` iguais ao `.js-meta.xml`; métodos Apex chamados e a verificação `@AuraEnabled`; perfil/permission set com `customPermissions` da permissão importada (formato `<customPermissions><enabled>`/`<name>`).
+
 ## 6. Acesso e configuração
 
 O ponto mais importante: confirmar se o XML de Profile/PermissionSet traz as permissões **só** dos componentes recuperados no mesmo pedido. O utilitário já recupera tudo junto (passo 6b), mas o resultado precisa ser conferido:

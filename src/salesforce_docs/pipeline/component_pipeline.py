@@ -7,7 +7,7 @@ componentes compõem um único documento (desvios).
 from __future__ import annotations
 
 import xml.etree.ElementTree as ET
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 from salesforce_docs import status as st
 from salesforce_docs.extraction.schema_extractor import load_schema
@@ -112,6 +112,9 @@ def attach_source(pctx, record, metadata_type, normalized):
     cfg = pctx.mvp.source_parser(metadata_type)
     if not cfg:
         return
+    if cfg.get("bundle"):
+        _attach_bundle(pctx, record, metadata_type, normalized, cfg)
+        return
     src = source_file(record.get("files"), metadata_type, cfg["suffix"])
     key = cfg["key"]
     if src is None:
@@ -129,6 +132,33 @@ def attach_source(pctx, record, metadata_type, normalized):
     if not parsed.get("parsed"):
         record.setdefault("warnings", []).append(
             f"{metadata_type}:{record['fullName']}: leitura do código falhou ({parsed.get('error')})")
+
+
+def _attach_bundle(pctx, record, metadata_type, normalized, cfg):
+    """Bundle (ex.: LWC): o parser recebe todos os arquivos do componente com os sufixos
+    configurados, por caminho relativo à pasta do XML principal. Registra sha256 de cada um."""
+    suffixes = tuple(cfg["suffix"] if isinstance(cfg["suffix"], list) else [cfg["suffix"]])
+    base = PurePosixPath(record["xml"]).parent
+    texts, hashes = {}, []
+    for f in record.get("files") or []:
+        path = str(f.get("path", ""))
+        if f.get("type") != metadata_type or not path.endswith(suffixes):
+            continue
+        try:
+            name = str(PurePosixPath(path).relative_to(base))
+        except ValueError:
+            name = PurePosixPath(path).name
+        full = pctx.root / path
+        texts[name] = full.read_text(encoding="utf-8", errors="replace")
+        hashes.append({"path": path, "sha256": sha256_file(full)})
+    parsed = SOURCE_PARSERS[cfg["name"]](texts)
+    normalized["data"][cfg["key"]] = parsed
+    normalized["source"]["code"] = str(base)
+    normalized["source"]["codeFiles"] = hashes
+    normalized["source"]["codeParser"] = parsed.get("parser")
+    if not parsed.get("parsed"):
+        record.setdefault("warnings", []).append(
+            f"{metadata_type}:{record['fullName']}: leitura do bundle falhou ({parsed.get('error')})")
 
 
 def normalize_record(pctx, record):

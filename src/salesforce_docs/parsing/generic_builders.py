@@ -190,10 +190,23 @@ def _provenance(related):
 
 
 def list_values(ctx, args):
-    """Uma linha por valor de uma lista simples em `path` (ex.: interfaces implementadas)."""
+    """Uma linha por valor de uma lista simples em `path` (ex.: interfaces implementadas).
+
+    `labels` + `labelPlaceholder` (opcional): descrição de cada valor, declarada no contrato
+    (ex.: target LWC -> onde o componente aparece); valor sem descrição: `unknownLabel`.
+    """
     value, _ = resolve(ctx, args["path"])
     ph = args.get("valuePlaceholder", "value")
-    return [{ph: format_value(v, None, ctx.sensitive)} for v in as_list(value) if v not in (None, "")]
+    rows = []
+    for v in as_list(value):
+        if v in (None, ""):
+            continue
+        row = {ph: format_value(v, None, ctx.sensitive)}
+        if args.get("labelPlaceholder"):
+            row[args["labelPlaceholder"]] = (args.get("labels") or {}).get(str(v),
+                                                                          args.get("unknownLabel", "Não mapeado"))
+        rows.append(row)
+    return rows
 
 
 def naming_convention(ctx, args, _render_props=None):

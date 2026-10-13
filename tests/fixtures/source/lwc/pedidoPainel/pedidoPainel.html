@@ -1,0 +1,10 @@
+<template>
+    <!-- <c-componente-comentado></c-componente-comentado> -->
+    <lightning-card title={titulo}>
+        <lightning-record-view-form record-id={recordId} object-api-name="Pedido__c">
+            <lightning-output-field field-name="Valor__c"></lightning-output-field>
+        </lightning-record-view-form>
+        <c-pedido-item pedido={pedido}></c-pedido-item>
+        <lightning-button label="Enviar" onclick={handleEnviar} disabled={podeAprovar}></lightning-button>
+    </lightning-card>
+</template>

@@ -9,6 +9,7 @@ Nenhum dado aqui veio de uma org real e nenhum deve ser usado como documentaçã
 - `source/`: XMLs em formato source usados pelo retrieve simulado.
 - `query/<Objeto>.json`: respostas simuladas de `sf data query`.
 - `source/triggers/` e `source/classes/PedidoTriggerHandler.cls`: triggers e handler simulados da Onda 02 (duas triggers em `Pedido__c`, para a seção de coexistência).
+- `source/lwc/` e `source/classes/PedidoController.cls`: bundles LWC simulados da Onda 03 (página, Quick Action headless e tela de Flow) e o controller Apex que eles chamam. `pedidoPainel/__tests__/` existe só para provar que testes Jest são ignorados.
 - `mvp-complete/`: camada usada no cenário `mvp_complete` (`FAKE_SF_SCENARIO=mvp_complete`). Tem prioridade sobre as fixtures base e acrescenta componentes para os tipos do MVP que, na base, ficam sem componentes: ExtlClntAppConfigurablePolicies, ExtlClntAppOauthConfigurablePolicies, WebLink e dados internos de ExternalCredential.
 
 ### Origem dos campos dos XMLs simulados novos
