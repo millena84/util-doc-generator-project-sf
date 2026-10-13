@@ -124,6 +124,14 @@
       "notes": "Imports @salesforce/customPermission e @salesforce/userPermission. O uso (esconder botão etc.) não é inferido."
     },
     {
+      "markdownSection": "Onde é usado (páginas Lightning)",
+      "builder": "page_usage_rows",
+      "source": "XML",
+      "args": { "keyPrefix": "c:" },
+      "emptyValue": "Não informado",
+      "notes": "FlexiPages processadas na execução com componentName c:<componente> (XML da FlexiPage)."
+    },
+    {
       "markdownSection": "Dados internos",
       "builder": "internal_record_properties",
       "source": "Objeto interno",

@@ -46,6 +46,12 @@
     "Role": { "folder": "roles", "contract": "role.schema.json", "documentSlug": "role" },
     "Group": { "folder": "public-groups", "contract": "public-group.schema.json", "documentSlug": "public-group" },
     "SecuritySettings": { "folder": "org-security", "contract": "org-security.schema.json", "documentSlug": "org-security" },
+    "FlexiPage": {
+      "folder": "flexipages",
+      "contract": "flexipage.schema.json",
+      "documentSlug": "flexipage",
+      "sourceParser": { "name": "flexipage", "suffix": ".flexipage-meta.xml", "key": "flexipage" }
+    },
     "CustomField": { "retrievedWith": "CustomObject" },
     "RecordType": { "retrievedWith": "CustomObject" },
     "ValidationRule": { "retrievedWith": "CustomObject" },
@@ -84,7 +90,7 @@
     "notes": "Onde cada componente está configurado (perfil, permission set, permission set group, fila, regra de compartilhamento). Fonte: XML. Os tipos abaixo são recuperados num retrieve único junto com os componentes documentados, para que o XML do Profile/PermissionSet traga as permissões desses componentes.",
     "enabled": true,
     "folder": "access",
-    "retrieveTypes": ["Profile", "PermissionSet", "PermissionSetGroup", "Queue", "SharingRules"],
+    "retrieveTypes": ["Profile", "PermissionSet", "PermissionSetGroup", "Queue", "SharingRules", "CustomApplication"],
     "grantContainers": { "Profile": "Perfil", "PermissionSet": "Permission Set" },
     "grants": [
       { "element": "classAccesses", "nameField": "apexClass", "enabledField": "enabled", "accessKey": "ApexClass", "accessLabel": "Executar" },
@@ -106,7 +112,16 @@
       "sharedTo": "sharedTo",
       "accessLevel": "accessLevel"
     },
-    "validationPending": "objectPermissions, PermissionSetGroup.permissionSets, SharingRules.sharedTo, customPermissions (name/enabled) e o formato de externalCredentialPrincipal não confirmados nesta adaptação; confirmar no piloto (documentation/piloto-org-real.md)."
+    "pageAssignments": {
+      "notes": "Ativação de páginas Lightning por app (actionOverrides) e por app + perfil/record type (profileActionOverrides) no XML do CustomApplication.",
+      "metadataType": "CustomApplication",
+      "elements": { "actionOverrides": "Padrão do app", "profileActionOverrides": "App + perfil" },
+      "typeField": "type",
+      "typeValue": "Flexipage",
+      "contentField": "content",
+      "fields": ["actionName", "formFactor", "pageOrSobjectType", "profile", "recordType"]
+    },
+    "validationPending": "objectPermissions, PermissionSetGroup.permissionSets, SharingRules.sharedTo, customPermissions (name/enabled), CustomApplication.profileActionOverrides e o formato de externalCredentialPrincipal não confirmados nesta adaptação; confirmar no piloto (documentation/piloto-org-real.md)."
   },
   "automationIndex": {
     "notes": "Automações que convivem no mesmo objeto (documento de Apex Trigger). Fonte: XML/código dos componentes processados na execução. Fases na ordem oficial de execução; 'order' null = posição relativa não confirmada nesta adaptação.",
@@ -134,10 +149,16 @@
     "validationPending": "Flow.triggerOrder e a posição relativa das fases de exclusão (delete/undelete) não confirmados nesta adaptação; confirmar no piloto (documentation/piloto-org-real.md)."
   },
   "recordIndex": {
-    "notes": "Campos do XML de outros componentes guardados no índice da execução: OWD por objeto (documento de segurança da org e de regras de compartilhamento) e parentRole (hierarquia de papéis).",
+    "notes": "Campos do XML de outros componentes guardados no índice da execução: OWD por objeto (documento de segurança da org e de regras de compartilhamento), parentRole (hierarquia de papéis) e uso/ativação de páginas Lightning (pages).",
     "fields": {
       "CustomObject": ["label", "sharingModel", "externalSharingModel"],
       "Role": ["name", "parentRole"]
+    },
+    "pages": {
+      "notes": "Onde cada componente é usado (FlexiPage processada) e páginas ativadas como padrão da org (actionOverrides do CustomObject processado).",
+      "pageType": "FlexiPage",
+      "parsedKey": "flexipage",
+      "orgDefault": { "metadataType": "CustomObject", "element": "actionOverrides", "typeField": "type", "typeValue": "Flexipage", "contentField": "content", "fields": ["actionName", "formFactor"] }
     }
   },
   "metadataTypeGroups": [
@@ -322,6 +343,19 @@
           "documentSuffix": "lwc-flow-screen"
         }
       ]
+    },
+    {
+      "group": "FlexiPage",
+      "primaryMetadataType": "FlexiPage",
+      "relatedMetadataTypes": [],
+      "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+      "referenceDoc": "_sf_utilities/ajudAI/contexto-flexipage.md",
+      "usesRunIndex": true,
+      "componentFilter": {
+        "excludeRegex": "^[A-Za-z0-9]+__",
+        "notes": "Páginas de pacote gerenciado (ns__Pagina) ficam fora."
+      },
+      "notes": "XML achatado pelo sourceParser flexipage. Processado com os grupos que usam o índice: o documento do LWC mostra as páginas que o usam; a ativação vem do CustomObject processado (padrão da org) e do CustomApplication (passo 6b)."
     },
     {
       "group": "PermissionSet",

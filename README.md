@@ -140,6 +140,7 @@ Registro da auditoria de segurança de 2026-10-11 (10 riscos: 1 crítico, 2 alto
 | ApexClass | `ONE_DOCUMENT_PER_COMPONENT` + subdocumentos por papel | — (o `.cls` é lido pelo parser estrutural configurado em `sourceParser`; classes de pacote gerenciado `ns__*` são excluídas por `componentFilter`) |
 | ApexTrigger | `ONE_DOCUMENT_PER_COMPONENT` | — (o `.trigger` é lido pelo parser `apex-trigger`; grupo com `usesRunIndex`: processado por último, mostra Flows, regras de validação e triggers do mesmo objeto; `lookupInventories` lista ApexClass só para conferência) |
 | LightningComponentBundle | `ONE_DOCUMENT_PER_COMPONENT` + subdocumentos por target | — (o bundle inteiro — `.js`, `.html`, `.css`, `.svg`, `.js-meta.xml` — é lido pelo parser `lwc` com `sourceParser.bundle`; `usesRunIndex` para conferir os métodos Apex chamados nas classes processadas) |
+| FlexiPage | `ONE_DOCUMENT_PER_COMPONENT` | — (XML achatado pelo parser `flexipage`; ativação pelo `actionOverrides` do CustomObject processado e pelo CustomApplication do passo 6b; `usesRunIndex`) |
 
 Cada componente (principal ou relacionado) é extraído e normalizado de forma independente; a agregação acontece apenas no documento.
 
@@ -240,9 +241,19 @@ Adaptação de `_sf_utilities/ajudAI/contexto-lwc.md` (ver a matriz em `document
 - **Parser do bundle** (`src/salesforce_docs/parsing/lwc_parser.py`, `sourceParser.bundle: true`): recebe todos os arquivos do componente; testes Jest (`__tests__/`) são ignorados; comentários e strings do JS e comentários do HTML não contam como evidência; o código nunca é renderizado. Lê os **atributos** do `.js-meta.xml` (`targetConfig targets=`, `property name/type/role`), que o normalizador XML genérico não guarda.
 - **Verificação nas classes Apex**: para cada método importado, confere no código da classe processada na execução se ele é `static`, `public`/`global`, tem `@AuraEnabled` e, com `@wire`, `cacheable=true`. Classe fora do escopo: "Classe não processada nesta execução".
 - **Acesso**: LWC não tem acesso próprio por perfil/permission set. A seção lista quem acessa as classes Apex chamadas (`classAccesses`, exigido para métodos `@AuraEnabled`) e quem tem as Custom Permissions importadas no JS (`customPermissions`, nova concessão em `accessSources.grants`).
-- **Conteúdo genérico** (ciclo de vida, comunicação, LDS, APIs de plataforma): [`documentation/referencia-lwc.md`](documentation/referencia-lwc.md). Onde o componente é colocado (FlexiPage) entra na Onda 04.
+- **Conteúdo genérico** (ciclo de vida, comunicação, LDS, APIs de plataforma): [`documentation/referencia-lwc.md`](documentation/referencia-lwc.md). Onde o componente é colocado: seção "Onde é usado (páginas Lightning)", a partir das FlexiPages processadas (Onda 04).
 
-## Segurança, acesso e governança — Onda 04
+## Páginas Lightning (FlexiPage) — Onda 04
+
+Adaptação de `_sf_utilities/ajudAI/contexto-flexipage.md` (ver a matriz em `documentation/refatoracao-1-matriz-ajudai.md`).
+
+- **Documento por página** (`modelo-doc-flexipage`): tipo, objeto, template, regiões (inclusive facets), componentes (com tipo pelo prefixo: `c:` do projeto, `flowruntime:interview` = Flow, plataforma, outros namespaces), campos de Dynamic Forms, propriedades dos componentes, regras de visibilidade (contexto Record/User/Permission/Client lido do critério), Flows embarcados — tudo do XML; dados internos do objeto `FlexiPage` (Tooling, `validationPending`).
+- **Parser** (`src/salesforce_docs/parsing/flexipage_parser.py`, `sourceParser` `flexipage`): lê o próprio `.flexipage-meta.xml` e achata regiões → `itemInstances` → `componentInstance`/`fieldInstance`; aceita também o formato antigo (`componentInstances` direto na região).
+- **Ativação** (última seção): padrão da org (`actionOverrides` do CustomObject processado), padrão do app e app + perfil/record type (`actionOverrides`/`profileActionOverrides` do CustomApplication, novo tipo do retrieve de acesso — `accessSources.pageAssignments`), e quem tem as Custom Permissions usadas na visibilidade. Página sem ativação nos componentes processados aparece como tal.
+- **Onde é usado**: o documento do LWC ganhou a seção "Onde é usado (páginas Lightning)" (`recordIndex.pages`).
+- **Conteúdo genérico** (templates, hierarquia de ativação, regras de visibilidade): [`documentation/referencia-flexipage.md`](documentation/referencia-flexipage.md).
+
+## Segurança, acesso e governança — Onda 05
 
 Adaptação de `_sf_utilities/ajudAI/contexto-seg-controle-acesso-gov.md` (ver a matriz em `documentation/refatoracao-1-matriz-ajudai.md`).
 
@@ -301,11 +312,11 @@ Os testes usam uma Salesforce CLI **simulada** (`tests/fixtures/bin/sf`) e respo
 ### Simulação de todas as documentações do MVP
 
 ```bash
-python3 -m unittest tests.test_mvp_simulation        # verifica os 28 modelos e os 27 metadata types
+python3 -m unittest tests.test_mvp_simulation        # verifica os 29 modelos e os 28 metadata types
 python3 -m tests.simulate_mvp --out /tmp/sim-mvp     # executa e gera o relatório passo a passo
 ```
 
-O cenário `mvp_complete` da CLI simulada sobrepõe `tests/fixtures/mvp-complete/` às fixtures base, de modo que todo metadata type do MVP tenha ao menos um componente. O relatório versionado em `documentation/simulacao/relatorio-simulacao-mvp.md` mostra, para essa simulação, a saída no terminal, os comandos por passo, a situação de cada tipo, a árvore de arquivos e o conteúdo dos 48 documentos gerados.
+O cenário `mvp_complete` da CLI simulada sobrepõe `tests/fixtures/mvp-complete/` às fixtures base, de modo que todo metadata type do MVP tenha ao menos um componente. O relatório versionado em `documentation/simulacao/relatorio-simulacao-mvp.md` mostra, para essa simulação, a saída no terminal, os comandos por passo, a situação de cada tipo, a árvore de arquivos e o conteúdo dos 50 documentos gerados.
 
 | Grupo | Documento(s) / modelo | Tipos que aparecem dentro do documento |
 |---|---|---|
@@ -328,6 +339,7 @@ O cenário `mvp_complete` da CLI simulada sobrepõe `tests/fixtures/mvp-complete
 | ApexClass | `modelo-doc-apex-class` + subdocumentos `modelo-doc-apex-batch`, `modelo-doc-apex-queueable`, `modelo-doc-apex-scheduler` e `modelo-doc-apex-future` (um por método) | — |
 | ApexTrigger | `modelo-doc-apex-trigger` | Flows record-triggered, regras de validação e outras triggers do mesmo objeto (coexistência) |
 | LightningComponentBundle | `modelo-doc-lwc` + subdocumentos `modelo-doc-lwc-quick-action` e `modelo-doc-lwc-flow-screen` | — (métodos Apex conferidos nas classes processadas) |
+| FlexiPage | `modelo-doc-flexipage` | ativação (CustomObject processado, CustomApplication do passo 6b); o LWC mostra as páginas que o usam |
 
 ## Estrutura
 

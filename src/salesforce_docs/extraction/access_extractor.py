@@ -44,7 +44,8 @@ def retrieve_access_sources(runner, session, specs, access_dir, errors_dir, proj
 
 
 def _empty_index():
-    return {"grants": {}, "permissionSetGroups": {}, "queues": {}, "sharingRules": {}, "sourceFiles": []}
+    return {"grants": {}, "permissionSetGroups": {}, "queues": {}, "sharingRules": {}, "pageAssignments": {},
+            "sourceFiles": []}
 
 
 def _add(index, key, name, row):
@@ -137,6 +138,21 @@ def build_access_index(files, project_root, cfg):
                      "sharedTo": "; ".join(targets) or None,
                      "accessLevel": rule.get(rules_cfg.get("accessLevel", "accessLevel")),
                      "source": f["path"]})
+    # Ativação de páginas Lightning por app: elementos do app que apontam para a FlexiPage
+    page_cfg = cfg.get("pageAssignments") or {}
+    for f in by_type.get(page_cfg.get("metadataType"), []):
+        _, data = parse_xml_file(root / f["path"])
+        for element, level in (page_cfg.get("elements") or {}).items():
+            for item in as_list(data.get(element)):
+                if not isinstance(item, dict) or str(item.get(page_cfg.get("typeField", "type"))) != \
+                        page_cfg.get("typeValue", "Flexipage"):
+                    continue
+                page = item.get(page_cfg.get("contentField", "content"))
+                if not page:
+                    continue
+                index["pageAssignments"].setdefault(page, []).append(
+                    {"level": level, "app": f["fullName"],
+                     **{k: item.get(k) for k in page_cfg.get("fields") or []}, "source": f["path"]})
     for key in index["grants"]:
         for name in index["grants"][key]:
             index["grants"][key][name].sort(key=lambda r: (r["originType"], r["origin"], r["via"] or ""))

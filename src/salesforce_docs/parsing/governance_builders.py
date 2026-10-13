@@ -2,7 +2,8 @@
 
 - `index_record_rows`: uma linha por componente de um tipo processado na execução, com campos
   copiados do XML (`recordIndex` no config), ex.: OWD (`sharingModel`) de cada objeto;
-- `role_hierarchy_rows`: papéis acima (cadeia de `parentRole`) e subordinados diretos.
+- `role_hierarchy_rows`: papéis acima (cadeia de `parentRole`) e subordinados diretos;
+- `page_usage_rows`: páginas Lightning (FlexiPage) que usam o componente (LWC, Flow).
 
 Sem índice: "Não informado". Só entram componentes processados na execução.
 """
@@ -14,6 +15,7 @@ from salesforce_docs import status as st
 DASH = "—"
 BUILDER_PLACEHOLDERS = {
     "role_hierarchy_rows": ("hierarchy_relation", "hierarchy_role", "hierarchy_level"),
+    "page_usage_rows": ("usage_page", "usage_page_type", "usage_region", "usage_identifier", "usage_visibility"),
 }
 
 
@@ -65,5 +67,24 @@ def role_hierarchy_rows(ctx, args):
     return rows
 
 
-TABLE_BUILDERS = {"index_record_rows": index_record_rows, "role_hierarchy_rows": role_hierarchy_rows}
+def page_usage_rows(ctx, args):
+    """Páginas Lightning (FlexiPage) processadas na execução que usam o componente.
+
+    args: keyPrefix — "c:" (LWC/Aura do projeto: c:<nome>) ou "flow:" (Flow em flowruntime:interview).
+    """
+    index = _index(ctx)
+    if index is None:
+        return []
+    key = f"{args.get('keyPrefix', 'c:')}{ctx.root().full_name}".lower()
+    rows = [{"usage_page": u["page"], "usage_page_type": u.get("pageType"), "usage_region": u.get("region") or DASH,
+             "usage_identifier": u.get("identifier") or DASH, "usage_visibility": u.get("hasVisibility") or DASH}
+            for u in (index.get("pageUsage") or {}).get(key, [])]
+    if not rows:
+        return [{"usage_page": "Nenhuma página processada nesta execução usa o componente", "usage_page_type": DASH,
+                 "usage_region": DASH, "usage_identifier": DASH, "usage_visibility": DASH}]
+    return rows
+
+
+TABLE_BUILDERS = {"index_record_rows": index_record_rows, "role_hierarchy_rows": role_hierarchy_rows,
+                  "page_usage_rows": page_usage_rows}
 BLOCK_BUILDERS = {}

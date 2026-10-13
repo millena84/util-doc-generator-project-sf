@@ -77,4 +77,4 @@ Conteúdo do `ajudAI`, *a confirmar* na página de ciclo de vida.
 | `@AuraEnabled`, `cacheable`, `static`, `public/global` dos métodos chamados | `Código Apex` (classes processadas na execução) |
 | Registro `LightningComponentBundle` | `Objeto interno` (Tooling, `validationPending`) |
 | Perfis/permission sets das classes chamadas e das Custom Permissions | `XML` (passo 6b) |
-| Onde o componente é colocado (FlexiPage, Quick Action, Flow) | Onda 04 |
+| Páginas Lightning que usam o componente | `XML` das FlexiPages processadas (Onda 04) |

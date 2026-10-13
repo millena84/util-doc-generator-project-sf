@@ -11,7 +11,7 @@ from salesforce_docs import status as st
 
 API = "inventory/org-dev/api-v67"
 
-# Documento -> modelo esperado (os 28 modelos de documentation/models/api-v67).
+# Documento -> modelo esperado (os 29 modelos de documentation/models/api-v67).
 EXPECTED_DOCS = {
     "doc-meu-flow-flow.md": "modelo-doc-flow-vapi-67.md",
     "doc-tela-cadastro-flow.md": "modelo-doc-flow-vapi-67.md",
@@ -53,7 +53,10 @@ EXPECTED_DOCS = {
     "doc-pedidoacaorapida-lwc-quick-action.md": "modelo-doc-lwc-quick-action-vapi-67.md",
     "doc-pedidotelaflow-lwc.md": "modelo-doc-lwc-vapi-67.md",
     "doc-pedidotelaflow-lwc-flow-screen.md": "modelo-doc-lwc-flow-screen-vapi-67.md",
-    # Segurança, acesso e governança (Onda 04)
+    # Páginas Lightning (Onda 04)
+    "doc-pedido-record-page-flexipage.md": "modelo-doc-flexipage-vapi-67.md",
+    "doc-pedidos-app-page-flexipage.md": "modelo-doc-flexipage-vapi-67.md",
+    # Segurança, acesso e governança (Onda 05)
     "doc-security-org-security.md": "modelo-doc-org-security-vapi-67.md",
     "doc-admin-profile.md": "modelo-doc-profile-vapi-67.md",
     "doc-vendas-profile.md": "modelo-doc-profile-vapi-67.md",
@@ -100,7 +103,7 @@ LISTED_TYPES = {
     "Certificate": "certificates", "ApexClass": "apex-classes", "PermissionSet": "permission-sets",
     "ApexTrigger": "apex-triggers", "LightningComponentBundle": "lwc",
     "Profile": "profiles", "PermissionSetGroup": "permission-set-groups", "SharingRules": "sharing-rules",
-    "Role": "roles", "Group": "public-groups",
+    "Role": "roles", "Group": "public-groups", "FlexiPage": "flexipages",
 }
 # Tipos documentados cujo XML vem do retrieve das fontes de acesso (passo 6b).
 PREFETCHED_TYPES = {"PermissionSet", "Profile", "PermissionSetGroup", "SharingRules"}

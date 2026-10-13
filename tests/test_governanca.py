@@ -1,4 +1,4 @@
-"""Segurança, acesso e governança (Onda 04): perfil, permission set group, regras de
+"""Segurança, acesso e governança (Onda 05): perfil, permission set group, regras de
 compartilhamento, papéis, grupos públicos e documento único de segurança da org.
 
 Usa a CLI simulada e os XMLs SIMULADOS de tests/fixtures/source.

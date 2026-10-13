@@ -78,6 +78,14 @@ Para ser chamado pelo LWC, o método precisa ser `static`, `public` ou `global` 
 |---|---|---|
 | {{ perm_kind }} | {{ perm_name }} | Código LWC |
 
+## Onde é usado (páginas Lightning)
+
+Páginas Lightning (FlexiPage) processadas nesta execução que incluem o componente.
+
+| Página | Tipo da página | Região | Identificador | Visibilidade condicional | Fonte |
+|---|---|---|---|---|---|
+| {{ usage_page }} | {{ usage_page_type }} | {{ usage_region }} | {{ usage_identifier }} | {{ usage_visibility }} | XML |
+
 ## Dados internos
 
 | Propriedade | Valor | Fonte |

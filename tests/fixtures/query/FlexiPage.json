@@ -1,0 +1,30 @@
+{
+  "done": true,
+  "totalSize": 2,
+  "records": [
+    {
+      "attributes": {
+        "type": "FlexiPage"
+      },
+      "Id": "0M0000000000000AAA",
+      "DeveloperName": "Pedido_Record_Page",
+      "MasterLabel": "Pedido - Página de registro",
+      "Type": "RecordPage",
+      "EntityDefinitionId": "01I000000000000AAA",
+      "Description": null,
+      "NamespacePrefix": null
+    },
+    {
+      "attributes": {
+        "type": "FlexiPage"
+      },
+      "Id": "0M0000000000001AAA",
+      "DeveloperName": "Pedidos_App_Page",
+      "MasterLabel": "Pedidos - Página de app",
+      "Type": "AppPage",
+      "EntityDefinitionId": null,
+      "Description": null,
+      "NamespacePrefix": null
+    }
+  ]
+}

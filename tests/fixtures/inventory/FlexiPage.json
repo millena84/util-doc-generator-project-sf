@@ -1,0 +1,20 @@
+[
+  {
+    "fullName": "Pedido_Record_Page",
+    "type": "FlexiPage",
+    "fileName": "flexipages/Pedido_Record_Page.flexipage",
+    "id": "0PS000000000000AAA",
+    "namespacePrefix": "",
+    "manageableState": "unmanaged",
+    "lastModifiedDate": "2026-10-01T00:00:00.000Z"
+  },
+  {
+    "fullName": "Pedidos_App_Page",
+    "type": "FlexiPage",
+    "fileName": "flexipages/Pedidos_App_Page.flexipage",
+    "id": "0PS000000000000AAA",
+    "namespacePrefix": "",
+    "manageableState": "unmanaged",
+    "lastModifiedDate": "2026-10-01T00:00:00.000Z"
+  }
+]
