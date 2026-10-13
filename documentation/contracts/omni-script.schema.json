@@ -1,0 +1,179 @@
+{
+  "metadataType": "OmniScript",
+  "apiVersion": "67.0",
+  "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+  "xmlFilePattern": "**/omniScripts/*.os-meta.xml",
+  "template": "modelo-doc-omni-script-vapi-{apiMajor}.md",
+  "titlePath": "@fullName",
+  "referenceDoc": "_sf_utilities/ajudAI/contexto-doc-industries-omni.md",
+  "classification": "Documento de todo OmniScript do OmniStudio padrão.",
+  "properties": [
+    {
+      "name": "Name",
+      "placeholder": "os_name",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Type",
+      "placeholder": "proc_type",
+      "path": "type",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "SubType",
+      "placeholder": "proc_subtype",
+      "path": "subType",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Type_SubType",
+      "placeholder": "proc_key",
+      "path": "omni.procedureKey",
+      "source": "Derivado",
+      "required": false,
+      "markdownSection": "Identificação",
+      "notes": "Type e SubType unidos por _: nome usado por quem chama."
+    },
+    {
+      "name": "Language",
+      "placeholder": "proc_language",
+      "path": "language",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "IsActive",
+      "placeholder": "is_active",
+      "path": "isActive",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "VersionNumber",
+      "placeholder": "version_number",
+      "path": "versionNumber",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Description",
+      "placeholder": "description",
+      "path": "description",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    }
+  ],
+  "tables": [
+    {
+      "markdownSection": "Configurações",
+      "builder": "leaf_properties",
+      "source": "XML",
+      "args": {
+        "keyPlaceholder": "leaf_key",
+        "valuePlaceholder": "leaf_value",
+        "exclude": [
+          "name",
+          "type",
+          "subType",
+          "language",
+          "inputType",
+          "outputType",
+          "isActive",
+          "versionNumber",
+          "description",
+          "propertySetConfig",
+          "dataSourceConfig",
+          "sampleDataSourceResponse"
+        ]
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Folhas do XML como estão (nomes de elemento não confirmados nesta adaptação)."
+    },
+    {
+      "markdownSection": "Elementos",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "omni.elements",
+        "columns": {
+          "el_order": "order",
+          "el_name": "name",
+          "el_type": "type",
+          "el_level": "level",
+          "el_parent": "parent",
+          "el_active": "active",
+          "el_refs": "references"
+        }
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "omniProcessElements/childElements na ordem do XML; referências extraídas do propertySetConfig (o texto não é documentado)."
+    },
+    {
+      "markdownSection": "Componentes referenciados",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "omni.references",
+        "columns": {
+          "ref_kind": "kind",
+          "ref_name": "name",
+          "ref_element": "element"
+        }
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Chaves bundle, integrationProcedureKey, ipMethod, remoteClass e namedCredential do JSON de configuração (a confirmar)."
+    },
+    {
+      "markdownSection": "Dados internos",
+      "builder": "internal_record_properties",
+      "source": "Objeto interno",
+      "args": {
+        "keyPlaceholder": "internal_property",
+        "valuePlaceholder": "internal_value"
+      },
+      "emptyValue": "Não informado"
+    },
+    {
+      "markdownSection": "Acesso e configuração",
+      "builder": "access_rows",
+      "source": "XML",
+      "args": {
+        "byPath": [
+          {
+            "path": "omni.apexClasses",
+            "accessKey": "ApexClass",
+            "via": "Classe Apex {name}"
+          }
+        ],
+        "noneText": "Nenhuma classe Apex referenciada com acesso concedido"
+      },
+      "emptyValue": "Não informado",
+      "notes": "classAccesses (passo 6b) das classes Apex referenciadas (remoteClass)."
+    }
+  ],
+  "internalData": {
+    "enabled": true,
+    "source": "Objeto interno",
+    "object": "OmniProcess",
+    "useToolingApi": false,
+    "query": "SELECT Id, UniqueName, Type, SubType, Language, VersionNumber, IsActive, IsIntegrationProcedure FROM OmniProcess WHERE UniqueName = '{fullName}'",
+    "expectSingleRecord": true,
+    "blocking": false,
+    "validationPending": "Objeto OmniProcess: confirmar campos e o filtro UniqueName = fullName no piloto."
+  },
+  "evidence": [
+    "OmniStudio Metadata API types (OmniDataTransform, OmniIntegrationProcedure, OmniScript, OmniUiCard) — developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_types_list.htm",
+    "OmniStudio — help.salesforce.com/s/articleView?id=sf.os_omnistudio.htm"
+  ]
+}

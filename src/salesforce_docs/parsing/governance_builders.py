@@ -18,6 +18,7 @@ BUILDER_PLACEHOLDERS = {
     "page_usage_rows": ("usage_page", "usage_page_type", "usage_region", "usage_identifier", "usage_visibility"),
     "event_reference_rows": ("event_role", "event_kind", "event_component", "event_detail", "event_subscriber_config"),
     "rule_target_rows": ("target_rule_type", "target_object", "target_rule", "target_order", "target_active"),
+    "omni_usage_rows": ("caller_component", "caller_type", "caller_element"),
 }
 
 
@@ -132,7 +133,23 @@ def rule_target_rows(ctx, args):
                      "target_object": DASH, "target_rule": DASH, "target_order": DASH, "target_active": DASH}]
 
 
+def omni_usage_rows(ctx, args):
+    """Componentes do OmniStudio processados na execução que referenciam este (ex.: OmniScript que
+    chama o Integration Procedure). args: kind (ex.: "DataRaptor"), path — nome pelo qual o
+    componente é referenciado (ex.: omni.procedureKey = Type_SubType)."""
+    from salesforce_docs.rendering.context import resolve
+    index = _index(ctx)
+    name, _ = resolve(ctx, args.get("path", "@fullName"))
+    if index is None or not name:
+        return []
+    rows = [{"caller_component": u["component"], "caller_type": u["componentType"],
+             "caller_element": u.get("element") or DASH}
+            for u in (index.get("omniRefs") or {}).get(f"{args['kind']}:{name}".lower(), [])]
+    return rows or [{"caller_component": "Nenhum componente processado nesta execução referencia este",
+                     "caller_type": DASH, "caller_element": DASH}]
+
+
 TABLE_BUILDERS = {"index_record_rows": index_record_rows, "role_hierarchy_rows": role_hierarchy_rows,
                   "page_usage_rows": page_usage_rows, "event_reference_rows": event_reference_rows,
-                  "rule_target_rows": rule_target_rows}
+                  "rule_target_rows": rule_target_rows, "omni_usage_rows": omni_usage_rows}
 BLOCK_BUILDERS = {}

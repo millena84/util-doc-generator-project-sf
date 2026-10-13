@@ -1,0 +1,11 @@
+[
+  {
+    "fullName": "Pedido_EnviarERP_Procedure_1",
+    "type": "OmniIntegrationProcedure",
+    "fileName": "omniIntegrationProcedures/Pedido_EnviarERP_Procedure_1.oip",
+    "id": "0PS000000000000AAA",
+    "namespacePrefix": "",
+    "manageableState": "unmanaged",
+    "lastModifiedDate": "2026-10-01T00:00:00.000Z"
+  }
+]

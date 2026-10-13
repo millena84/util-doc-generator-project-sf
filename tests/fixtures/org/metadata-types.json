@@ -335,6 +335,38 @@
         "metaFile": false,
         "suffix": "site",
         "xmlName": "ExperienceBundle"
+      },
+      {
+        "childXmlNames": [],
+        "directoryName": "omniDataTransforms",
+        "inFolder": false,
+        "metaFile": false,
+        "suffix": "rpt",
+        "xmlName": "OmniDataTransform"
+      },
+      {
+        "childXmlNames": [],
+        "directoryName": "omniIntegrationProcedures",
+        "inFolder": false,
+        "metaFile": false,
+        "suffix": "oip",
+        "xmlName": "OmniIntegrationProcedure"
+      },
+      {
+        "childXmlNames": [],
+        "directoryName": "omniScripts",
+        "inFolder": false,
+        "metaFile": false,
+        "suffix": "os",
+        "xmlName": "OmniScript"
+      },
+      {
+        "childXmlNames": [],
+        "directoryName": "omniUiCards",
+        "inFolder": false,
+        "metaFile": false,
+        "suffix": "ouc",
+        "xmlName": "OmniUiCard"
       }
     ],
     "organizationNamespace": "",

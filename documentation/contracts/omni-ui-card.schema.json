@@ -1,0 +1,160 @@
+{
+  "metadataType": "OmniUiCard",
+  "apiVersion": "67.0",
+  "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+  "xmlFilePattern": "**/omniUiCards/*.ouc-meta.xml",
+  "template": "modelo-doc-omni-ui-card-vapi-{apiMajor}.md",
+  "titlePath": "@fullName",
+  "referenceDoc": "_sf_utilities/ajudAI/contexto-doc-industries-omni.md",
+  "classification": "Documento de todo FlexCard (OmniUiCard) do OmniStudio padrão.",
+  "properties": [
+    {
+      "name": "Name",
+      "placeholder": "card_name",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "IsActive",
+      "placeholder": "is_active",
+      "path": "isActive",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "VersionNumber",
+      "placeholder": "version_number",
+      "path": "versionNumber",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Description",
+      "placeholder": "description",
+      "path": "description",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Tipo da fonte de dados",
+      "placeholder": "data_source_type",
+      "path": "omni.dataSourceType",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação",
+      "notes": "type do dataSourceConfig (a confirmar)."
+    },
+    {
+      "name": "Fonte de dados",
+      "placeholder": "data_source",
+      "path": "omni.dataSource",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação",
+      "notes": "Componente referenciado no dataSourceConfig."
+    }
+  ],
+  "tables": [
+    {
+      "markdownSection": "Configurações",
+      "builder": "leaf_properties",
+      "source": "XML",
+      "args": {
+        "keyPlaceholder": "leaf_key",
+        "valuePlaceholder": "leaf_value",
+        "exclude": [
+          "name",
+          "type",
+          "subType",
+          "language",
+          "inputType",
+          "outputType",
+          "isActive",
+          "versionNumber",
+          "description",
+          "propertySetConfig",
+          "dataSourceConfig",
+          "sampleDataSourceResponse"
+        ]
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Folhas do XML como estão (nomes de elemento não confirmados nesta adaptação)."
+    },
+    {
+      "markdownSection": "Ações",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "omni.actions",
+        "columns": {
+          "action_label": "label",
+          "action_type": "type",
+          "action_refs": "references"
+        }
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "actionList no propertySetConfig: label, stateAction.type e referências (a confirmar)."
+    },
+    {
+      "markdownSection": "Componentes referenciados",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "omni.references",
+        "columns": {
+          "ref_kind": "kind",
+          "ref_name": "name",
+          "ref_element": "element"
+        }
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Chaves bundle, integrationProcedureKey, ipMethod, remoteClass e namedCredential do JSON de configuração (a confirmar)."
+    },
+    {
+      "markdownSection": "Dados internos",
+      "builder": "internal_record_properties",
+      "source": "Objeto interno",
+      "args": {
+        "keyPlaceholder": "internal_property",
+        "valuePlaceholder": "internal_value"
+      },
+      "emptyValue": "Não informado"
+    },
+    {
+      "markdownSection": "Acesso e configuração",
+      "builder": "access_rows",
+      "source": "XML",
+      "args": {
+        "byPath": [
+          {
+            "path": "omni.apexClasses",
+            "accessKey": "ApexClass",
+            "via": "Classe Apex {name}"
+          }
+        ],
+        "noneText": "Nenhuma classe Apex referenciada com acesso concedido"
+      },
+      "emptyValue": "Não informado",
+      "notes": "classAccesses (passo 6b) das classes Apex referenciadas (remoteClass)."
+    }
+  ],
+  "internalData": {
+    "enabled": true,
+    "source": "Objeto interno",
+    "object": "OmniUiCard",
+    "useToolingApi": false,
+    "query": "SELECT Id, UniqueName, Name, VersionNumber, IsActive FROM OmniUiCard WHERE UniqueName = '{fullName}'",
+    "expectSingleRecord": true,
+    "blocking": false,
+    "validationPending": "Objeto OmniUiCard: confirmar campos e o filtro UniqueName = fullName no piloto."
+  },
+  "evidence": [
+    "OmniStudio Metadata API types (OmniDataTransform, OmniIntegrationProcedure, OmniScript, OmniUiCard) — developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_types_list.htm",
+    "OmniStudio — help.salesforce.com/s/articleView?id=sf.os_omnistudio.htm"
+  ]
+}

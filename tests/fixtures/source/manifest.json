@@ -637,5 +637,33 @@
       "fullName": "Portal Clientes Profile",
       "path": "profiles/Portal Clientes Profile.profile-meta.xml"
     }
+  ],
+  "OmniDataTransform:ExtrairPedido": [
+    {
+      "type": "OmniDataTransform",
+      "fullName": "ExtrairPedido",
+      "path": "omniDataTransforms/ExtrairPedido.rpt-meta.xml"
+    }
+  ],
+  "OmniIntegrationProcedure:Pedido_EnviarERP_Procedure_1": [
+    {
+      "type": "OmniIntegrationProcedure",
+      "fullName": "Pedido_EnviarERP_Procedure_1",
+      "path": "omniIntegrationProcedures/Pedido_EnviarERP_Procedure_1.oip-meta.xml"
+    }
+  ],
+  "OmniScript:Vendas_CriarPedido_Portuguese_1": [
+    {
+      "type": "OmniScript",
+      "fullName": "Vendas_CriarPedido_Portuguese_1",
+      "path": "omniScripts/Vendas_CriarPedido_Portuguese_1.os-meta.xml"
+    }
+  ],
+  "OmniUiCard:CartaoPedido_1": [
+    {
+      "type": "OmniUiCard",
+      "fullName": "CartaoPedido_1",
+      "path": "omniUiCards/CartaoPedido_1.ouc-meta.xml"
+    }
   ]
 }

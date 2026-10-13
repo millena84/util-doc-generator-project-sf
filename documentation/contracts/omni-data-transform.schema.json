@@ -1,0 +1,194 @@
+{
+  "metadataType": "OmniDataTransform",
+  "apiVersion": "67.0",
+  "documentStrategy": "ONE_DOCUMENT_PER_COMPONENT",
+  "xmlFilePattern": "**/omniDataTransforms/*.rpt-meta.xml",
+  "template": "modelo-doc-omni-data-transform-vapi-{apiMajor}.md",
+  "titlePath": "@fullName",
+  "referenceDoc": "_sf_utilities/ajudAI/contexto-doc-industries-omni.md",
+  "classification": "Documento de todo DataRaptor (OmniDataTransform) do OmniStudio padrão.",
+  "properties": [
+    {
+      "name": "Name",
+      "placeholder": "dr_name",
+      "path": "@fullName",
+      "source": "XML",
+      "required": true,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Tipo",
+      "placeholder": "dr_type",
+      "path": "type",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação",
+      "notes": "Ex.: Extract, Turbo Extract, Transform, Load (valores a confirmar)."
+    },
+    {
+      "name": "Entrada",
+      "placeholder": "input_type",
+      "path": "inputType",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Saída",
+      "placeholder": "output_type",
+      "path": "outputType",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "IsActive",
+      "placeholder": "is_active",
+      "path": "isActive",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "VersionNumber",
+      "placeholder": "version_number",
+      "path": "versionNumber",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    },
+    {
+      "name": "Description",
+      "placeholder": "description",
+      "path": "description",
+      "source": "XML",
+      "required": false,
+      "markdownSection": "Identificação"
+    }
+  ],
+  "tables": [
+    {
+      "markdownSection": "Configurações",
+      "builder": "leaf_properties",
+      "source": "XML",
+      "args": {
+        "keyPlaceholder": "leaf_key",
+        "valuePlaceholder": "leaf_value",
+        "exclude": [
+          "name",
+          "type",
+          "subType",
+          "language",
+          "inputType",
+          "outputType",
+          "isActive",
+          "versionNumber",
+          "description",
+          "propertySetConfig",
+          "dataSourceConfig",
+          "sampleDataSourceResponse"
+        ]
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Folhas do XML como estão (nomes de elemento não confirmados nesta adaptação)."
+    },
+    {
+      "markdownSection": "Itens de mapeamento",
+      "builder": "path_rows",
+      "source": "XML",
+      "args": {
+        "path": "omni.items",
+        "columns": {
+          "item_order": "order",
+          "item_in_obj": "inputObject",
+          "item_in_field": "inputField",
+          "item_out_obj": "outputObject",
+          "item_out_field": "outputField",
+          "item_filter": "filter",
+          "item_formula": "formula"
+        }
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "omniDataTransformItem: inputObjectName/inputFieldName, outputObjectName/outputFieldName, filtro e fórmula (nomes a confirmar)."
+    },
+    {
+      "markdownSection": "Objetos lidos",
+      "builder": "list_values",
+      "source": "Derivado",
+      "args": {
+        "path": "omni.objectsRead",
+        "valuePlaceholder": "object_read"
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Objetos de entrada (Extract/Turbo) e de lookup."
+    },
+    {
+      "markdownSection": "Objetos gravados",
+      "builder": "list_values",
+      "source": "Derivado",
+      "args": {
+        "path": "omni.objectsWritten",
+        "valuePlaceholder": "object_written"
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Objetos de saída de um Load."
+    },
+    {
+      "markdownSection": "Quem usa",
+      "builder": "omni_usage_rows",
+      "source": "XML",
+      "args": {
+        "kind": "DataRaptor",
+        "path": "omni.name"
+      },
+      "emptyValue": "Não informado",
+      "notes": "Integration Procedures, OmniScripts e FlexCards processados cujo JSON referencia o DataRaptor (bundle)."
+    },
+    {
+      "markdownSection": "Dados internos",
+      "builder": "internal_record_properties",
+      "source": "Objeto interno",
+      "args": {
+        "keyPlaceholder": "internal_property",
+        "valuePlaceholder": "internal_value"
+      },
+      "emptyValue": "Não informado"
+    },
+    {
+      "markdownSection": "Acesso e configuração",
+      "builder": "access_rows",
+      "source": "XML",
+      "args": {
+        "byPath": [
+          {
+            "path": "omni.objectsRead",
+            "accessKey": "CustomObject",
+            "via": "Objeto lido {name}"
+          },
+          {
+            "path": "omni.objectsWritten",
+            "accessKey": "CustomObject",
+            "via": "Objeto gravado {name}"
+          }
+        ],
+        "noneText": "Nenhuma permissão de objeto encontrada para os objetos do DataRaptor"
+      },
+      "emptyValue": "Não informado",
+      "notes": "objectPermissions (passo 6b) dos objetos lidos e gravados."
+    }
+  ],
+  "internalData": {
+    "enabled": true,
+    "source": "Objeto interno",
+    "object": "OmniDataTransform",
+    "useToolingApi": false,
+    "query": "SELECT Id, Name, Type, IsActive, VersionNumber FROM OmniDataTransform WHERE Name = '{fullName}'",
+    "expectSingleRecord": true,
+    "blocking": false,
+    "validationPending": "Objeto OmniDataTransform: confirmar campos e se Name é o fullName no piloto."
+  },
+  "evidence": [
+    "OmniStudio Metadata API types (OmniDataTransform, OmniIntegrationProcedure, OmniScript, OmniUiCard) — developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_types_list.htm",
+    "OmniStudio — help.salesforce.com/s/articleView?id=sf.os_omnistudio.htm"
+  ]
+}

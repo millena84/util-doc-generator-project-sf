@@ -11,7 +11,7 @@ from salesforce_docs import status as st
 
 API = "inventory/org-dev/api-v67"
 
-# Documento -> modelo esperado (os 42 modelos de documentation/models/api-v67).
+# Documento -> modelo esperado (os 46 modelos de documentation/models/api-v67).
 EXPECTED_DOCS = {
     "doc-meu-flow-flow.md": "modelo-doc-flow-vapi-67.md",
     "doc-tela-cadastro-flow.md": "modelo-doc-flow-vapi-67.md",
@@ -63,6 +63,11 @@ EXPECTED_DOCS = {
     "doc-portal-clientes-site.md": "modelo-doc-custom-site-vapi-67.md",
     "doc-portal-clientes1-experience.md": "modelo-doc-experience-bundle-vapi-67.md",
     "doc-portal-clientes-profile-profile.md": "modelo-doc-profile-vapi-67.md",
+    # OmniStudio (Onda 10)
+    "doc-extrairpedido-dataraptor.md": "modelo-doc-omni-data-transform-vapi-67.md",
+    "doc-pedido-enviarerp-procedure-1-integration-procedure.md": "modelo-doc-omni-integration-procedure-vapi-67.md",
+    "doc-vendas-criarpedido-portuguese-1-omniscript.md": "modelo-doc-omni-script-vapi-67.md",
+    "doc-cartaopedido-1-flexcard.md": "modelo-doc-omni-ui-card-vapi-67.md",
     # Service Cloud (Onda 07)
     "doc-case-assignment-rules.md": "modelo-doc-assignment-rules-vapi-67.md",
     "doc-case-auto-response-rules.md": "modelo-doc-auto-response-rules-vapi-67.md",
@@ -134,6 +139,8 @@ LISTED_TYPES = {
     "Territory2Model": "territory2-models", "Territory2": "territory2-models", "Territory2Rule": "territory2-models",
     "OpportunitySplitType": "opportunity-split-types",
     "Network": "networks", "CustomSite": "sites", "ExperienceBundle": "experiences",
+    "OmniDataTransform": "omni-data-transforms", "OmniIntegrationProcedure": "omni-integration-procedures",
+    "OmniScript": "omni-scripts", "OmniUiCard": "omni-ui-cards",
 }
 # Tipos documentados cujo XML vem do retrieve das fontes de acesso (passo 6b).
 PREFETCHED_TYPES = {"PermissionSet", "Profile", "PermissionSetGroup", "SharingRules", "Queue"}

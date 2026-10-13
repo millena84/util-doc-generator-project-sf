@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SIMULADO para testes. -->
+<OmniScript xmlns="http://soap.sforce.com/2006/04/metadata">
+    <isActive>true</isActive>
+    <isIntegrationProcedure>false</isIntegrationProcedure>
+    <language>Portuguese</language>
+    <name>CriarPedido</name>
+    <omniProcessElements>
+        <childElements>
+            <isActive>true</isActive>
+            <level>1</level>
+            <name>Texto_Ajuda</name>
+            <propertySetConfig>{"label": "Ajuda", "textKey": "x"}</propertySetConfig>
+            <type>Text Block</type>
+        </childElements>
+        <isActive>true</isActive>
+        <level>0</level>
+        <name>Passo_Cliente</name>
+        <propertySetConfig>{"label": "Cliente"}</propertySetConfig>
+        <type>Step</type>
+    </omniProcessElements>
+    <omniProcessElements>
+        <isActive>true</isActive>
+        <level>0</level>
+        <name>DR_Carregar</name>
+        <propertySetConfig>{"bundle": "ExtrairPedido"}</propertySetConfig>
+        <type>DataRaptor Extract Action</type>
+    </omniProcessElements>
+    <omniProcessElements>
+        <isActive>true</isActive>
+        <level>0</level>
+        <name>IP_Enviar</name>
+        <propertySetConfig>{"integrationProcedureKey": "Pedido_EnviarERP", "label": "Enviar"}</propertySetConfig>
+        <type>Integration Procedure Action</type>
+    </omniProcessElements>
+    <omniProcessElements>
+        <isActive>true</isActive>
+        <level>0</level>
+        <name>Navegar</name>
+        <propertySetConfig>{"label": "Ir para o registro"}</propertySetConfig>
+        <type>Navigate Action</type>
+    </omniProcessElements>
+    <subType>CriarPedido</subType>
+    <type>Vendas</type>
+    <versionNumber>1</versionNumber>
+</OmniScript>

@@ -1,0 +1,16 @@
+{
+  "done": true,
+  "totalSize": 1,
+  "records": [
+    {
+      "attributes": {
+        "type": "OmniUiCard"
+      },
+      "Id": "0kc000000000001AAA",
+      "UniqueName": "CartaoPedido_1",
+      "Name": "CartaoPedido",
+      "VersionNumber": 1,
+      "IsActive": true
+    }
+  ]
+}
