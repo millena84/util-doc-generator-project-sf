@@ -1,0 +1,194 @@
+{
+  "notes": "Regras da Fase 2 (integration_discovery). Relação = (tipo de origem, tipo de destino); 'pathEndsWith' ou 'pathRegex' (caminho JSON sem índices) refinam pelo campo onde o nome foi achado; vale a primeira regra que casar. Nenhuma relação é criada sem o nome do destino aparecer no campo data (ou codeBody) do JSON normalizado de origem ou de um relacionado lido junto.",
+  "relationships": [
+    {
+      "from": "ApexClass",
+      "to": "NamedCredential",
+      "relationship": "CALLS_ENDPOINT"
+    },
+    {
+      "from": "ApexClass",
+      "to": "CustomObject",
+      "relationship": "REFERENCES_OBJECT"
+    },
+    {
+      "from": "ApexClass",
+      "to": "ApexClass",
+      "pathRegex": "\\.apex\\.extends$",
+      "relationship": "EXTENDS_CLASS"
+    },
+    {
+      "from": "ApexClass",
+      "to": "ApexClass",
+      "pathRegex": "\\.apex\\.implements(Declared)?$",
+      "relationship": "IMPLEMENTS_INTERFACE"
+    },
+    {
+      "from": "ApexClass",
+      "to": "ApexClass",
+      "pathRegex": "\\.(asyncInvocations|chainedJobs)\\.targetClass$",
+      "relationship": "INVOKES_CLASS"
+    },
+    {
+      "from": "ApexClass",
+      "to": "ApexClass",
+      "pathRegex": "\\.apex\\.(methods|constructors)\\.",
+      "relationship": "USES_TYPE"
+    },
+    {
+      "from": "ApexClass",
+      "to": "ApexClass",
+      "relationship": "REFERENCES_CLASS"
+    },
+    {
+      "from": "ApexClass",
+      "to": "CustomMetadata",
+      "relationship": "USES_METADATA"
+    },
+    {
+      "from": "ApexTrigger",
+      "to": "CustomObject",
+      "pathEndsWith": "apex.sObject",
+      "relationship": "TRIGGERS_ON_OBJECT"
+    },
+    {
+      "from": "ApexTrigger",
+      "to": "CustomObject",
+      "relationship": "REFERENCES_OBJECT"
+    },
+    {
+      "from": "ApexTrigger",
+      "to": "ApexClass",
+      "pathRegex": "\\.(referencedClasses\\.className|asyncInvocations\\.targetClass)$",
+      "relationship": "INVOKES_CLASS"
+    },
+    {
+      "from": "ApexTrigger",
+      "to": "ApexClass",
+      "relationship": "REFERENCES_CLASS"
+    },
+    {
+      "from": "ApexTrigger",
+      "to": "CustomMetadata",
+      "relationship": "USES_METADATA"
+    },
+    {
+      "from": "CustomMetadata",
+      "to": "NamedCredential",
+      "relationship": "DEFINES_ENDPOINT"
+    },
+    {
+      "from": "CustomMetadata",
+      "to": "ConnectedApp",
+      "relationship": "REFERENCES_APP"
+    },
+    {
+      "from": "CustomMetadata",
+      "to": "ExternalClientApp",
+      "relationship": "REFERENCES_APP"
+    },
+    {
+      "from": "PermissionSet",
+      "to": "ApexClass",
+      "relationship": "GRANTS_ACCESS_TO_CLASS"
+    },
+    {
+      "from": "PermissionSet",
+      "to": "CustomObject",
+      "relationship": "GRANTS_ACCESS_TO_OBJECT"
+    },
+    {
+      "from": "PermissionSet",
+      "to": "ConnectedApp",
+      "relationship": "GRANTS_ACCESS_TO_APP"
+    },
+    {
+      "from": "PermissionSet",
+      "to": "ExternalClientApp",
+      "relationship": "GRANTS_ACCESS_TO_APP"
+    },
+    {
+      "from": "ConnectedApp",
+      "to": "Certificate",
+      "relationship": "USES_CERTIFICATE"
+    },
+    {
+      "from": "ConnectedApp",
+      "to": "SelfSignedCertificate",
+      "relationship": "USES_CERTIFICATE"
+    },
+    {
+      "from": "ExternalClientApp",
+      "to": "*",
+      "relationship": "RELATED_COMPONENT"
+    },
+    {
+      "from": "NamedCredential",
+      "to": "ExternalCredential",
+      "relationship": "USES_CREDENTIAL"
+    },
+    {
+      "from": "CustomObject",
+      "to": "CustomObject",
+      "pathRegex": "\\.referenceTo$",
+      "relationship": "LOOKUP_TO_OBJECT"
+    },
+    {
+      "from": "CustomObject",
+      "to": "CustomObject",
+      "relationship": "REFERENCES_OBJECT"
+    },
+    {
+      "from": "Flow",
+      "to": "ApexClass",
+      "pathRegex": "\\.actionCalls\\.actionName$",
+      "relationship": "INVOKES_CLASS"
+    },
+    {
+      "from": "Flow",
+      "to": "CustomObject",
+      "pathRegex": "\\.start\\.object$",
+      "relationship": "TRIGGERS_ON_OBJECT"
+    },
+    {
+      "from": "Flow",
+      "to": "CustomObject",
+      "relationship": "REFERENCES_OBJECT"
+    }
+  ],
+  "defaultRelationship": "REFERENCES",
+  "inverseRelationships": {
+    "TRIGGERS_ON_OBJECT": "HAS_TRIGGER"
+  },
+  "codePaths": [
+    "apex"
+  ],
+  "unverifiedKeys": [
+    "description",
+    "errorMessage",
+    "inlineHelpText",
+    "errorConditionFormula",
+    "formula"
+  ],
+  "typeHintsByKey": {
+    "apexClass": "ApexClass",
+    "className": "ApexClass",
+    "targetClass": "ApexClass",
+    "sObject": "CustomObject",
+    "object": "CustomObject",
+    "targetSObject": "CustomObject",
+    "externalCredential": "ExternalCredential",
+    "flow": "Flow",
+    "permissionSetName": "PermissionSet",
+    "certificate": "Certificate"
+  },
+  "relatedIgnoreKeys": [
+    "fullName"
+  ],
+  "ambiguityPreference": [
+    [
+      "Flow",
+      "FlowDefinition"
+    ]
+  ]
+}

@@ -1,0 +1,46 @@
+{
+ "metadataType": "CustomMetadata",
+ "fullName": "Endpoint_Config.Producao",
+ "role": "related",
+ "source": {
+  "xml": "inventory/org-dev/api-v67/custom-metadata/components/customMetadata/Endpoint_Config.Producao.md-meta.xml",
+  "xmlSha256": "110d572e4243f244d010cbae7c91085f775a0ec70e205e2ccfa6b4f69be2bdff",
+  "rootElement": "CustomMetadata",
+  "retrieveRaw": "inventory/org-dev/api-v67/custom-metadata/retrieve/x.raw.json"
+ },
+ "schema": {
+  "available": true,
+  "fieldNames": [
+   "label",
+   "protected",
+   "values"
+  ]
+ },
+ "fields": {
+  "present": [
+   "label",
+   "protected",
+   "values"
+  ],
+  "absent": [],
+  "redacted": []
+ },
+ "data": {
+  "label": "Producao",
+  "protected": "false",
+  "values": [
+   {
+    "field": "Named_Credential__c",
+    "value": "RH_Endpoint"
+   },
+   {
+    "field": "Url_Backup__c",
+    "value": "https://sentinela-rh.example.invalid/v1"
+   },
+   {
+    "field": "Chave__c",
+    "value": "SENTINELA_VALOR_CMDT"
+   }
+  ]
+ }
+}

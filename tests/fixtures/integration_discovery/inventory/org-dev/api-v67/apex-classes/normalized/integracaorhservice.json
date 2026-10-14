@@ -1,0 +1,85 @@
+{
+ "metadataType": "ApexClass",
+ "fullName": "IntegracaoRHService",
+ "role": "primary",
+ "source": {
+  "xml": "inventory/org-dev/api-v67/apex-classes/components/classes/IntegracaoRHService.cls-meta.xml",
+  "xmlSha256": "966cd4c0ecc67e255f7243956012215217710f878da3bebd12c3d1125df5348c",
+  "rootElement": "ApexClass",
+  "retrieveRaw": "inventory/org-dev/api-v67/apex-classes/retrieve/x.raw.json",
+  "code": "inventory/org-dev/api-v67/apex-classes/components/classes/IntegracaoRHService.cls",
+  "codeSha256": "f7d1e80ca3034cb178d2aa5b4260261cc69416f5775176d17f4d23475b1ebf4e",
+  "codeParser": "apex-lexical/v1"
+ },
+ "schema": {
+  "available": true,
+  "fieldNames": [
+   "apiVersion",
+   "label",
+   "status"
+  ]
+ },
+ "fields": {
+  "present": [
+   "apiVersion",
+   "status"
+  ],
+  "absent": [],
+  "redacted": []
+ },
+ "data": {
+  "apiVersion": "67.0",
+  "status": "Active",
+  "label": null,
+  "apex": {
+   "parser": "apex-lexical/v1",
+   "parsed": true,
+   "kind": "class",
+   "className": "IntegracaoRHService",
+   "description": "Envia admissões ao sistema do RH pelo RH_Endpoint.",
+   "classAnnotations": [],
+   "isTest": false,
+   "classModifiers": [
+    "public"
+   ],
+   "sharing": "with sharing",
+   "extends": null,
+   "implementsDeclared": [],
+   "implements": [],
+   "constructors": [],
+   "methods": [
+    {
+     "name": "enviar",
+     "signature": "enviar(List<Colaborador__c> colaboradores)",
+     "modifiers": [
+      "public",
+      "static"
+     ],
+     "static": true,
+     "returnType": "void",
+     "parameters": [
+      {
+       "type": "List<Colaborador__c>",
+       "name": "colaboradores"
+      }
+     ],
+     "annotations": [
+      "@future(callout=true)"
+     ]
+    }
+   ],
+   "innerTypes": [],
+   "asyncInvocations": [],
+   "futureMethods": [],
+   "batch": null,
+   "queueable": null,
+   "schedulable": null,
+   "configReads": [],
+   "securityPatterns": [],
+   "platformEvents": {
+    "publishCall": false,
+    "eventTypes": []
+   }
+  }
+ }
+}

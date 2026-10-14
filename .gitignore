@@ -17,3 +17,9 @@ runs/*/errors/
 # O raw continua intacto em disco, mas fora do Git.
 inventory/**/components/
 inventory/**/normalized/
+
+# Fase 2 (integration_discovery): saídas derivadas do inventário da org (nomes de componentes,
+# relações e decisões de revisão). O CSV de entrada é curado pela usuária: versionar ou não é
+# decisão dela (o exemplo é versionado).
+# Saídas por org e versão: discovery/org-<alias>/api-v<N>/{graphs,clusters,proposals,orphans,report,state}
+discovery/org-*/

@@ -1,0 +1,56 @@
+{
+ "metadataType": "PermissionSet",
+ "fullName": "IntegracaoRH_User",
+ "role": "primary",
+ "source": {
+  "xml": "inventory/org-dev/api-v67/permission-sets/components/permissionsets/IntegracaoRH_User.permissionset-meta.xml",
+  "xmlSha256": "81111aa7293ade70eb997e9e474a0261de68c3b6dcf87061ed429eb0b713e10e",
+  "rootElement": "PermissionSet",
+  "retrieveRaw": "inventory/org-dev/api-v67/permission-sets/retrieve/x.raw.json"
+ },
+ "schema": {
+  "available": true,
+  "fieldNames": [
+   "classAccesses",
+   "description",
+   "hasActivationRequired",
+   "label",
+   "objectPermissions"
+  ]
+ },
+ "fields": {
+  "present": [
+   "classAccesses",
+   "description",
+   "hasActivationRequired",
+   "label",
+   "objectPermissions"
+  ],
+  "absent": [],
+  "redacted": []
+ },
+ "data": {
+  "label": "Integração RH - Usuário",
+  "description": "Usuário de integração (SIMULADO)",
+  "hasActivationRequired": "false",
+  "classAccesses": [
+   {
+    "apexClass": "IntegracaoRHService",
+    "enabled": "true"
+   },
+   {
+    "apexClass": "SAPOrderSync",
+    "enabled": "true"
+   }
+  ],
+  "objectPermissions": {
+   "allowCreate": "true",
+   "allowDelete": "false",
+   "allowEdit": "true",
+   "allowRead": "true",
+   "modifyAllRecords": "false",
+   "object": "Colaborador__c",
+   "viewAllRecords": "false"
+  }
+ }
+}

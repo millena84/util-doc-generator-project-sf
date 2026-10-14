@@ -1,0 +1,77 @@
+{
+ "metadataType": "ApexClass",
+ "fullName": "SAPOrderSync",
+ "role": "primary",
+ "source": {
+  "xml": "inventory/org-dev/api-v67/apex-classes/components/classes/SAPOrderSync.cls-meta.xml",
+  "xmlSha256": "bdeb7e48fbf76733d876f31a5532f498dcc62bc73b8bbe341752fbc0ae28b310",
+  "rootElement": "ApexClass",
+  "retrieveRaw": "inventory/org-dev/api-v67/apex-classes/retrieve/x.raw.json",
+  "code": "inventory/org-dev/api-v67/apex-classes/components/classes/SAPOrderSync.cls",
+  "codeSha256": "64dfa240bdc715acd3ea3a428ee9e9e5d2fb468deb885fd50568ebae9d057a3b",
+  "codeParser": "apex-lexical/v1"
+ },
+ "schema": {
+  "available": true,
+  "fieldNames": [
+   "apiVersion",
+   "label",
+   "status"
+  ]
+ },
+ "fields": {
+  "present": [
+   "apiVersion",
+   "status"
+  ],
+  "absent": [],
+  "redacted": []
+ },
+ "data": {
+  "apiVersion": "67.0",
+  "status": "Active",
+  "label": null,
+  "apex": {
+   "parser": "apex-lexical/v1",
+   "parsed": true,
+   "kind": "class",
+   "className": "SAPOrderSync",
+   "description": null,
+   "classAnnotations": [],
+   "isTest": false,
+   "classModifiers": [
+    "public"
+   ],
+   "sharing": "with sharing",
+   "extends": null,
+   "implementsDeclared": [],
+   "implements": [],
+   "constructors": [],
+   "methods": [
+    {
+     "name": "sync",
+     "signature": "sync()",
+     "modifiers": [
+      "public"
+     ],
+     "static": false,
+     "returnType": "void",
+     "parameters": [],
+     "annotations": []
+    }
+   ],
+   "innerTypes": [],
+   "asyncInvocations": [],
+   "futureMethods": [],
+   "batch": null,
+   "queueable": null,
+   "schedulable": null,
+   "configReads": [],
+   "securityPatterns": [],
+   "platformEvents": {
+    "publishCall": false,
+    "eventTypes": []
+   }
+  }
+ }
+}

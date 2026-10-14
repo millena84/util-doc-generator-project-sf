@@ -1,0 +1,44 @@
+{
+ "metadataType": "ConnectedApp",
+ "fullName": "IntegracaoRH",
+ "role": "primary",
+ "source": {
+  "xml": "inventory/org-dev/api-v67/connected-apps/components/connectedApps/IntegracaoRH.connectedApp-meta.xml",
+  "xmlSha256": "2cb1756a2fc44ada2afdda53d77caf2ff552e43b599dfc783bd8dc1ad6ea7206",
+  "rootElement": "ConnectedApp",
+  "retrieveRaw": "inventory/org-dev/api-v67/connected-apps/retrieve/x.raw.json"
+ },
+ "schema": {
+  "available": true,
+  "fieldNames": [
+   "contactEmail",
+   "label",
+   "oauthConfig",
+   "permissionSetName"
+  ]
+ },
+ "fields": {
+  "present": [
+   "contactEmail",
+   "label",
+   "oauthConfig",
+   "permissionSetName"
+  ],
+  "absent": [],
+  "redacted": []
+ },
+ "data": {
+  "contactEmail": "sentinela@example.invalid",
+  "label": "Integração RH",
+  "oauthConfig": {
+   "callbackUrl": "https://sentinela-rh.example.invalid/callback",
+   "certificate": "IntegracaoRH_Cert",
+   "consumerKey": "SENTINELA_CONSUMER_KEY",
+   "consumerSecret": "[REDACTED]",
+   "scopes": [
+    "Api"
+   ]
+  },
+  "permissionSetName": "IntegracaoRH_User"
+ }
+}
