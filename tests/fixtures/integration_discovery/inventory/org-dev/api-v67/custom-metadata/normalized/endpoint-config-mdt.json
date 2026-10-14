@@ -1,0 +1,39 @@
+{
+ "metadataType": "CustomObject",
+ "fullName": "Endpoint_Config__mdt",
+ "role": "primary",
+ "source": {
+  "xml": "inventory/org-dev/api-v67/custom-metadata/components/objects/Endpoint_Config__mdt/Endpoint_Config__mdt.object-meta.xml",
+  "xmlSha256": "940268950e93858f184118ed3bdcec9fa05f3cc1fc352b6471b0a08ca290c844",
+  "rootElement": "CustomObject",
+  "retrieveRaw": "inventory/org-dev/api-v67/custom-metadata/retrieve/x.raw.json"
+ },
+ "schema": {
+  "available": true,
+  "fieldNames": [
+   "deploymentStatus",
+   "description",
+   "label",
+   "pluralLabel",
+   "sharingModel",
+   "visibility"
+  ]
+ },
+ "fields": {
+  "present": [
+   "label",
+   "pluralLabel",
+   "visibility"
+  ],
+  "absent": [],
+  "redacted": []
+ },
+ "data": {
+  "label": "Endpoint Config",
+  "pluralLabel": "Endpoint Configs",
+  "visibility": "Public",
+  "deploymentStatus": null,
+  "description": null,
+  "sharingModel": null
+ }
+}

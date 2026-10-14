@@ -1,0 +1,37 @@
+"""Base dos testes da Fase 2: projeto temporário com config e o inventário SIMULADO de fixtures."""
+
+import json
+import shutil
+import tempfile
+import unittest
+from pathlib import Path
+
+REPO = Path(__file__).resolve().parents[2]
+FIX = REPO / "tests" / "fixtures" / "integration_discovery"
+CSV = FIX / "componentes-squad.csv"
+INV = "inventory/org-dev/api-v67"
+
+
+class DiscoveryBase(unittest.TestCase):
+    def setUp(self):
+        self.root = Path(tempfile.mkdtemp(prefix="discovery-test-"))
+        self.addCleanup(shutil.rmtree, self.root, ignore_errors=True)
+        (self.root / "config").mkdir()
+        for f in ("config.json", "integration-discovery-rules.json"):
+            shutil.copy(REPO / "config" / f, self.root / "config" / f)
+        shutil.copytree(FIX / "inventory", self.root / "inventory")
+
+    def settings(self):
+        from integration_discovery.settings import DiscoverySettings
+        return DiscoverySettings(self.root)
+
+    def write_csv(self, text, name="in.csv"):
+        p = self.root / name
+        p.write_text(text, encoding="utf-8")
+        return p
+
+    def out(self, *parts):
+        return self.root.joinpath("discovery", *parts)
+
+    def read_json(self, *parts):
+        return json.loads(self.out(*parts).read_text(encoding="utf-8"))
