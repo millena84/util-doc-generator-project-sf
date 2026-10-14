@@ -10,6 +10,73 @@ Este guia diz **o que testar, onde e com qual roteiro**, conforme o ambiente. Co
 | 2 | Org de desenvolvimento ou sandbox autorizada | Sim (não produtiva) | [`piloto-org-real.md`](piloto-org-real.md) | Pronto para o primeiro teste |
 | 3 | Produção | **Não permitido** | Seção 3 deste guia (plano) | **Não implementado** |
 
+## 0. Escolher os metadados a documentar
+
+O utilitário documenta **só o que está configurado** em `config/metadata-types-mvp.json`: 37 grupos, um documento por componente (alguns por objeto ou por org). Tipos da org fora dessa lista não são documentados; o `resumo.md` os mostra em "Descobertos e não configurados".
+
+### Como indicar o que documentar
+
+| Forma | Onde | Quando usar |
+|---|---|---|
+| `--group <Grupo>` (repetível) | linha de comando | restringe a execução aos grupos informados |
+| `--component <nome>` (repetível) | linha de comando | restringe aos componentes informados (vale para todos os `--group` do comando). **Use sempre no piloto:** sem ele, o modo `ALL` recupera os tipos inteiros |
+| `selection.mode = "ALL"` | `config/config.json` | padrão: todos os grupos e todos os componentes encontrados na org |
+| `selection.mode = "SELECTED"` + `metadataTypes` | `config/config.json` | lista fixa de tipos principais e componentes, revisável. **Não use no piloto:** o grupo PlatformEvent não é selecionável (achado ADD-09) |
+
+Exemplo para um piloto de uma classe e um Flow:
+
+```bash
+bin/sf-docs.sh run --group ApexClass --group Flow --component PedidoService --component Meu_Flow --non-interactive
+```
+
+Depois da execução, confira na lista "Documentados" do `runs/<runId>/resumo.md` se todos os nomes pedidos aparecem. No modo `ALL`, nome digitado errado não gera aviso.
+
+### Catálogo do MVP
+
+Os exemplos de `--component` são os componentes das fixtures simuladas: troque pelos nomes de API da sua org. Formatos marcados *a confirmar* serão conferidos no piloto.
+
+| Onda | `--group` | Tipo principal (`selection`) | Relacionados no mesmo documento | Exemplo de `--component` |
+|---|---|---|---|---|
+| MVP | `Certificate` | `Certificate` | — | `Meu_Certificado` |
+| MVP | `ConnectedApp` | `ConnectedApp` | — | `Meu_App` |
+| MVP | `CustomMetadata` | `CustomMetadata` | CustomField | `Config__mdt` (o tipo; os records vêm junto) |
+| MVP | `CustomObject` | `CustomObject` | CustomField, RecordType, ValidationRule, WebLink | `Pedido__c` (só objetos `__c`; objetos padrão como `Account` ficam fora pelo `componentFilter`) |
+| MVP | `ExternalClientApp` | `ExternalClientApplication` | ExtlClntAppOauthSettings, ExtlClntAppConfigurablePolicies, ExtlClntAppOauthConfigurablePolicies | `Minha_ECA` |
+| MVP | `ExternalCredential` | `ExternalCredential` | — | `Minha_EC` |
+| MVP | `Flow` | `Flow` | FlowDefinition | `Meu_Flow` (nome de API do Flow) |
+| MVP | `NamedCredential` | `NamedCredential` | ExternalCredential | `Minha_NC` |
+| MVP | `RemoteSiteSetting` | `RemoteSiteSetting` | — | `Meu_Site` |
+| 01 | `ApexClass` | `ApexClass` | — | `PedidoService` (classes de pacote `ns__` ficam fora) |
+| 02 | `ApexTrigger` | `ApexTrigger` | — | `PedidoTrigger` (`ns__` fica fora) |
+| 03 | `LightningComponentBundle` | `LightningComponentBundle` | — | `pedidoPainel` (`ns__` fica fora) |
+| 04 | `FlexiPage` | `FlexiPage` | — | `Pedido_Record_Page` (`ns__` fica fora) |
+| 05 | `OrgSecurity` | `SecuritySettings` | — | `Security` (fixo) |
+| 05 | `PermissionSet` | `PermissionSet` | — | `Leitura_Pedidos` |
+| 05 | `PermissionSetGroup` | `PermissionSetGroup` | — | `PSG_Integracao` |
+| 05 | `Profile` | `Profile` | — | `Admin` (nome do metadata, não o rótulo) |
+| 05 | `PublicGroup` | `Group` | — | `Grupo_Suporte` |
+| 05 | `Role` | `Role` | — | `Gerente_Vendas` |
+| 05 | `SharingRules` | `SharingRules` | — | objeto: `Pedido__c` |
+| 06 | `ChangeDataCapture` | `PlatformEventChannelMember` | — | nome do membro do canal (formato *a confirmar*) |
+| 06 | `PlatformEvent` | `CustomObject` | CustomField | `Pedido_Evento__e` (só `__e`) |
+| 07 | `AssignmentRules` | `AssignmentRules` | — | objeto: `Case` ou `Lead` |
+| 07 | `AutoResponseRules` | `AutoResponseRules` | — | objeto: `Case` ou `Lead` |
+| 07 | `EscalationRules` | `EscalationRules` | — | objeto: `Case` |
+| 07 | `Queue` | `Queue` | — | `Fila_Pedidos` (DeveloperName) |
+| 08 | `BusinessProcess` | `BusinessProcess` | RecordType | `Opportunity.Venda_Enterprise` (Objeto.Processo) |
+| 08 | `LeadConvertSettings` | `LeadConvertSettings` | — | `LeadConvertSettings` (fixo) |
+| 08 | `OpportunitySplitType` | `OpportunitySplitType` | — | `Receita_Principal` |
+| 08 | `Territory2Model` | `Territory2Model` | Territory2, Territory2Rule | `Modelo_Vendas` |
+| 09 | `CustomSite` | `CustomSite` | Network | `Portal_Clientes` |
+| 09 | `ExperienceBundle` | `ExperienceBundle` | — | `Portal_Clientes1` |
+| 09 | `Network` | `Network` | CustomSite | `Portal_Clientes` |
+| 10 | `OmniDataTransform` | `OmniDataTransform` | — | `ExtrairPedido` (formato *a confirmar*) |
+| 10 | `OmniIntegrationProcedure` | `OmniIntegrationProcedure` | — | `Pedido_EnviarERP_Procedure_1` (formato *a confirmar*) |
+| 10 | `OmniScript` | `OmniScript` | — | `Vendas_CriarPedido_Portuguese_1` (formato *a confirmar*) |
+| 10 | `OmniUiCard` | `OmniUiCard` | — | `CartaoPedido_1` (formato *a confirmar*) |
+
+Componentes fixos (OrgSecurity e LeadConvertSettings) não são listados na org: informe o nome indicado. Os relacionados (coluna 4) não precisam de `--component`: vêm junto com o principal.
+
 ## 1. Nível 1 — sem org (fixtures simuladas)
 
 Prova que o utilitário, a configuração, os contratos e os modelos estão coerentes. Não prova nada sobre uma org real: a CLI e as respostas são simuladas (`tests/fixtures/`).
@@ -43,6 +110,35 @@ Siga [`piloto-org-real.md`](piloto-org-real.md). Em resumo:
 4. `--component` em todo `run`, com poucos componentes por fase. Sem ele, o modo `ALL` recupera tipos inteiros. Não use `SELECTED` no piloto (achado ADD-09).
 5. Fase A (execução mínima), Fase B (acesso e configuração) e fases C0–C10, uma de cada vez.
 6. Revisão de proteção de dados em toda fase; critérios de aprovação e de parada; relato sem dados da org; limpeza.
+
+### 2.1 E se não puder rodar `sf data query`?
+
+O `sf data query` é usado **só** no passo 9 (dados internos): uma consulta por componente, definida no contrato (lista no Apêndice A do piloto). Os passos de inventário, retrieve, acesso e Markdown não dependem dele.
+
+Se a consulta falhar (sem permissão, objeto ou campo inexistente, comando bloqueado por política), **a execução continua**. Foi simulado com todas as consultas falhando nos 37 grupos (fixtures sem respostas de consulta):
+
+| O que acontece | Resultado da simulação |
+|---|---|
+| Status da execução | `SUCCESS`, com cobertura `COMPLETE_WITH_WARNINGS` |
+| Documentos | todos gerados (60 de 60) |
+| Seção "Dados internos" (e "Registros na org" das regras de atendimento) | linha "Não informado", com fonte `Objeto interno` |
+| Avisos | um `INTERNAL_DATA_UNAVAILABLE` por componente (55), no log, no run state e na lista "Dados internos indisponíveis" do `resumo.md` |
+| Resposta de erro | gravada em `runs/<runId>/errors/internal-<pasta>-<componente>.sanitized.json` (com segredos mascarados) |
+
+O que se **perde**, porque só existe na consulta:
+- datas de criação e alteração, `Id`, versões e status das versões do Flow (a linha "Status" com fonte `Objeto interno` fica "Não informado"; o "Status (versão recuperada)" continua vindo do XML);
+- `IsValid` e `LengthWithoutComments` do Apex e o uso por evento das triggers;
+- padrões de acesso da org (`Organization.Default*Access`) no documento de segurança;
+- registros das regras de atendimento (`AssignmentRule`, `AutoResponseRule`, `EscalationRule`);
+- `State` e `ActivatedDate` do modelo de territórios, `Status` da Network e do Site, e os demais campos do Apêndice A.
+
+Todo o resto vem do XML e não muda: propriedades, relacionados, código lido, acesso e configuração, índice entre componentes.
+
+Exceções:
+- **Sessão expirada** (`INVALID_SESSION_ID`) numa consulta **interrompe** a execução com `SESSION_EXPIRED`, como em qualquer outro passo. Retome com `run --resume latest` depois de novo login.
+- Hoje não há opção global para pular o passo 9. As consultas são tentadas, falham e ficam registradas, e cada uma custa uma chamada à CLI. Desligar por contrato (`internalData.enabled = false`) é possível, mas muda os contratos: só com aprovação.
+
+No cenário produtivo sem login (seção 3), essas consultas seriam substituídas por exportações do Salesforce Inspector. Até lá, a perda acima é o comportamento esperado.
 
 ## 3. Nível 3 — produção sem login (PLANO, não implementado)
 
