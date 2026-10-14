@@ -23,8 +23,8 @@ def build_parser():
     sub = parser.add_subparsers(dest="command")
     run = sub.add_parser("run", help="Executa a descoberta (padrão quando nenhum subcomando é dado)")
     run.add_argument("--project-root", help="Raiz do projeto (padrão: diretório do utilitário)")
-    run.add_argument("--csv", default="discovery/input/componentes-squad.csv",
-                     help="CSV curado (padrão: discovery/input/componentes-squad.csv)")
+    run.add_argument("--csv", help="CSV curado; caminho relativo é resolvido a partir da pasta atual "
+                                   "(padrão: <raiz do projeto>/discovery/input/componentes-squad.csv)")
     run.add_argument("--target-org", "-o", help="Alias da org do inventário (padrão: config.json orgAlias)")
     run.add_argument("--api-version", help="Versão da API do inventário (padrão: config.json defaultApiVersion)")
     run.add_argument("--no-cache", action="store_true", help="Reprocessa todos os componentes (ignora o cache)")
@@ -35,6 +35,7 @@ def build_parser():
     rv.add_argument("--by", help="Quem revisou (obrigatório para APPROVED/REJECTED)")
     rv.add_argument("--notes", help="Observações da revisão")
     rv.add_argument("--name", help="Nome escolhido (APPROVED; padrão: o nome proposto)")
+    rv.add_argument("--signature", help="Confirmação opcional: assinatura do cluster mostrada no relatório")
     return parser
 
 
@@ -46,14 +47,15 @@ def main(argv=None):
     root = Path(args.project_root) if args.project_root else DEFAULT_ROOT
     if args.command == "review":
         try:
-            review_cluster(root, args.cluster, args.decision, args.by, args.notes, args.name)
+            review_cluster(root, args.cluster, args.decision, args.by, args.notes, args.name,
+                           signature=args.signature)
         except ValueError as exc:
             print(f"ERRO: {exc}", file=sys.stderr)
             return 2
         return 0
-    csv_path = Path(args.csv)
-    if not csv_path.is_absolute():
-        csv_path = root / csv_path
+    # --csv informado: relativo à pasta atual (como qualquer caminho de linha de comando);
+    # sem --csv: o padrão dentro da raiz do projeto.
+    csv_path = Path(args.csv).resolve() if args.csv else root / "discovery" / "input" / "componentes-squad.csv"
     code, _ = run_discovery(root, csv_path, args.target_org, args.api_version, use_cache=not args.no_cache)
     return code
 

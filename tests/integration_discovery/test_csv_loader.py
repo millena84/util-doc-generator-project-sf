@@ -44,5 +44,12 @@ class CsvLoaderTest(DiscoveryBase):
         self.assertIsNone(r.fatal)
         self.assertEqual((r.total_rows, r.components), (0, []))
 
+    def test_line_numbers_are_physical_lines(self):
+        # linhas em branco e notes entre aspas em duas linhas não deslocam a numeração
+        text = HEADER + "\n\nApexClass,A,true,\"nota\nem duas linhas\"\n\nApexPage,X,true,\n"
+        r = load_csv(self.write_csv(text))
+        self.assertEqual([c["line"] for c in r.components], [4])
+        self.assertEqual(r.errors[0]["line"], 7)
+
     def test_missing_file(self):
         self.assertIn("não encontrado", load_csv(self.root / "nao-existe.csv").fatal)

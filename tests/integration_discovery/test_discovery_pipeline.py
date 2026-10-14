@@ -69,6 +69,9 @@ class DiscoveryPipelineTest(DiscoveryBase):
         self.run_it(extractor=spy, use_cache=False)
         self.assertEqual(len(calls), 10)
 
+    def members(self, cluster_id):
+        return [x["id"] for x in self.read_json("clusters", f"{cluster_id}.json")["components"]]
+
     def test_review_is_kept_across_runs_while_composition_is_the_same(self):
         self.run_it()
         review_cluster(self.root, "cluster-001", "APPROVED", "Millena", "ok", "Integração RH - Admissões", stream=io.StringIO())
@@ -77,14 +80,78 @@ class DiscoveryPipelineTest(DiscoveryBase):
                          ("APPROVED", "Integração RH - Admissões", "Millena"))
         self.assertEqual(self.read_json("proposals", "cluster-001.proposal.json")["status"], "APPROVED")
         self.run_it()
-        self.assertEqual(self.read_json("clusters", "cluster-001.json")["status"], "APPROVED")
-        # composição muda (remove a Named Credential): a decisão não é reaplicada e o relatório avisa
-        (self.root / INV / "custom-metadata" / "normalized" / "endpoint-config-producao.json").unlink()
-        self.run_it()
-        self.assertEqual(self.read_json("clusters", "cluster-001.json")["status"], "CANDIDATE")
-        self.assertIn("Revisões que não se aplicam mais", self.out("report", "discovery-report.md").read_text(encoding="utf-8"))
+        c = self.read_json("clusters", "cluster-001.json")
+        self.assertEqual((c["status"], c["approvedName"]), ("APPROVED", "Integração RH - Admissões"))
         with self.assertRaises(ValueError):
             review_cluster(self.root, "cluster-001", "APPROVED", None, stream=io.StringIO())
+
+    def test_cluster_numbers_are_stable_when_order_changes(self):
+        # D22-01: nova evidência reordena os clusters; o número continua apontando para a mesma composição
+        self.run_it()
+        app = self.members("cluster-002")
+        self.assertIn("ConnectedApp:IntegracaoRH", app)
+        p = self.root / INV / "permission-sets" / "normalized" / "integracaorh-user.json"
+        d = json.loads(p.read_text(encoding="utf-8"))
+        d["data"]["fieldPermissions"] = [{"field": "x", "note": "SAPOrderSync"}, {"field": "y", "note": "SAPOrderSync"}]
+        p.write_text(json.dumps(d), encoding="utf-8")
+        self.run_it()
+        report = self.out("report", "discovery-report.md").read_text(encoding="utf-8")
+        self.assertLess(report.index("| cluster-003 |"), report.index("| cluster-002 |"))  # SAP passou à frente
+        review_cluster(self.root, "cluster-002", "APPROVED", "Millena", stream=io.StringIO())
+        self.assertEqual(self.members("cluster-002"), app)
+        self.assertEqual(self.read_json("clusters", "cluster-002.json")["status"], "APPROVED")
+
+    def test_retired_number_is_refused_and_never_reused(self):
+        self.run_it()
+        review_cluster(self.root, "cluster-001", "REJECTED", "Millena", "não é integração", stream=io.StringIO())
+        (self.root / INV / "custom-metadata" / "normalized" / "endpoint-config-producao.json").unlink()
+        self.run_it()
+        self.assertFalse(self.out("clusters", "cluster-001.json").exists())
+        new_ids = sorted(p.stem for p in self.out("clusters").glob("*.json"))
+        self.assertNotIn("cluster-001", new_ids)
+        self.assertIn("cluster-004", new_ids)  # composição nova: próximo número livre
+        with self.assertRaises(ValueError) as ctx:
+            review_cluster(self.root, "cluster-001", "APPROVED", "Millena", stream=io.StringIO())
+        self.assertIn("não existe mais", str(ctx.exception))
+        self.assertIn("cluster-004", str(ctx.exception))
+        with self.assertRaises(ValueError):
+            review_cluster(self.root, "cluster-999", "APPROVED", "Millena", stream=io.StringIO())
+
+    def test_decision_history_survives_several_runs(self):
+        # D22-02: a decisão de um cluster aposentado continua no histórico e no relatório
+        self.run_it()
+        review_cluster(self.root, "cluster-001", "REJECTED", "Millena", "não é integração", stream=io.StringIO())
+        (self.root / INV / "custom-metadata" / "normalized" / "endpoint-config-producao.json").unlink()
+        for _ in range(2):
+            self.run_it()
+            report = self.out("report", "discovery-report.md").read_text(encoding="utf-8")
+            self.assertIn("## 9. Revisões que não se aplicam mais", report)
+            self.assertIn("cluster-001 (decisão anterior: REJECTED por Millena; nota: não é integração)", report)
+        registry = self.read_json("state", "cluster-registry.json")
+        self.assertEqual(registry["reviews"][0]["notes"], "não é integração")
+        # revisar o sucessor encerra o aviso
+        succ = [x for x in registry["clusters"].values() if x["clusterId"] == "cluster-001"][0]["successors"]
+        for cid in succ:
+            review_cluster(self.root, cid, "APPROVED", "Millena", stream=io.StringIO())
+        self.run_it()
+        self.assertNotIn("## 9.", self.out("report", "discovery-report.md").read_text(encoding="utf-8"))
+
+    def test_signature_confirmation(self):
+        self.run_it()
+        sig = self.read_json("clusters", "cluster-001.json")["signature"]
+        with self.assertRaises(ValueError):
+            review_cluster(self.root, "cluster-001", "APPROVED", "Millena", signature="0" * 16, stream=io.StringIO())
+        review_cluster(self.root, "cluster-001", "APPROVED", "Millena", signature=sig, stream=io.StringIO())
+        self.assertEqual(self.read_json("clusters", "cluster-001.json")["status"], "APPROVED")
+
+    def test_migration_from_outputs_without_registry(self):
+        self.run_it()
+        review_cluster(self.root, "cluster-002", "APPROVED", "Millena", stream=io.StringIO())
+        app = self.members("cluster-002")
+        self.out("state", "cluster-registry.json").unlink()  # como saídas geradas antes do registro
+        self.run_it()
+        self.assertEqual(self.members("cluster-002"), app)
+        self.assertEqual(self.read_json("clusters", "cluster-002.json")["status"], "APPROVED")
 
     def test_fatal_csv_keeps_previous_outputs(self):
         self.run_it()
@@ -101,6 +168,19 @@ class DiscoveryPipelineTest(DiscoveryBase):
         report = self.out("report", "discovery-report.md").read_text(encoding="utf-8")
         self.assertIn("component_type inválido: 'ApexPage'", report)
         self.assertIn("duplicada da linha 12", report)
+
+    def test_cli_relative_csv_is_resolved_from_current_directory(self):
+        import os
+        work = self.root / "minha-pasta"
+        work.mkdir()
+        shutil.copy(CSV, work / "squad.csv")
+        cwd = os.getcwd()
+        os.chdir(work)
+        try:
+            self.assertEqual(cli_main(["--project-root", str(self.root), "--csv", "squad.csv"]), 0)
+        finally:
+            os.chdir(cwd)
+        self.assertTrue(self.out("clusters", "cluster-001.json").is_file())
 
     def test_cli_run_without_subcommand_and_review(self):
         csv_copy = self.root / "discovery" / "input" / "componentes-squad.csv"

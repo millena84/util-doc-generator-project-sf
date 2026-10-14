@@ -5,10 +5,12 @@ Saídas em `discovery/` (configurável em `config.json` -> `discovery.outputDir`
 - `graphs/graph.json`, `clusters/cluster-NNN.json`, `proposals/cluster-NNN.proposal.json`,
   `orphans/orphans.json`, `report/discovery-report.md`, `report/component-status.json`;
 - `state/extraction-cache.json`: retomada — componente cujo JSON normalizado (sha256), lista de
-  componentes do CSV e regras não mudaram não é reprocessado.
+  componentes do CSV e regras não mudaram não é reprocessado;
+- `state/cluster-registry.json`: número estável por composição (assinatura) e histórico das
+  revisões humanas (ver `cluster_registry.py`).
 
-A revisão humana fica no próprio arquivo do cluster e é mantida nas execuções seguintes enquanto
-a composição do cluster (assinatura) for a mesma. Nenhum dossiê é gerado nesta fase.
+O `review` confere o número no registro: número aposentado (composição mudou) é recusado, para
+que uma decisão nunca caia em outro cluster. Nenhum dossiê é gerado nesta fase.
 """
 
 from __future__ import annotations
@@ -21,6 +23,7 @@ from pathlib import Path
 from integration_discovery import cluster_builder, csv_loader, graph_builder, name_proposer
 from integration_discovery import normalized_json_loader as loader
 from integration_discovery import reference_extractor, report_generator
+from integration_discovery.cluster_registry import RETIRED, ClusterRegistry
 from integration_discovery.settings import DiscoverySettings
 
 CACHE_VERSION = 1
@@ -62,15 +65,32 @@ def _entry_fingerprint(entry):
     return [entry["sha256"]] + [x["sha256"] for x in entry.get("extraSources") or []]
 
 
-def _previous_reviews(clusters_dir):
-    out = {}
-    for p in sorted(Path(clusters_dir).glob("cluster-*.json")):
-        c = _read_json(p) or {}
-        review = c.get("humanReview") or {}
-        if c.get("signature") and review.get("decision") not in (None, "PENDING"):
-            out[c["signature"]] = {"clusterId": c.get("clusterId"), "status": c.get("status"),
-                                   "humanReview": review, "approvedName": c.get("approvedName")}
-    return out
+def _registry(out):
+    """Registro de números e revisões. Na primeira vez, migra os arquivos de cluster gerados antes
+    dele (mesmo número e mesma decisão para a mesma composição)."""
+    path = out / "state" / "cluster-registry.json"
+    registry = ClusterRegistry(path)
+    if not path.is_file():
+        for p in sorted((out / "clusters").glob("cluster-*.json")):
+            c = _read_json(p) or {}
+            if not c.get("signature") or not c.get("clusterId"):
+                continue
+            registry.seed(c["signature"], c["clusterId"], [x["id"] for x in c.get("components") or []])
+            review = c.get("humanReview") or {}
+            if review.get("decision") not in (None, "PENDING"):
+                registry.add_review(c["signature"], c["clusterId"], review, c.get("approvedName"))
+    return registry
+
+
+def _apply_review(cluster, review):
+    decision = (review or {}).get("decision") or "PENDING"
+    cluster["humanReview"] = {"decision": decision, "reviewedBy": (review or {}).get("reviewedBy"),
+                              "notes": (review or {}).get("notes"), "reviewedAt": (review or {}).get("reviewedAt")}
+    cluster["status"] = {"APPROVED": "APPROVED", "REJECTED": "REJECTED"}.get(decision, "CANDIDATE")
+    if decision == "APPROVED":
+        cluster["approvedName"] = (review or {}).get("approvedName") or cluster.get("proposedName")
+    else:
+        cluster.pop("approvedName", None)
 
 
 def run_discovery(project_root, csv_path, alias=None, api_version=None, use_cache=True,
@@ -124,17 +144,15 @@ def run_discovery(project_root, csv_path, alias=None, api_version=None, use_cach
     graph = graph_builder.build_graph(entries, relations, settings.rules, generated_at)
     clusters, orphans = cluster_builder.build_clusters(graph, settings.bridge_types)
 
-    # Revisões anteriores: mantidas quando a composição (assinatura) é a mesma.
-    previous = _previous_reviews(out / "clusters")
-    applied = set()
+    # Números estáveis por composição e decisões vigentes (histórico em state/cluster-registry.json).
+    registry = _registry(out)
+    registry.assign(clusters, generated_at)
     for c in clusters:
-        prev = previous.get(c["signature"])
-        if prev:
-            c.update(status=prev["status"], humanReview=prev["humanReview"])
-            if prev.get("approvedName"):
-                c["approvedName"] = prev["approvedName"]
-            applied.add(c["signature"])
-    stale = [p for sig, p in previous.items() if sig not in applied]
+        review = registry.latest_review(c["signature"])
+        if review and review.get("decision") not in (None, "PENDING"):
+            _apply_review(c, review)
+    stale = registry.stale_reviews({c["clusterId"] for c in clusters if c["status"] != "CANDIDATE"})
+    registry.save()
 
     labels = {n["id"]: n.get("label") for n in graph["nodes"]}
     descriptions = {}
@@ -172,9 +190,12 @@ def run_discovery(project_root, csv_path, alias=None, api_version=None, use_cach
         "inventoryDir": _rel(settings.inventory_dir(alias, api_version), settings.project_root),
         "cacheHits": hits})
     if stale:
-        report += ("\n## 9. Revisões que não se aplicam mais\n\nA composição destes clusters mudou; "
-                   "revise de novo:\n\n" + "\n".join(
-                       f"- {p['clusterId']} (decisão anterior: {p['humanReview'].get('decision')})" for p in stale) + "\n")
+        report += ("\n## 9. Revisões que não se aplicam mais\n\nA composição destes clusters mudou e o número "
+                   "foi aposentado (nunca é reutilizado). Revise os clusters que receberam os componentes:\n\n"
+                   + "\n".join(f"- {p['clusterId']} (decisão anterior: {p['decision']}"
+                                + (f" por {p['reviewedBy']}" if p.get("reviewedBy") else "")
+                                + (f"; nota: {p['notes']}" if p.get("notes") else "") + ") → componentes agora em: "
+                                + (", ".join(p["successors"]) or "nenhum cluster") for p in stale) + "\n")
     (out / "report").mkdir(parents=True, exist_ok=True)
     (out / "report" / "discovery-report.md").write_text(report, encoding="utf-8")
 
@@ -191,8 +212,12 @@ def run_discovery(project_root, csv_path, alias=None, api_version=None, use_cach
     return 0, summary
 
 
-def review_cluster(project_root, cluster_id, decision, reviewed_by=None, notes=None, name=None, stream=None):
-    """Registra a decisão humana no arquivo do cluster (e na proposta)."""
+def review_cluster(project_root, cluster_id, decision, reviewed_by=None, notes=None, name=None, stream=None,
+                   signature=None):
+    """Registra a decisão humana no histórico (registro) e no arquivo do cluster e da proposta.
+
+    O número é conferido no registro: número aposentado (composição mudou) ou inexistente é
+    recusado; `signature`, se informada, precisa ser a da composição atual do número."""
     say = (lambda m: print(m, file=stream)) if stream is not None else print
     settings = DiscoverySettings(project_root)
     decision = str(decision).upper()
@@ -200,17 +225,27 @@ def review_cluster(project_root, cluster_id, decision, reviewed_by=None, notes=N
         raise ValueError(f"decisão deve ser uma de {', '.join(DECISIONS)}")
     if decision != "PENDING" and not reviewed_by:
         raise ValueError("--by é obrigatório para APPROVED/REJECTED")
+    registry = _registry(settings.output_dir)
+    sig, entry = registry.find(cluster_id)
+    if entry is None:
+        raise ValueError(f"{cluster_id} não existe (rode a descoberta e confira o relatório)")
+    if entry.get("status") == RETIRED:
+        succ = ", ".join(entry.get("successors") or []) or "nenhum cluster atual"
+        raise ValueError(f"{cluster_id} não existe mais (a composição mudou); os componentes dele agora estão em: "
+                         f"{succ}. Nenhuma decisão foi registrada.")
+    if signature and signature != sig:
+        raise ValueError(f"assinatura informada ({signature}) não é a de {cluster_id} ({sig}); "
+                         "o cluster mudou desde o relatório lido. Nenhuma decisão foi registrada.")
     path = settings.output_dir / "clusters" / f"{cluster_id}.json"
     cluster = _read_json(path)
-    if cluster is None:
-        raise ValueError(f"cluster não encontrado: {path}")
-    cluster["humanReview"] = {"decision": decision, "reviewedBy": reviewed_by if decision != "PENDING" else None,
-                              "notes": notes, "reviewedAt": _now() if decision != "PENDING" else None}
-    cluster["status"] = {"APPROVED": "APPROVED", "REJECTED": "REJECTED"}.get(decision, "CANDIDATE")
-    if decision == "APPROVED":
-        cluster["approvedName"] = name or cluster.get("proposedName")
-    else:
-        cluster.pop("approvedName", None)
+    if cluster is None or cluster.get("signature") != sig:
+        raise ValueError(f"arquivo {path} ausente ou de outra composição; rode a descoberta de novo")
+    review = {"decision": decision, "reviewedBy": reviewed_by if decision != "PENDING" else None,
+              "notes": notes, "reviewedAt": _now()}
+    approved = (name or cluster.get("proposedName")) if decision == "APPROVED" else None
+    registry.add_review(sig, cluster_id, review, approved)
+    registry.save()
+    _apply_review(cluster, dict(review, approvedName=approved))
     _write_json(path, cluster)
     ppath = settings.output_dir / "proposals" / f"{cluster_id}.proposal.json"
     proposal = _read_json(ppath)

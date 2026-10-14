@@ -39,18 +39,24 @@ def load_csv(path) -> CsvLoadResult:
         res.fatal = f"CSV não encontrado: {path}"
         return res
     with open(path, "r", encoding="utf-8-sig", newline="") as f:
-        rows = list(csv.reader(f))
-    rows = [r for r in rows if any(c.strip() for c in r)]  # ignora linhas em branco
+        reader = csv.reader(f)
+        # (linha física no arquivo, valores): a numeração vem antes de descartar linhas em branco,
+        # para que o erro aponte a linha real (também com campos entre aspas em várias linhas).
+        rows, last = [], 0
+        for values in reader:
+            rows.append((last + 1, values))  # linha onde o registro começa
+            last = reader.line_num
+    rows = [(n, r) for n, r in rows if any(c.strip() for c in r)]  # ignora linhas em branco
     if not rows:
         res.fatal = "CSV vazio (sem cabeçalho)"
         return res
-    header = [h.strip() for h in rows[0]]
+    header = [h.strip() for h in rows[0][1]]
     if header != HEADER:
         res.fatal = (f"cabeçalho inválido: esperado exatamente {','.join(HEADER)} "
                      f"(nesta ordem); encontrado {','.join(header)}")
         return res
     seen = {}
-    for line_no, row in enumerate(rows[1:], start=2):
+    for line_no, row in rows[1:]:
         res.total_rows += 1
         if len(row) > len(HEADER):
             res.errors.append({"line": line_no, "reason": f"{len(row)} colunas (máximo {len(HEADER)}); "

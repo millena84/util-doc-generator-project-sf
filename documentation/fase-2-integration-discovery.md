@@ -46,7 +46,7 @@ NamedCredential,RH_Endpoint,true,Endpoint do RH
 
 Validação:
 - O cabeçalho deve ter exatamente as 4 colunas, nesta ordem. Sem isso a execução para **sem alterar nenhuma saída anterior**.
-- Uma linha inválida (tipo fora da lista, nome vazio, `squad_suspect` diferente de true/false) é ignorada e listada no relatório, com o número da linha e o motivo.
+- Uma linha inválida (tipo fora da lista, nome vazio, `squad_suspect` diferente de true/false) é ignorada e listada no relatório, com o número da linha e o motivo. O número é a linha física do arquivo, contando linhas em branco; para uma nota entre aspas em várias linhas, vale a linha onde o registro começa.
 - Uma linha duplicada (mesmo tipo e nome) é ignorada com aviso.
 
 ## 3. Executar
@@ -57,6 +57,7 @@ bin/integration-discovery.sh --csv discovery/input/componentes-squad.csv --targe
 PYTHONPATH=src python3 -m integration_discovery --csv discovery/input/componentes-squad.csv --target-org dev --api-version 67.0
 ```
 
+- `--csv` relativo é resolvido a partir da **pasta atual**. Sem `--csv`, o padrão é `discovery/input/componentes-squad.csv` dentro da raiz do projeto.
 - `--target-org` e `--api-version` só escolhem a pasta do inventário (`inventory/org-<alias>/api-v<N>`). Padrões: `orgAlias` e `defaultApiVersion` do `config.json`.
 - **Retomada:** um componente cujo JSON normalizado (sha256), lista de componentes do CSV e regras não mudaram não é reprocessado; o cache fica em `discovery/state/`. `--no-cache` força tudo de novo.
 - Componente sem JSON vira `NORMALIZED_JSON_NOT_FOUND` e a execução continua. Outros status: `NORMALIZED_JSON_INVALID` (JSON malformado) e `NORMALIZED_JSON_MISMATCH` (o arquivo é de outro componente ou tipo).
@@ -106,9 +107,13 @@ bin/integration-discovery.sh review --cluster cluster-003 --decision REJECTED --
 bin/integration-discovery.sh review --cluster cluster-002 --decision PENDING          # volta para CANDIDATE
 ```
 
-- A decisão fica no próprio `cluster-NNN.json` (`status`, `humanReview`, `approvedName`) e na proposta.
-- Nas execuções seguintes, a decisão é mantida enquanto a composição do cluster (`signature`) for a mesma. Se a composição mudar, o cluster volta a `CANDIDATE` e o relatório lista a revisão anterior em "Revisões que não se aplicam mais".
-- Os números (`cluster-001`...) seguem a ordem por evidências e podem mudar entre execuções: a identidade estável é a `signature`.
+Números estáveis e histórico (`discovery/state/cluster-registry.json`):
+- **O número segue a composição, não a ordem.** Cada composição de cluster (os seus membros, resumidos na `signature`) recebe um número uma única vez. Uma execução nova que reordena os clusters por evidência não muda os números: `cluster-002` continua sendo o mesmo conjunto de componentes.
+- **Composição nova recebe o próximo número livre.** Quando um cluster muda de membros, o número antigo é **aposentado** e nunca é reutilizado por outra composição. Se a mesma composição voltar, o número volta a valer.
+- **O `review` confere o número no registro antes de gravar.** Número aposentado é recusado com a indicação de onde os componentes estão agora (ex.: *"cluster-001 não existe mais (a composição mudou); os componentes dele agora estão em: cluster-004"*). Número inexistente também é recusado. `--signature <assinatura do relatório>` é uma confirmação opcional: se o cluster mudou desde o relatório lido, nada é gravado.
+- **As decisões ficam num histórico que só cresce.** A decisão vigente de uma composição é a última revisão dela, e é copiada para `cluster-NNN.json` e para a proposta em toda execução.
+- **Decisão de cluster aposentado continua no relatório** ("Revisões que não se aplicam mais"), com quem decidiu e a nota, até os clusters que receberam os componentes serem revisados.
+- **Saídas de antes deste registro:** na primeira execução, os arquivos de cluster existentes são migrados com o mesmo número e a mesma decisão.
 
 ## 6. Próxima fase (não implementada)
 
