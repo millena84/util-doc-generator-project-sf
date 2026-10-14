@@ -63,5 +63,6 @@ Conteúdo **genérico da plataforma** (limites, formas de invocação, monitoram
 |---|---|
 | Interfaces, sharing, assinaturas, anotações, SOQL literal do `start()`, finalizer, encadeamento e delegação | documento da classe e subdocumentos por papel (fonte `Código Apex`) |
 | `apiVersion` e `status` | documento da classe (fonte `XML`, `.cls-meta.xml`) |
+| Named Credentials usadas em callout (`'callout:Nome'`) e URLs fixas em `setEndpoint`/`endpoint_x` (só contagem) | documento da classe, seção "Callouts" (fonte `Código Apex`) |
 | Tamanho de lote, cron e nome do job usados por **outras** classes | próxima entrega (índice entre classes) |
 | Agendamentos e execuções reais na org (`CronTrigger`, `AsyncApexJob`) | entrega de dados internos, após o piloto |

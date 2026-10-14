@@ -87,6 +87,21 @@ class ApexDocumentsTest(P3Base):
         self.assertIn("| callout=true | False | Código Apex |", docs["IntegrationAsyncHelper.recalc"])
         self.assertIn("| Classe | IntegrationAsyncHelper | XML |", docs["IntegrationAsyncHelper.recalc"])
 
+    def test_callouts_section(self):
+        doc = self.doc("IntegrationAsyncHelper")
+        self.assertIn("| Named Credential | Minha_NC | 1 | Código Apex |", doc)
+        self.assertIn("| URL fixa no código (sem Named Credential; valor não registrado) |", doc)
+        self.assertNotIn("NC_Em_Comentario", doc)
+        norm = json.loads(self.read(self.entry("IntegrationAsyncHelper")["normalized"]))
+        self.assertEqual([c["namedCredential"] for c in norm["data"]["apex"]["callouts"]], ["Minha_NC", None])
+        self.assertIn("## Callouts (Named Credentials e endpoints)\n\n| Tipo de endpoint | Named Credential |"
+                      " Ocorrências | Fonte |\n|---|---|---|---|\n| Não aplicável |", self.doc("PedidoService"))
+        leaks = [str(p.relative_to(self.root)) for p in self.root.rglob("*")
+                 if p.is_file() and p.suffix != ".cls"
+                 and ("SENTINELA_CALLOUT_PATH" in p.read_text(errors="ignore")
+                      or "SENTINELA_URL_FIXA" in p.read_text(errors="ignore"))]
+        self.assertEqual(leaks, [])
+
     def test_scheduler_document(self):
         doc = self.subdoc("DailyOrderCleanupScheduler", "apex-scheduler")
         self.assertIn("| Classes delegadas | OrderCleanupBatch | Código Apex |", doc)
