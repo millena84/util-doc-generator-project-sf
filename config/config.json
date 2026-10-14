@@ -22,6 +22,28 @@
     "privateFiles": true,
     "orgDisplayRaw": "KEEP_PRIVATE"
   },
+  "discovery": {
+    "notes": "Fase 2 (integration_discovery): lê só inventory/org-<alias>/api-v<N>/<pasta>/normalized/*.json. Pastas por component_type do CSV; bridgeTypes não unem clusters; regras de relação em rulesFile.",
+    "outputDir": "discovery",
+    "rulesFile": "config/integration-discovery-rules.json",
+    "bridgeTypes": ["PermissionSet"],
+    "metadataTypeFolders": {
+      "ConnectedApp": "connected-apps",
+      "ExternalClientApp": "external-client-apps",
+      "NamedCredential": "named-credentials",
+      "ExternalCredential": "external-credentials",
+      "ApexClass": "apex-classes",
+      "ApexTrigger": "apex-triggers",
+      "CustomObject": "custom-objects",
+      "CustomMetadata": "custom-metadata",
+      "PermissionSet": "permission-sets",
+      "RemoteSiteSetting": "remote-site-settings",
+      "Certificate": "certificates",
+      "SelfSignedCertificate": "self-signed-certificates",
+      "Flow": "flows",
+      "FlowDefinition": "flow-definitions"
+    }
+  },
   "execution": {
     "mode": "MVP_MOCKED_METADATA_TYPES",
     "saveRawResponses": true,

@@ -1,0 +1,34 @@
+{
+  "notes": "Regras da Fase 2 (integration_discovery). Relação = (tipo de origem, tipo de destino); 'pathEndsWith' refina pelo caminho JSON onde o nome foi achado. Nenhuma relação é criada sem o nome do destino aparecer no campo data (ou codeBody) do JSON normalizado de origem.",
+  "relationships": [
+    { "from": "ApexClass", "to": "NamedCredential", "relationship": "CALLS_ENDPOINT" },
+    { "from": "ApexClass", "to": "CustomObject", "relationship": "REFERENCES_OBJECT" },
+    { "from": "ApexClass", "to": "ApexClass", "relationship": "INVOKES_CLASS" },
+    { "from": "ApexClass", "to": "CustomMetadata", "relationship": "USES_METADATA" },
+    { "from": "ApexTrigger", "to": "CustomObject", "pathEndsWith": "apex.sObject", "relationship": "TRIGGERS_ON_OBJECT" },
+    { "from": "ApexTrigger", "to": "CustomObject", "relationship": "REFERENCES_OBJECT" },
+    { "from": "ApexTrigger", "to": "ApexClass", "relationship": "INVOKES_CLASS" },
+    { "from": "ApexTrigger", "to": "CustomMetadata", "relationship": "USES_METADATA" },
+    { "from": "CustomMetadata", "to": "NamedCredential", "relationship": "DEFINES_ENDPOINT" },
+    { "from": "CustomMetadata", "to": "ConnectedApp", "relationship": "REFERENCES_APP" },
+    { "from": "CustomMetadata", "to": "ExternalClientApp", "relationship": "REFERENCES_APP" },
+    { "from": "PermissionSet", "to": "ApexClass", "relationship": "GRANTS_ACCESS_TO_CLASS" },
+    { "from": "PermissionSet", "to": "CustomObject", "relationship": "GRANTS_ACCESS_TO_OBJECT" },
+    { "from": "PermissionSet", "to": "ConnectedApp", "relationship": "GRANTS_ACCESS_TO_APP" },
+    { "from": "PermissionSet", "to": "ExternalClientApp", "relationship": "GRANTS_ACCESS_TO_APP" },
+    { "from": "ConnectedApp", "to": "Certificate", "relationship": "USES_CERTIFICATE" },
+    { "from": "ConnectedApp", "to": "SelfSignedCertificate", "relationship": "USES_CERTIFICATE" },
+    { "from": "ExternalClientApp", "to": "*", "relationship": "RELATED_COMPONENT" },
+    { "from": "NamedCredential", "to": "ExternalCredential", "relationship": "USES_CREDENTIAL" }
+  ],
+  "defaultRelationship": "REFERENCES",
+  "inverseRelationships": { "TRIGGERS_ON_OBJECT": "HAS_TRIGGER" },
+  "codePaths": ["apex"],
+  "unverifiedKeys": ["description"],
+  "typeHintsByKey": {
+    "apexClass": "ApexClass", "className": "ApexClass", "targetClass": "ApexClass",
+    "sObject": "CustomObject", "object": "CustomObject", "targetSObject": "CustomObject",
+    "externalCredential": "ExternalCredential", "flow": "Flow",
+    "permissionSetName": "PermissionSet", "certificate": "Certificate"
+  }
+}
