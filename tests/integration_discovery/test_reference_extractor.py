@@ -77,6 +77,34 @@ class ReferenceExtractorTest(DiscoveryBase):
         unverified = [x for x in self.refs(e) if x["evidence"] == "UNVERIFIED"]
         self.assertEqual([(x["to"], x["jsonPath"]) for x in unverified], [("NamedCredential:RH_Endpoint", "data.apex.description")])
 
+    def test_apex_class_relationship_follows_the_json_path(self):
+        # D22-06: herança, interface e tipo usado não são "invoca"
+        names = ["BaseIntegracao", "Agendavel", "PedidoDTO", "OutroJob", "Util"]
+        targets = build_targets([c("ApexClass", n) for n in names])
+        data = {"apex": {"extends": "BaseIntegracao", "implements": ["Agendavel"],
+                         "methods": [{"signature": "m(PedidoDTO d)", "parameters": [{"type": "PedidoDTO"}]}],
+                         "asyncInvocations": [{"targetClass": "OutroJob"}], "innerTypes": ["Util"]}}
+        got = {(x["to"].split(":")[1], x["relationship"]) for x in extract_references(entry("ApexClass", "X", data),
+                                                                                       targets, self.rules)}
+        self.assertEqual(got, {("BaseIntegracao", "EXTENDS_CLASS"), ("Agendavel", "IMPLEMENTS_INTERFACE"),
+                               ("PedidoDTO", "USES_TYPE"), ("OutroJob", "INVOKES_CLASS"), ("Util", "REFERENCES_CLASS")})
+
+    def test_flow_preferred_over_flow_definition_when_ambiguous(self):
+        # D22-05: Flow e FlowDefinition são um só componente no Utilitário 1
+        targets = build_targets([c("Flow", "Meu_Flow"), c("FlowDefinition", "Meu_Flow")])
+        r = extract_references(entry("ApexClass", "C", {"apex": {"asyncInvocations": [{"jobName": "Meu_Flow"}]}}),
+                               targets, self.rules)
+        self.assertEqual([(x["to"], x["evidence"]) for x in r], [("Flow:Meu_Flow", "CODE_REFERENCE")])
+
+    def test_related_sources_scanned_without_child_identity(self):
+        extra = [{"path": "f.json", "metadataType": "CustomField", "fullName": "Colaborador__c.Empresa__c",
+                  "data": {"fullName": "Empresa__c", "referenceTo": "Empresa__c", "type": "Lookup"}}]
+        targets = build_targets([c("CustomObject", "Colaborador__c"), c("CustomObject", "Empresa__c")])
+        r = extract_references(entry("CustomObject", "Colaborador__c", extra=extra), targets, self.rules)
+        self.assertEqual([(x["to"], x["relationship"], x["jsonPath"], x["relatedSource"]) for x in r],
+                         [("CustomObject:Empresa__c", "LOOKUP_TO_OBJECT", "data.referenceTo",
+                           "CustomField:Colaborador__c.Empresa__c")])
+
     def test_same_name_in_two_types_needs_path_hint(self):
         targets = build_targets([c("ApexClass", "Pedido"), c("Flow", "Pedido")])
         r = extract_references(entry("PermissionSet", "PS", {"classAccesses": {"apexClass": "Pedido"}, "x": "Pedido"}),

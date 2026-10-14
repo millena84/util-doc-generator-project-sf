@@ -81,12 +81,22 @@ Essas saídas são derivadas da org e ficam no `.gitignore`.
   - nome exato, com fronteira de identificador e sensível a maiúsculas;
   - aceita `'Nome'`, `"Nome"`, `callout:Nome`, `Nome__c` e `Nome__mdt`;
   - nunca casa partes do nome.
-- O tipo de relação vem de `config/integration-discovery-rules.json`: tipo de origem × tipo de destino, refinado pelo caminho JSON. Por exemplo, `ApexTrigger` → `CustomObject` em `data.apex.sObject` é `TRIGGERS_ON_OBJECT`. Combinação sem regra vira `REFERENCES`.
+- O tipo de relação vem de `config/integration-discovery-rules.json`: tipo de origem × tipo de destino, refinado pelo caminho JSON sem índices (`pathEndsWith` ou `pathRegex`). Vale a primeira regra que casar; combinação sem regra vira `REFERENCES`. Exemplos:
+  - `ApexTrigger` → `CustomObject` em `data.apex.sObject`: `TRIGGERS_ON_OBJECT`;
+  - `ApexClass` → `ApexClass` depende do campo: `apex.extends` é `EXTENDS_CLASS`; `apex.implements` é `IMPLEMENTS_INTERFACE`; tipos em `apex.methods`/`constructors` (assinatura, parâmetro, retorno) são `USES_TYPE`; `asyncInvocations`/`chainedJobs.targetClass` é `INVOKES_CLASS`; o resto é `REFERENCES_CLASS`;
+  - `CustomObject` → `CustomObject` em `referenceTo` (campo lookup): `LOOKUP_TO_OBJECT`;
+  - `Flow` → `CustomObject` em `start.object`: `TRIGGERS_ON_OBJECT`; `Flow` → `ApexClass` em `actionCalls.actionName`: `INVOKES_CLASS`.
 - Evidência:
   - `CODE_REFERENCE`: fatos de código lidos pelo Utilitário 1 (`data.apex.*`) ou `codeBody`;
   - `CONFIGURATION_REFERENCE`: demais campos do XML;
-  - `UNVERIFIED`: texto livre como `description`, ou o mesmo nome em dois tipos do CSV sem dica no caminho. `UNVERIFIED` **não entra no grafo**: aparece só no relatório.
-- Custom Metadata: o tipo (`X__mdt`) e os seus records (`X.Registro`, mesma pasta) são lidos juntos, para que um record que aponta para uma Named Credential gere `DEFINES_ENDPOINT`.
+  - `MANIFEST_REFERENCE`: vínculo pela estrutura do metadata (ver abaixo);
+  - `UNVERIFIED`: texto livre (`description`, `errorMessage`, `inlineHelpText`), ou o mesmo nome em dois tipos do CSV sem dica no caminho. `UNVERIFIED` **não entra no grafo**: aparece só no relatório.
+- **Relacionados lidos junto** (`discovery.relatedSources`, padrões em `settings.py`): JSONs que o Utilitário 1 grava ao lado do componente são lidos como parte dele. As referências achadas neles contam como do componente do CSV, com `relatedSource` indicando o arquivo de origem. Eles não viram nós do grafo e são listados no relatório ("Relacionados lidos junto") e em `component-status.json`.
+  - **External Client App:** as políticas (`ExtlClntAppOauthSettings`, `ExtlClntAppConfigurablePolicies`, `ExtlClntAppOauthConfigurablePolicies`) cujo `externalClientApplication` é a ECA. Exemplo: `commaSeparatedPermissionSet` liga a ECA aos permission sets.
+  - **CustomObject:** os filhos `<Objeto>.*` (CustomField, RecordType, ValidationRule, WebLink). Um lookup (`referenceTo`) liga a outro objeto do CSV.
+  - **Custom Metadata:** o tipo (`X__mdt`), os seus records (`X.Registro`) e campos, para que um record que aponta para uma Named Credential gere `DEFINES_ENDPOINT`.
+  - O `fullName` do relacionado (a identidade dele, ex.: campo `Empresa__c`) não é varrido, para não confundir com um objeto de mesmo nome.
+- **Mesmo componente em dois tipos** (`discovery.sameNamePairs`): `Flow` e `FlowDefinition` com o mesmo nome no CSV são ligados por `HAS_DEFINITION` (evidência `MANIFEST_REFERENCE`, como o `SAME_FULL_NAME` do Utilitário 1). Uma menção ambígua entre os dois vai para o `Flow`, sem rebaixar a evidência (`ambiguityPreference` nas regras).
 - `matchedText` guarda **só o nome casado**: o normalizado pode ter valores sensíveis (cabeçalhos de Named Credential, valores de Custom Metadata, `consumerKey`) e nenhum deles é copiado.
 
 ### Como os clusters são formados
@@ -133,3 +143,4 @@ Nada disso é feito agora.
 - Nome de componente que é palavra comum (ex.: classe `Status`) pode casar em valores de configuração. A busca exige o nome inteiro, mas não sabe se o campo é uma referência.
 - `SelfSignedCertificate` não é um metadata type separado no Utilitário 1 (certificados ficam em `Certificate`): essa linha do CSV sempre resulta em `NORMALIZED_JSON_NOT_FOUND`.
 - `line` só é preenchida para `codeBody`; os campos de `data` não têm número de linha.
+- As pastas dos relacionados (`extl-clnt-app-*`, `custom-objects`, `custom-metadata`) e o campo `externalClientApplication` seguem a saída atual do Utilitário 1 (conferida com a CLI simulada). Confirme com dados reais; se mudarem, ajuste `discovery.relatedSources` no `config.json`.

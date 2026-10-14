@@ -47,6 +47,35 @@ DEFAULT_NAME_STOPWORDS = [
     "callout", "flow", "the", "de", "do", "da", "dos", "das",
 ]
 
+# Componentes lidos JUNTO com o componente do CSV (não viram nós do grafo): as referências achadas
+# neles contam como do componente do CSV, e o vínculo fica registrado (MANIFEST_REFERENCE).
+# - FIELD_EQUALS_NAME: JSON da pasta cujo `data.<field>` é o nome do componente (ex.: políticas da
+#   External Client App apontam para ela em `externalClientApplication`);
+# - CHILD_OF: JSON da pasta cujo fullName é `<nome>.<filho>` (ex.: campos, record types e regras
+#   de validação do objeto; records de Custom Metadata, com `stripSuffix` "__mdt").
+DEFAULT_RELATED_SOURCES = {
+    "ExternalClientApp": [
+        {"match": "FIELD_EQUALS_NAME", "field": "externalClientApplication",
+         "folders": ["extl-clnt-app-oauth-settings", "extl-clnt-app-configurable-policies",
+                     "extl-clnt-app-oauth-configurable-policies"]},
+    ],
+    "CustomObject": [
+        {"match": "CHILD_OF", "folders": ["custom-objects"],
+         "metadataTypes": ["CustomField", "RecordType", "ValidationRule", "WebLink"]},
+    ],
+    "CustomMetadata": [
+        {"match": "CHILD_OF", "folders": ["custom-metadata"], "metadataTypes": ["CustomMetadata"],
+         "stripSuffix": "__mdt"},
+        {"match": "CHILD_OF", "folders": ["custom-metadata"], "metadataTypes": ["CustomField"]},
+    ],
+}
+
+# Mesmo fullName em dois tipos do CSV que formam um só componente no Utilitário 1 (relação
+# SAME_FULL_NAME do metadata-types-mvp.json): ligados com evidência MANIFEST_REFERENCE.
+DEFAULT_SAME_NAME_PAIRS = [
+    {"from": "Flow", "to": "FlowDefinition", "relationship": "HAS_DEFINITION"},
+]
+
 DEFAULT_RULES_FILE = "config/integration-discovery-rules.json"
 
 
@@ -65,6 +94,8 @@ class DiscoverySettings:
         self.normalized_types = dict(DEFAULT_NORMALIZED_TYPES, **(disc.get("normalizedMetadataTypes") or {}))
         self.bridge_types = list(disc.get("bridgeTypes", DEFAULT_BRIDGE_TYPES))
         self.stopwords = {w.lower() for w in disc.get("nameStopwords", DEFAULT_NAME_STOPWORDS)}
+        self.related_sources = dict(DEFAULT_RELATED_SOURCES, **(disc.get("relatedSources") or {}))
+        self.same_name_pairs = list(disc.get("sameNamePairs", DEFAULT_SAME_NAME_PAIRS))
         rules_path = self.project_root / (disc.get("rulesFile") or DEFAULT_RULES_FILE)
         self.rules_path = rules_path
         self.rules = json.loads(rules_path.read_text(encoding="utf-8")) if rules_path.is_file() else {}

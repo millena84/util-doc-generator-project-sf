@@ -25,7 +25,9 @@ _VERB = {"CALLS_ENDPOINT": "chama o endpoint", "REFERENCES_OBJECT": "referencia 
          "GRANTS_ACCESS_TO_CLASS": "concede acesso à classe", "GRANTS_ACCESS_TO_OBJECT": "concede acesso ao objeto",
          "GRANTS_ACCESS_TO_APP": "concede acesso ao app", "USES_CERTIFICATE": "usa o certificado",
          "RELATED_COMPONENT": "está relacionado a", "USES_CREDENTIAL": "usa a credencial",
-         "HAS_TRIGGER": "tem a trigger", "REFERENCES": "referencia"}
+         "HAS_TRIGGER": "tem a trigger", "REFERENCES": "referencia", "EXTENDS_CLASS": "estende",
+         "IMPLEMENTS_INTERFACE": "implementa", "USES_TYPE": "usa o tipo", "REFERENCES_CLASS": "referencia a classe",
+         "LOOKUP_TO_OBJECT": "tem lookup para", "HAS_DEFINITION": "tem a definição"}
 
 
 def tokens(name):
@@ -110,8 +112,9 @@ def propose(cluster, labels, descriptions, stopwords, orphans):
     for e in [e for e in cluster["relationships"] if not e.get("inverseOf")][:8]:
         ft, fn = _split(e["from"])
         tt, tn = _split(e["to"])
+        where = f"`{e['jsonPath']}`" + (f" em {e['relatedSource']}" if e.get("relatedSource") else "")
         rationale.append(f"{ft} {fn} {_VERB.get(e['relationship'], 'referencia')} {tt} {tn} "
-                         f"({e['relationship']}, {e['evidence']}, `{e['jsonPath']}`).")
+                         f"({e['relationship']}, {e['evidence']}, {where}).")
     if prefix:
         for m, desc in sorted(descriptions.items()):
             if m in members and desc and re.search(r"(?<![A-Za-z0-9_])" + re.escape(prefix) + r"(?![A-Za-z0-9_])", desc):

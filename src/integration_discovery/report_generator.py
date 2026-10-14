@@ -17,6 +17,11 @@ def _table(headers, rows):
     return out if rows else out + ["| " + " | ".join(["—"] * len(headers)) + " |"]
 
 
+def _where(e):
+    """Caminho JSON da evidência e, se veio de um relacionado lido junto, qual."""
+    return f"`{e['jsonPath']}`" + (f" em {e['relatedSource']}" if e.get("relatedSource") else "")
+
+
 def generate_report(ctx):
     csv_res, entries, graph = ctx["csv"], ctx["entries"], ctx["graph"]
     clusters, proposals, orphans = ctx["clusters"], ctx["proposals"], ctx["orphans"]
@@ -61,7 +66,7 @@ def generate_report(ctx):
               f"{', '.join(x['id'] for x in c['components'] if x['bridge']) or '—'}", ""]
         L += _table(["De", "Relação", "Para", "Evidência", "Campo (JSON)", "Texto casado"],
                     [[e["from"], e["relationship"] + (" (inversa)" if e.get("inverseOf") else ""), e["to"],
-                      e["evidence"], f"`{e['jsonPath']}`", f"`{e['matchedText']}`"] for e in c["relationships"]])
+                      e["evidence"], _where(e), f"`{e['matchedText']}`"] for e in c["relationships"]])
         if p.get("rationale"):
             L += ["", "Justificativa do nome:", ""] + [f"- {r}" for r in p["rationale"]]
         if c["orphanComponents"]:
@@ -71,12 +76,16 @@ def generate_report(ctx):
     L += _table(["Componente"], [[o] for o in orphans])
     L += ["", "## 5. Menções não verificadas (não entram no grafo)", ""]
     L += _table(["De", "Para", "Campo (JSON)", "Texto casado", "Motivo"],
-                [[m["from"], m["to"], f"`{m['jsonPath']}`", f"`{m['matchedText']}`",
+                [[m["from"], m["to"], _where(m), f"`{m['matchedText']}`",
                   m.get("ambiguity") or "texto livre (comentário/descrição)"] for m in graph["unverifiedMentions"]])
     L += ["", "## 6. Referências a componentes do CSV sem JSON (não entram no grafo)", ""]
     L += _table(["De", "Para", "Relação", "Campo (JSON)"],
-                [[m["from"], m["to"], m["relationship"], f"`{m['jsonPath']}`"]
+                [[m["from"], m["to"], m["relationship"], _where(m)]
                  for m in graph["referencesToComponentsWithoutJson"]])
+    L += ["", "## 6b. Relacionados lidos junto com o componente (não são nós do grafo)", ""]
+    L += _table(["Componente do CSV", "Relacionado", "Vínculo", "Arquivo"],
+                [[e["key"], f"{x.get('metadataType')}:{x['fullName']}", (x.get("link") or {}).get("via"), f"`{x['path']}`"]
+                 for e in entries for x in e.get("extraSources") or []])
     L += ["", "## 7. Erros e avisos de validação do CSV", ""]
     if csv_res.fatal:
         L += [f"- **Erro que impediu a leitura:** {csv_res.fatal}"]

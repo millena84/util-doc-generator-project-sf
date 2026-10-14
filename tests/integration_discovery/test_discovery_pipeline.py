@@ -153,6 +153,52 @@ class DiscoveryPipelineTest(DiscoveryBase):
         self.assertEqual(self.members("cluster-002"), app)
         self.assertEqual(self.read_json("clusters", "cluster-002.json")["status"], "APPROVED")
 
+    def test_external_client_app_joins_through_its_policy(self):
+        # D22-04: a ECA deixa de ser órfã quando a política dela cita um componente do CSV
+        self.put_normalized("external-client-apps/normalized/integracaorh-eca.json", "ExternalClientApplication",
+                            "IntegracaoRH_ECA", {"label": "ECA RH"})
+        self.put_normalized("extl-clnt-app-oauth-configurable-policies/normalized/integracaorh-eca-oauthplcy.json",
+                            "ExtlClntAppOauthConfigurablePolicies", "IntegracaoRH_ECA_oauthPlcy",
+                            {"externalClientApplication": "IntegracaoRH_ECA",
+                             "commaSeparatedPermissionSet": "Outro_PS,IntegracaoRH_User"}, role="related")
+        _, summary = self.run_it()
+        self.assertEqual(summary["notFound"], 0)
+        edges = self.read_json("graphs", "graph.json")["edges"]
+        eca = [e for e in edges if e["from"] == "ExternalClientApp:IntegracaoRH_ECA"]
+        self.assertEqual([(e["to"], e["relationship"], e["jsonPath"], e["relatedSource"]) for e in eca],
+                         [("PermissionSet:IntegracaoRH_User", "RELATED_COMPONENT", "data.commaSeparatedPermissionSet",
+                           "ExtlClntAppOauthConfigurablePolicies:IntegracaoRH_ECA_oauthPlcy")])
+        report = self.out("report", "discovery-report.md").read_text(encoding="utf-8")
+        self.assertIn("em ExtlClntAppOauthConfigurablePolicies:IntegracaoRH_ECA_oauthPlcy", report)
+        self.assertIn("data.externalClientApplication = IntegracaoRH_ECA", report)  # seção de relacionados lidos
+
+    def test_flow_and_flow_definition_are_linked(self):
+        # D22-05
+        self.put_normalized("flows/normalized/admissao-flow.json", "Flow", "Admissao_Flow",
+                            {"label": "Admissão", "start": {"object": "Colaborador__c", "triggerType": "RecordAfterSave"}})
+        self.put_normalized("flow-definitions/normalized/admissao-flow.json", "FlowDefinition", "Admissao_Flow",
+                            {"activeVersionNumber": "1", "masterLabel": "Admissão"})
+        text = CSV.read_text(encoding="utf-8") + "Flow,Admissao_Flow,true,\nFlowDefinition,Admissao_Flow,true,\n"
+        self.run_it(csv=self.write_csv(text))
+        edges = {(e["from"], e["to"], e["relationship"], e["evidence"]) for e in self.read_json("graphs", "graph.json")["edges"]}
+        self.assertIn(("Flow:Admissao_Flow", "FlowDefinition:Admissao_Flow", "HAS_DEFINITION", "MANIFEST_REFERENCE"), edges)
+        self.assertIn(("Flow:Admissao_Flow", "CustomObject:Colaborador__c", "TRIGGERS_ON_OBJECT", "CONFIGURATION_REFERENCE"), edges)
+        orphans = [o["id"] for o in self.read_json("orphans", "orphans.json")["orphans"]]
+        self.assertNotIn("FlowDefinition:Admissao_Flow", orphans)
+
+    def test_custom_object_lookup_from_child_field(self):
+        # D22-07
+        self.put_normalized("custom-objects/normalized/empresa-c.json", "CustomObject", "Empresa__c", {"label": "Empresa"})
+        self.put_normalized("custom-objects/normalized/custom-field--colaborador-c-empresa-c.json", "CustomField",
+                            "Colaborador__c.Empresa__c", {"fullName": "Empresa__c", "referenceTo": "Empresa__c",
+                                                          "type": "Lookup"}, "child")
+        self.run_it(csv=self.write_csv(CSV.read_text(encoding="utf-8") + "CustomObject,Empresa__c,true,\n"))
+        edges = [e for e in self.read_json("graphs", "graph.json")["edges"] if e["to"] == "CustomObject:Empresa__c"]
+        self.assertEqual([(e["from"], e["relationship"], e["relatedSource"]) for e in edges],
+                         [("CustomObject:Colaborador__c", "LOOKUP_TO_OBJECT", "CustomField:Colaborador__c.Empresa__c")])
+        c1 = self.read_json("clusters", "cluster-001.json")
+        self.assertIn("CustomObject:Empresa__c", [x["id"] for x in c1["components"]])
+
     def test_fatal_csv_keeps_previous_outputs(self):
         self.run_it()
         before = self.out("clusters", "cluster-001.json").read_text(encoding="utf-8")
@@ -197,14 +243,18 @@ class DiscoveryOnRealUtility1OutputTest(P3Base):
     """Ponta a ponta sobre JSONs normalizados gerados DE VERDADE pelo Utilitário 1 (CLI simulada)."""
 
     def test_clusters_from_utility1_inventory(self):
-        code, _ = self.run_pipeline(groups=["ApexTrigger", "ApexClass", "CustomObject", "PermissionSet",
-                                            "NamedCredential", "ExternalCredential", "ConnectedApp"])
+        # mvp_complete: cenário em que a External Client App tem as políticas no inventário
+        code, _ = self.run_pipeline("mvp_complete", groups=["ApexTrigger", "ApexClass", "CustomObject", "PermissionSet",
+                                            "NamedCredential", "ExternalCredential", "ConnectedApp", "Flow",
+                                            "ExternalClientApp"])
         self.assertEqual(code, 0, self.log.getvalue())
         csv = self.root / "squad.csv"
         csv.write_text("component_type,component_name,squad_suspect,notes\n"
                        "ApexTrigger,PedidoTrigger,true,\nApexClass,PedidoTriggerHandler,true,\nApexClass,PedidoService,true,\n"
                        "CustomObject,Pedido__c,true,\nNamedCredential,Minha_NC,true,\nExternalCredential,Minha_EC,true,\n"
-                       "ConnectedApp,Meu_App,true,\nPermissionSet,Integracao_API,true,\n", encoding="utf-8")
+                       "ConnectedApp,Meu_App,true,\nPermissionSet,Integracao_API,true,\n"
+                       "Flow,Meu_Flow,true,\nFlowDefinition,Meu_Flow,true,\nExternalClientApp,Minha_ECA,true,\n",
+                       encoding="utf-8")
         code, summary = run_discovery(self.root, csv, stream=io.StringIO())
         self.assertEqual((code, summary["notFound"]), (0, 0))
         graph = json.loads((self.root / "discovery" / "graphs" / "graph.json").read_text(encoding="utf-8"))
@@ -213,6 +263,14 @@ class DiscoveryOnRealUtility1OutputTest(P3Base):
         self.assertIn(("ApexTrigger:PedidoTrigger", "ApexClass:PedidoService", "INVOKES_CLASS"), edges)
         self.assertIn(("NamedCredential:Minha_NC", "ExternalCredential:Minha_EC", "USES_CREDENTIAL"), edges)
         self.assertIn(("ConnectedApp:Meu_App", "PermissionSet:Integracao_API", "REFERENCES"), edges)
+        # D22-05 / D22-04 sobre a saída real do Utilitário 1
+        self.assertIn(("Flow:Meu_Flow", "FlowDefinition:Meu_Flow", "HAS_DEFINITION"), edges)
+        self.assertIn(("Flow:Meu_Flow", "CustomObject:Pedido__c", "TRIGGERS_ON_OBJECT"), edges)
+        self.assertIn(("ExternalClientApp:Minha_ECA", "PermissionSet:Integracao_API", "RELATED_COMPONENT"), edges)
+        status = json.loads((self.root / "discovery" / "report" / "component-status.json").read_text(encoding="utf-8"))
+        rel = {c["componentName"]: [r["component"] for r in c["relatedSources"]] for c in status["components"]}
+        self.assertIn("ExtlClntAppOauthConfigurablePolicies:Minha_ECA_oauthPlcy", rel["Minha_ECA"])
+        self.assertIn("CustomField:Pedido__c.Status__c", rel["Pedido__c"])  # D22-07: filhos do objeto
         out = "\n".join(p.read_text(encoding="utf-8") for p in (self.root / "discovery").rglob("*.*") if p.is_file())
         for s in ("SENTINELA", "sentinela", "CHAVE_SIMULADA"):
             self.assertNotIn(s, out)

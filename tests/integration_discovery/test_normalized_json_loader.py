@@ -39,3 +39,28 @@ class NormalizedJsonLoaderTest(DiscoveryBase):
         e = L.load_component(self.settings(), comp("CustomMetadata", "Endpoint_Config__mdt"))
         self.assertEqual((e["status"], e["metadataType"]), (L.FOUND, "CustomObject"))
         self.assertEqual([x["fullName"] for x in e["extraSources"]], ["Endpoint_Config.Producao"])
+        self.assertEqual(e["extraSources"][0]["link"]["evidence"], "MANIFEST_REFERENCE")
+
+    def test_external_client_app_reads_its_policies(self):
+        # D22-04: as políticas ficam em outras pastas e apontam para a ECA em externalClientApplication
+        self.put_normalized("external-client-apps/normalized/integracaorh-eca.json", "ExternalClientApplication",
+                            "IntegracaoRH_ECA", {"label": "ECA RH", "distributionState": "Local"})
+        self.put_normalized("extl-clnt-app-oauth-configurable-policies/normalized/integracaorh-eca-oauthplcy.json",
+                            "ExtlClntAppOauthConfigurablePolicies", "IntegracaoRH_ECA_oauthPlcy",
+                            {"externalClientApplication": "IntegracaoRH_ECA", "commaSeparatedPermissionSet": "IntegracaoRH_User"},
+                            role="related")
+        self.put_normalized("extl-clnt-app-oauth-settings/normalized/outra-oauth.json", "ExtlClntAppOauthSettings",
+                            "Outra_oauth", {"externalClientApplication": "Outra_ECA"}, role="related")
+        e = L.load_component(self.settings(), comp("ExternalClientApp", "IntegracaoRH_ECA"))
+        self.assertEqual((e["status"], e["metadataType"]), (L.FOUND, "ExternalClientApplication"))
+        self.assertEqual([(x["fullName"], x["link"]["via"]) for x in e["extraSources"]],
+                         [("IntegracaoRH_ECA_oauthPlcy", "data.externalClientApplication = IntegracaoRH_ECA")])
+
+    def test_custom_object_reads_its_children_only(self):
+        # D22-07: filhos do objeto (campos, record types, regras) entram como relacionados
+        self.put_normalized("custom-objects/normalized/custom-field--colaborador-c-empresa-c.json", "CustomField",
+                            "Colaborador__c.Empresa__c", {"fullName": "Empresa__c", "referenceTo": "Empresa__c"}, "child")
+        self.put_normalized("custom-objects/normalized/custom-field--colaborador2-c-x-c.json", "CustomField",
+                            "Colaborador2__c.X__c", {"fullName": "X__c"}, "child")
+        e = L.load_component(self.settings(), comp("CustomObject", "Colaborador__c"))
+        self.assertEqual([x["fullName"] for x in e["extraSources"]], ["Colaborador__c.Empresa__c"])

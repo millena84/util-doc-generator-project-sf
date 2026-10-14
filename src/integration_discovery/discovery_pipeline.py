@@ -93,6 +93,22 @@ def _apply_review(cluster, review):
         cluster.pop("approvedName", None)
 
 
+def _same_name_relations(entries, pairs):
+    """Mesmo fullName em dois tipos do CSV que formam um só componente no Utilitário 1 (ex.: Flow e
+    FlowDefinition, relação SAME_FULL_NAME do metadata-types-mvp.json): evidência de manifesto."""
+    found = {(e["componentType"], e["componentName"].lower()): e for e in entries if e["status"] == loader.FOUND}
+    out = []
+    for pair in pairs:
+        for (t, name), src in sorted(found.items()):
+            dst = found.get((pair["to"], name)) if t == pair["from"] else None
+            if dst:
+                out.append({"from": src["key"], "to": dst["key"], "relationship": pair["relationship"],
+                            "evidence": reference_extractor.MANIFEST, "sourceFile": dst["path"],
+                            "sourceField": "fullName", "jsonPath": "fullName",
+                            "matchedText": dst["componentName"], "line": None})
+    return out
+
+
 def run_discovery(project_root, csv_path, alias=None, api_version=None, use_cache=True,
                   extractor=None, stream=None):
     """Executa a descoberta. Retorna (código de saída, resumo)."""
@@ -138,6 +154,7 @@ def run_discovery(project_root, csv_path, alias=None, api_version=None, use_cach
             rels = extractor(e, targets, settings.rules)
         new_cache[e["key"]] = {"fingerprint": fp, "relations": rels}
         relations += rels
+    relations += _same_name_relations(entries, settings.same_name_pairs)
     _write_json(cache_path, {"version": CACHE_VERSION, "contextKey": ctx_key, "updatedAt": generated_at,
                              "components": new_cache})
 
@@ -183,6 +200,8 @@ def run_discovery(project_root, csv_path, alias=None, api_version=None, use_cach
         "generatedAt": generated_at, "csv": csv_res.to_dict(),
         "components": [{"componentType": e["componentType"], "componentName": e["componentName"],
                         "status": e["status"], "expectedPath": e["expectedPath"],
+                        "relatedSources": [{"component": f"{x.get('metadataType')}:{x['fullName']}", "path": x["path"],
+                                            **(x.get("link") or {})} for x in e.get("extraSources") or []],
                         **({"error": e["error"]} if e.get("error") else {})} for e in entries]})
     report = report_generator.generate_report({
         "csv": csv_res, "entries": entries, "graph": graph, "clusters": clusters, "proposals": proposals,

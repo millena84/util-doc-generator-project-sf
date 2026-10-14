@@ -33,5 +33,16 @@ class DiscoveryBase(unittest.TestCase):
     def out(self, *parts):
         return self.root.joinpath("discovery", *parts)
 
+    def put_normalized(self, rel, metadata_type, full_name, data, role="primary"):
+        """Grava um JSON normalizado no formato do Utilitário 1 dentro do inventário do teste."""
+        p = self.root / INV / rel
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(json.dumps({"metadataType": metadata_type, "fullName": full_name, "role": role,
+                                 "source": {"xml": f"{INV}/{rel}.xml", "xmlSha256": "0" * 64},
+                                 "schema": {"available": True, "fieldNames": []},
+                                 "fields": {"present": [], "absent": [], "redacted": []}, "data": data},
+                                ensure_ascii=False), encoding="utf-8")
+        return p
+
     def read_json(self, *parts):
         return json.loads(self.out(*parts).read_text(encoding="utf-8"))

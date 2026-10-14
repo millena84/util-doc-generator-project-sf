@@ -6,6 +6,11 @@ Só o JSON normalizado é lido — nunca o XML bruto nem o Markdown.
 
 Status por componente: FOUND, NORMALIZED_JSON_NOT_FOUND, NORMALIZED_JSON_INVALID (JSON malformado)
 e NORMALIZED_JSON_MISMATCH (o arquivo existe, mas é de outro tipo/componente).
+
+Relacionados lidos junto (`discovery.relatedSources`): JSONs normalizados de outros tipos que o
+Utilitário 1 grava ao lado do componente (políticas da External Client App, filhos do objeto,
+records de Custom Metadata). Ficam em `extraSources`, com o vínculo (`link`) que os prendeu ao
+componente; não viram nós do grafo.
 """
 
 from __future__ import annotations
@@ -39,20 +44,49 @@ def expected_path(settings, component, alias=None, api_version=None) -> Path:
     return settings.inventory_dir(alias, api_version) / folder / "normalized" / f"{slugify(component['componentName'])}.json"
 
 
-def _cmdt_records(folder_dir, type_name, root):
-    """Records de Custom Metadata do tipo `X__mdt` (fullName `X.Registro`), na mesma pasta."""
-    prefix = type_name[:-len("__mdt")] + "." if type_name.endswith("__mdt") else None
-    out = []
-    if not prefix or not folder_dir.is_dir():
-        return out
-    for p in sorted(folder_dir.glob("*.json")):
-        try:
-            data, sha = _read(p)
-        except (ValueError, OSError):
-            continue
-        if data.get("metadataType") == "CustomMetadata" and str(data.get("fullName", "")).startswith(prefix):
-            out.append({"path": _rel(p, root), "sha256": sha, "fullName": data.get("fullName"),
-                        "data": data.get("data"), "codeBody": data.get("codeBody")})
+def _folder_index(settings, inv_dir, folder):
+    """JSONs normalizados de uma pasta, lidos uma vez por execução (cache no objeto settings)."""
+    cache = settings.__dict__.setdefault("_folder_index", {})
+    key = str(inv_dir / folder)
+    if key not in cache:
+        items = []
+        for p in sorted((inv_dir / folder / "normalized").glob("*.json")):
+            try:
+                doc, sha = _read(p)
+            except (ValueError, OSError):
+                continue
+            if isinstance(doc, dict):
+                items.append({"path": _rel(p, settings.project_root), "sha256": sha,
+                              "metadataType": doc.get("metadataType"), "fullName": str(doc.get("fullName") or ""),
+                              "data": doc.get("data"), "codeBody": doc.get("codeBody")})
+        cache[key] = items
+    return cache[key]
+
+
+def related_sources(settings, component, full_name, own_path, inv_dir):
+    """Relacionados declarados em `discovery.relatedSources` para o tipo do componente."""
+    out, seen = [], {own_path}
+    for spec in settings.related_sources.get(component["componentType"]) or []:
+        types = set(spec.get("metadataTypes") or [])
+        if spec["match"] == "CHILD_OF":
+            base = full_name
+            if spec.get("stripSuffix") and base.endswith(spec["stripSuffix"]):
+                base = base[:-len(spec["stripSuffix"])]
+            link = {"match": "CHILD_OF", "evidence": "MANIFEST_REFERENCE", "via": f"fullName {base}.*"}
+        else:
+            link = {"match": "FIELD_EQUALS_NAME", "evidence": "MANIFEST_REFERENCE",
+                    "via": f"data.{spec['field']} = {full_name}"}
+        for folder in spec.get("folders") or []:
+            for item in _folder_index(settings, inv_dir, folder):
+                if item["path"] in seen or (types and item["metadataType"] not in types):
+                    continue
+                if spec["match"] == "CHILD_OF":
+                    ok = item["fullName"].startswith(base + ".")
+                else:
+                    ok = isinstance(item["data"], dict) and item["data"].get(spec["field"]) == full_name
+                if ok:
+                    seen.add(item["path"])
+                    out.append(dict(item, link=link))
     return out
 
 
@@ -83,8 +117,8 @@ def load_component(settings, component, alias=None, api_version=None) -> dict:
     data = doc.get("data") or {}
     entry.update(status=FOUND, data=data, codeBody=doc.get("codeBody") or data.get("codeBody"),
                  label=data.get("label") if isinstance(data.get("label"), str) else None)
-    if component["componentType"] == "CustomMetadata":
-        entry["extraSources"] = _cmdt_records(path.parent, full_name, settings.project_root)
+    entry["extraSources"] = related_sources(settings, component, full_name, entry["path"],
+                                            settings.inventory_dir(alias, api_version))
     return entry
 
 

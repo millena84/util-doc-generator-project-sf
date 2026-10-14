@@ -70,13 +70,28 @@ def _last_key(path):
 
 
 def _relationship(rules, from_type, to_type, path):
+    """Primeira regra que casa (tipo de origem, tipo de destino e, se houver, o caminho JSON sem
+    índices: `pathEndsWith` ou `pathRegex`)."""
+    clean = re.sub(r"\[\d+\]", "", path)
     for r in rules.get("relationships") or []:
         if r["from"] != from_type or r["to"] not in (to_type, "*"):
             continue
-        if r.get("pathEndsWith") and not re.sub(r"\[\d+\]", "", path).endswith(r["pathEndsWith"]):
+        if r.get("pathEndsWith") and not clean.endswith(r["pathEndsWith"]):
+            continue
+        if r.get("pathRegex") and not re.search(r["pathRegex"], clean):
             continue
         return r["relationship"]
     return rules.get("defaultRelationship", "REFERENCES")
+
+
+def _prefer(rules, cands):
+    """Nome em dois tipos que o Utilitário 1 trata como um só componente (ex.: Flow/FlowDefinition):
+    `ambiguityPreference` escolhe o primeiro tipo do par, sem rebaixar a evidência."""
+    types = {c["componentType"] for c in cands}
+    for pair in rules.get("ambiguityPreference") or []:
+        if types == set(pair):
+            return [c for c in cands if c["componentType"] == pair[0]]
+    return None
 
 
 def _evidence(rules, path, field):
@@ -89,14 +104,22 @@ def _evidence(rules, path, field):
     return CODE if first in set(rules.get("codePaths") or []) else CONFIG
 
 
-def _texts(entry):
-    """(arquivo de origem, campo, caminho, texto, linha-base) de um componente carregado."""
-    out = [(entry["path"], "data", path, text) for path, text in _walk(entry.get("data") or {}, "data")]
-    for extra in entry.get("extraSources") or []:  # records de Custom Metadata do tipo
-        out += [(extra["path"], "data", f"{path} (record {extra['fullName']})", text)
-                for path, text in _walk(extra.get("data") or {}, "data")]
+def _texts(entry, rules):
+    """(arquivo de origem, campo, caminho, texto, relacionado de origem) de um componente carregado.
+
+    Relacionados lidos junto (`extraSources`) entram com o próprio arquivo e `relatedSource`; as
+    chaves de `relatedIgnoreKeys` (ex.: `fullName` do filho, que é a identidade dele e pode
+    coincidir com o nome de outro componente) não são varridas neles."""
+    out = [(entry["path"], "data", path, text, None) for path, text in _walk(entry.get("data") or {}, "data")]
     if isinstance(entry.get("codeBody"), str):
-        out.append((entry["path"], "codeBody", "codeBody", entry["codeBody"]))
+        out.append((entry["path"], "codeBody", "codeBody", entry["codeBody"], None))
+    ignore = set(rules.get("relatedIgnoreKeys") or [])
+    for extra in entry.get("extraSources") or []:
+        related = f"{extra.get('metadataType')}:{extra['fullName']}"
+        out += [(extra["path"], "data", path, text, related)
+                for path, text in _walk(extra.get("data") or {}, "data") if _last_key(path) not in ignore]
+        if isinstance(extra.get("codeBody"), str):
+            out.append((extra["path"], "codeBody", "codeBody", extra["codeBody"], related))
     return out
 
 
@@ -105,7 +128,7 @@ def extract_references(entry, targets, rules):
     src_key = entry["key"]
     hints = rules.get("typeHintsByKey") or {}
     found, seen = [], set()
-    for source_file, field, path, text in _texts(entry):
+    for source_file, field, path, text, related in _texts(entry, rules):
         if text == REDACTED or not text:
             continue
         for name, (candidates, pattern) in targets.items():
@@ -118,8 +141,11 @@ def extract_references(entry, targets, rules):
                 evidence = _evidence(rules, path, field)
                 if len(cands) > 1:  # mesmo nome em tipos diferentes: só resolve com dica do caminho
                     hinted = [c for c in cands if c["componentType"] == hints.get(_last_key(path))]
+                    preferred = _prefer(rules, cands)
                     if len(hinted) == 1:
                         cands = hinted
+                    elif preferred:
+                        cands = preferred
                     else:
                         evidence = UNVERIFIED
                 line = text.count("\n", 0, m.start()) + 1 if field == "codeBody" else None
@@ -129,9 +155,11 @@ def extract_references(entry, targets, rules):
                            "relationship": _relationship(rules, entry["componentType"], c["componentType"], path),
                            "evidence": evidence, "sourceFile": source_file, "sourceField": field,
                            "jsonPath": path, "matchedText": m.group(0), "line": line}
+                    if related:
+                        rel["relatedSource"] = related
                     if len(cands) > 1:
                         rel["ambiguity"] = "nome presente em mais de um tipo do CSV, sem dica no caminho"
-                    dedupe = (to_key, rel["relationship"], source_file, path, rel["matchedText"], line)
+                    dedupe = (to_key, rel["relationship"], source_file, path, rel["matchedText"], line, related)
                     if dedupe not in seen:
                         seen.add(dedupe)
                         found.append(rel)
