@@ -166,7 +166,9 @@
   "unverifiedKeys": [
     "description",
     "errorMessage",
-    "inlineHelpText"
+    "inlineHelpText",
+    "errorConditionFormula",
+    "formula"
   ],
   "typeHintsByKey": {
     "apexClass": "ApexClass",

@@ -1,6 +1,6 @@
 """Números estáveis dos clusters e histórico das revisões humanas.
 
-Arquivo: `discovery/state/cluster-registry.json`.
+Arquivo: `discovery/org-<alias>/api-v<N>/state/cluster-registry.json` (um registro por org e versão).
 
 - Cada composição de cluster (assinatura = membros) recebe um número uma única vez
   (`cluster-NNN`). Em execuções seguintes, a mesma composição reaproveita o número, mesmo que a
@@ -15,6 +15,7 @@ Arquivo: `discovery/state/cluster-registry.json`.
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 VERSION = 1
@@ -22,18 +23,40 @@ ACTIVE = "ACTIVE"
 RETIRED = "RETIRED"
 
 
+class RegistryError(ValueError):
+    """Registro existe mas não pode ser usado: nada é gravado (evita renumerar em silêncio)."""
+
+
+def write_atomic(path, text):
+    """Grava num temporário da mesma pasta e troca de uma vez: interrupção não deixa arquivo pela metade."""
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_name(f".{path.name}.tmp")
+    tmp.write_text(text, encoding="utf-8")
+    os.replace(tmp, path)
+
+
 class ClusterRegistry:
     def __init__(self, path):
         self.path = Path(path)
-        data = None
-        if self.path.is_file():
-            try:
-                data = json.loads(self.path.read_text(encoding="utf-8"))
-            except ValueError:
-                data = None
-        if not isinstance(data, dict) or data.get("version") != VERSION:
-            data = {"version": VERSION, "nextNumber": 1, "clusters": {}, "reviews": []}
+        self.existed = self.path.is_file()
+        if not self.existed:
+            self.data = {"version": VERSION, "nextNumber": 1, "clusters": {}, "reviews": []}
+            return
+        try:
+            data = json.loads(self.path.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as exc:
+            raise RegistryError(self._unusable(f"não é um JSON válido ({type(exc).__name__})")) from None
+        if not isinstance(data, dict) or data.get("version") != VERSION \
+                or not isinstance(data.get("clusters"), dict) or not isinstance(data.get("reviews"), list) \
+                or not isinstance(data.get("nextNumber"), int):
+            raise RegistryError(self._unusable(f"estrutura inesperada (versão esperada {VERSION})"))
         self.data = data
+
+    def _unusable(self, why):
+        return (f"registro de clusters ilegível: {self.path} {why}. Nada foi gravado. Recomeçar a numeração "
+                "faria um número antigo apontar para outra composição. Restaure o arquivo (backup) ou, se aceitar "
+                "perder os números e as decisões registradas, apague-o conscientemente e rode de novo.")
 
     # Números --------------------------------------------------------------
     def _new_id(self):
@@ -105,11 +128,10 @@ class ClusterRegistry:
                 continue
             pending = [s for s in entry.get("successors") or [] if s not in decided_ids]
             if pending or not entry.get("successors"):
-                out.append({"clusterId": entry["clusterId"], "decision": review["decision"],
+                out.append({"clusterId": entry["clusterId"], "signature": sig, "decision": review["decision"],
                             "reviewedBy": review.get("reviewedBy"), "notes": review.get("notes"),
                             "successors": entry.get("successors") or []})
         return out
 
     def save(self):
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        self.path.write_text(json.dumps(self.data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        write_atomic(self.path, json.dumps(self.data, indent=2, ensure_ascii=False) + "\n")

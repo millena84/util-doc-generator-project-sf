@@ -1,7 +1,8 @@
 """Orquestra a descoberta: CSV -> JSON normalizado -> referências -> grafo -> clusters ->
 propostas de nome -> relatório. Também registra a revisão humana de um cluster.
 
-Saídas em `discovery/` (configurável em `config.json` -> `discovery.outputDir`):
+Saídas em `discovery/org-<alias>/api-v<N>/` (raiz configurável em `config.json` -> `discovery.outputDir`),
+separadas por org e versão para que decisões de uma org nunca valham para outra; gravação atômica:
 - `graphs/graph.json`, `clusters/cluster-NNN.json`, `proposals/cluster-NNN.proposal.json`,
   `orphans/orphans.json`, `report/discovery-report.md`, `report/component-status.json`;
 - `state/extraction-cache.json`: retomada — componente cujo JSON normalizado (sha256), lista de
@@ -23,11 +24,12 @@ from pathlib import Path
 from integration_discovery import cluster_builder, csv_loader, graph_builder, name_proposer
 from integration_discovery import normalized_json_loader as loader
 from integration_discovery import reference_extractor, report_generator
-from integration_discovery.cluster_registry import RETIRED, ClusterRegistry
+from integration_discovery.cluster_registry import RETIRED, ClusterRegistry, RegistryError, write_atomic
 from integration_discovery.settings import DiscoverySettings
 
 CACHE_VERSION = 1
 DECISIONS = ("APPROVED", "REJECTED", "PENDING")
+SIGNATURE_PREFIX = 6  # caracteres da assinatura mostrados no relatório e exigidos no review
 
 
 def _now():
@@ -35,9 +37,11 @@ def _now():
 
 
 def _write_json(path, data):
-    path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    write_atomic(path, json.dumps(data, indent=2, ensure_ascii=False) + "\n")
+
+
+def short_signature(sig):
+    return (sig or "")[:SIGNATURE_PREFIX]
 
 
 def _read_json(path):
@@ -68,9 +72,8 @@ def _entry_fingerprint(entry):
 def _registry(out):
     """Registro de números e revisões. Na primeira vez, migra os arquivos de cluster gerados antes
     dele (mesmo número e mesma decisão para a mesma composição)."""
-    path = out / "state" / "cluster-registry.json"
-    registry = ClusterRegistry(path)
-    if not path.is_file():
+    registry = ClusterRegistry(out / "state" / "cluster-registry.json")  # ilegível: RegistryError
+    if not registry.existed:
         for p in sorted((out / "clusters").glob("cluster-*.json")):
             c = _read_json(p) or {}
             if not c.get("signature") or not c.get("clusterId"):
@@ -114,7 +117,7 @@ def run_discovery(project_root, csv_path, alias=None, api_version=None, use_cach
     """Executa a descoberta. Retorna (código de saída, resumo)."""
     say = (lambda m: print(m, file=stream)) if stream is not None else print
     settings = DiscoverySettings(project_root)
-    out = settings.output_dir
+    out = settings.output_root(alias, api_version)
     extractor = extractor or reference_extractor.extract_references
     generated_at = _now()
     csv_res = csv_loader.load_csv(csv_path)
@@ -122,6 +125,11 @@ def run_discovery(project_root, csv_path, alias=None, api_version=None, use_cach
         # Nada é sobrescrito: clusters, propostas e revisões anteriores ficam intactos.
         say(f"ERRO no CSV: {csv_res.fatal}. Nenhuma saída foi alterada.")
         return 2, {"fatal": csv_res.fatal}
+    try:  # antes de qualquer gravação: registro ilegível para a execução sem tocar em nada
+        registry = _registry(out)
+    except RegistryError as exc:
+        say(f"ERRO: {exc}")
+        return 2, {"fatal": str(exc)}
     for e in csv_res.errors:
         say(f"CSV linha {e['line']}: {e['reason']} (ignorada)")
     for w in csv_res.warnings:
@@ -162,7 +170,6 @@ def run_discovery(project_root, csv_path, alias=None, api_version=None, use_cach
     clusters, orphans = cluster_builder.build_clusters(graph, settings.bridge_types)
 
     # Números estáveis por composição e decisões vigentes (histórico em state/cluster-registry.json).
-    registry = _registry(out)
     registry.assign(clusters, generated_at)
     for c in clusters:
         review = registry.latest_review(c["signature"])
@@ -211,12 +218,11 @@ def run_discovery(project_root, csv_path, alias=None, api_version=None, use_cach
     if stale:
         report += ("\n## 9. Revisões que não se aplicam mais\n\nA composição destes clusters mudou e o número "
                    "foi aposentado (nunca é reutilizado). Revise os clusters que receberam os componentes:\n\n"
-                   + "\n".join(f"- {p['clusterId']} (decisão anterior: {p['decision']}"
+                   + "\n".join(f"- {p['clusterId']} · `{short_signature(p['signature'])}` (decisão anterior: {p['decision']}"
                                 + (f" por {p['reviewedBy']}" if p.get("reviewedBy") else "")
                                 + (f"; nota: {p['notes']}" if p.get("notes") else "") + ") → componentes agora em: "
                                 + (", ".join(p["successors"]) or "nenhum cluster") for p in stale) + "\n")
-    (out / "report").mkdir(parents=True, exist_ok=True)
-    (out / "report" / "discovery-report.md").write_text(report, encoding="utf-8")
+    write_atomic(out / "report" / "discovery-report.md", report)
 
     summary = {"csvRows": csv_res.total_rows, "validComponents": len(components),
                "found": sum(1 for e in entries if e["status"] == loader.FOUND),
@@ -232,11 +238,13 @@ def run_discovery(project_root, csv_path, alias=None, api_version=None, use_cach
 
 
 def review_cluster(project_root, cluster_id, decision, reviewed_by=None, notes=None, name=None, stream=None,
-                   signature=None):
+                   signature=None, alias=None, api_version=None):
     """Registra a decisão humana no histórico (registro) e no arquivo do cluster e da proposta.
 
-    O número é conferido no registro: número aposentado (composição mudou) ou inexistente é
-    recusado; `signature`, se informada, precisa ser a da composição atual do número."""
+    Duas conferências antes de gravar: o número tem de estar ativo no registro (aposentado ou
+    inexistente é recusado) e `signature` — obrigatória, ao menos os 6 primeiros caracteres
+    mostrados no relatório — tem de ser o começo da assinatura da composição atual desse número.
+    Assim o relatório que a pessoa leu, mesmo de outra máquina, só aprova a composição que mostrou."""
     say = (lambda m: print(m, file=stream)) if stream is not None else print
     settings = DiscoverySettings(project_root)
     decision = str(decision).upper()
@@ -244,7 +252,12 @@ def review_cluster(project_root, cluster_id, decision, reviewed_by=None, notes=N
         raise ValueError(f"decisão deve ser uma de {', '.join(DECISIONS)}")
     if decision != "PENDING" and not reviewed_by:
         raise ValueError("--by é obrigatório para APPROVED/REJECTED")
-    registry = _registry(settings.output_dir)
+    signature = (signature or "").strip().lower()
+    if len(signature) < SIGNATURE_PREFIX:
+        raise ValueError(f"--signature é obrigatório: informe ao menos os {SIGNATURE_PREFIX} primeiros caracteres da "
+                         "assinatura mostrada ao lado do cluster no relatório. Nenhuma decisão foi registrada.")
+    out = settings.output_root(alias, api_version)
+    registry = _registry(out)
     sig, entry = registry.find(cluster_id)
     if entry is None:
         raise ValueError(f"{cluster_id} não existe (rode a descoberta e confira o relatório)")
@@ -252,10 +265,11 @@ def review_cluster(project_root, cluster_id, decision, reviewed_by=None, notes=N
         succ = ", ".join(entry.get("successors") or []) or "nenhum cluster atual"
         raise ValueError(f"{cluster_id} não existe mais (a composição mudou); os componentes dele agora estão em: "
                          f"{succ}. Nenhuma decisão foi registrada.")
-    if signature and signature != sig:
-        raise ValueError(f"assinatura informada ({signature}) não é a de {cluster_id} ({sig}); "
-                         "o cluster mudou desde o relatório lido. Nenhuma decisão foi registrada.")
-    path = settings.output_dir / "clusters" / f"{cluster_id}.json"
+    if not sig.startswith(signature):
+        raise ValueError(f"assinatura informada ({signature}) não é a de {cluster_id} ({short_signature(sig)}): a "
+                         "composição deste número não é a do relatório lido (ele mudou, ou o relatório é de outra "
+                         "máquina/execução). Rode a descoberta e confira o relatório. Nenhuma decisão foi registrada.")
+    path = out / "clusters" / f"{cluster_id}.json"
     cluster = _read_json(path)
     if cluster is None or cluster.get("signature") != sig:
         raise ValueError(f"arquivo {path} ausente ou de outra composição; rode a descoberta de novo")
@@ -266,7 +280,7 @@ def review_cluster(project_root, cluster_id, decision, reviewed_by=None, notes=N
     registry.save()
     _apply_review(cluster, dict(review, approvedName=approved))
     _write_json(path, cluster)
-    ppath = settings.output_dir / "proposals" / f"{cluster_id}.proposal.json"
+    ppath = out / "proposals" / f"{cluster_id}.proposal.json"
     proposal = _read_json(ppath)
     if proposal is not None:
         proposal["status"] = cluster["status"]

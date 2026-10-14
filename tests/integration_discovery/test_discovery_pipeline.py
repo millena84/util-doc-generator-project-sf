@@ -74,7 +74,7 @@ class DiscoveryPipelineTest(DiscoveryBase):
 
     def test_review_is_kept_across_runs_while_composition_is_the_same(self):
         self.run_it()
-        review_cluster(self.root, "cluster-001", "APPROVED", "Millena", "ok", "Integração RH - Admissões", stream=io.StringIO())
+        review_cluster(self.root, "cluster-001", "APPROVED", "Millena", "ok", "Integração RH - Admissões", stream=io.StringIO(), signature=self.sig("cluster-001"))
         c = self.read_json("clusters", "cluster-001.json")
         self.assertEqual((c["status"], c["approvedName"], c["humanReview"]["reviewedBy"]),
                          ("APPROVED", "Integração RH - Admissões", "Millena"))
@@ -83,7 +83,7 @@ class DiscoveryPipelineTest(DiscoveryBase):
         c = self.read_json("clusters", "cluster-001.json")
         self.assertEqual((c["status"], c["approvedName"]), ("APPROVED", "Integração RH - Admissões"))
         with self.assertRaises(ValueError):
-            review_cluster(self.root, "cluster-001", "APPROVED", None, stream=io.StringIO())
+            review_cluster(self.root, "cluster-001", "APPROVED", None, stream=io.StringIO(), signature=self.sig("cluster-001"))
 
     def test_cluster_numbers_are_stable_when_order_changes(self):
         # D22-01: nova evidência reordena os clusters; o número continua apontando para a mesma composição
@@ -97,13 +97,13 @@ class DiscoveryPipelineTest(DiscoveryBase):
         self.run_it()
         report = self.out("report", "discovery-report.md").read_text(encoding="utf-8")
         self.assertLess(report.index("| cluster-003 |"), report.index("| cluster-002 |"))  # SAP passou à frente
-        review_cluster(self.root, "cluster-002", "APPROVED", "Millena", stream=io.StringIO())
+        review_cluster(self.root, "cluster-002", "APPROVED", "Millena", stream=io.StringIO(), signature=self.sig("cluster-002"))
         self.assertEqual(self.members("cluster-002"), app)
         self.assertEqual(self.read_json("clusters", "cluster-002.json")["status"], "APPROVED")
 
     def test_retired_number_is_refused_and_never_reused(self):
         self.run_it()
-        review_cluster(self.root, "cluster-001", "REJECTED", "Millena", "não é integração", stream=io.StringIO())
+        review_cluster(self.root, "cluster-001", "REJECTED", "Millena", "não é integração", stream=io.StringIO(), signature=self.sig("cluster-001"))
         (self.root / INV / "custom-metadata" / "normalized" / "endpoint-config-producao.json").unlink()
         self.run_it()
         self.assertFalse(self.out("clusters", "cluster-001.json").exists())
@@ -111,28 +111,29 @@ class DiscoveryPipelineTest(DiscoveryBase):
         self.assertNotIn("cluster-001", new_ids)
         self.assertIn("cluster-004", new_ids)  # composição nova: próximo número livre
         with self.assertRaises(ValueError) as ctx:
-            review_cluster(self.root, "cluster-001", "APPROVED", "Millena", stream=io.StringIO())
+            review_cluster(self.root, "cluster-001", "APPROVED", "Millena", stream=io.StringIO(), signature="aaaaaa")
         self.assertIn("não existe mais", str(ctx.exception))
         self.assertIn("cluster-004", str(ctx.exception))
         with self.assertRaises(ValueError):
-            review_cluster(self.root, "cluster-999", "APPROVED", "Millena", stream=io.StringIO())
+            review_cluster(self.root, "cluster-999", "APPROVED", "Millena", stream=io.StringIO(), signature="aaaaaa")
 
     def test_decision_history_survives_several_runs(self):
         # D22-02: a decisão de um cluster aposentado continua no histórico e no relatório
         self.run_it()
-        review_cluster(self.root, "cluster-001", "REJECTED", "Millena", "não é integração", stream=io.StringIO())
+        review_cluster(self.root, "cluster-001", "REJECTED", "Millena", "não é integração", stream=io.StringIO(), signature=self.sig("cluster-001"))
         (self.root / INV / "custom-metadata" / "normalized" / "endpoint-config-producao.json").unlink()
         for _ in range(2):
             self.run_it()
             report = self.out("report", "discovery-report.md").read_text(encoding="utf-8")
             self.assertIn("## 9. Revisões que não se aplicam mais", report)
-            self.assertIn("cluster-001 (decisão anterior: REJECTED por Millena; nota: não é integração)", report)
+            self.assertRegex(report, r"cluster-001 · `[0-9a-f]{6}` \(decisão anterior: REJECTED por Millena; "
+                                     r"nota: não é integração\)")
         registry = self.read_json("state", "cluster-registry.json")
         self.assertEqual(registry["reviews"][0]["notes"], "não é integração")
         # revisar o sucessor encerra o aviso
         succ = [x for x in registry["clusters"].values() if x["clusterId"] == "cluster-001"][0]["successors"]
         for cid in succ:
-            review_cluster(self.root, cid, "APPROVED", "Millena", stream=io.StringIO())
+            review_cluster(self.root, cid, "APPROVED", "Millena", stream=io.StringIO(), signature=self.sig(cid))
         self.run_it()
         self.assertNotIn("## 9.", self.out("report", "discovery-report.md").read_text(encoding="utf-8"))
 
@@ -146,7 +147,7 @@ class DiscoveryPipelineTest(DiscoveryBase):
 
     def test_migration_from_outputs_without_registry(self):
         self.run_it()
-        review_cluster(self.root, "cluster-002", "APPROVED", "Millena", stream=io.StringIO())
+        review_cluster(self.root, "cluster-002", "APPROVED", "Millena", stream=io.StringIO(), signature=self.sig("cluster-002"))
         app = self.members("cluster-002")
         self.out("state", "cluster-registry.json").unlink()  # como saídas geradas antes do registro
         self.run_it()
@@ -199,6 +200,72 @@ class DiscoveryPipelineTest(DiscoveryBase):
         c1 = self.read_json("clusters", "cluster-001.json")
         self.assertIn("CustomObject:Empresa__c", [x["id"] for x in c1["components"]])
 
+    def test_corrupted_registry_stops_without_writing(self):
+        # R2-01: registro ilegível não é descartado em silêncio (renumeraria clusters)
+        self.run_it()
+        before = {p.name: p.read_text(encoding="utf-8") for p in self.out("clusters").glob("*.json")}
+        reg = self.out("state", "cluster-registry.json")
+        reg.write_text("{ corrompido", encoding="utf-8")
+        code, summary = self.run_it()
+        self.assertEqual(code, 2)
+        self.assertIn("registro de clusters ilegível", summary["fatal"])
+        self.assertEqual({p.name: p.read_text(encoding="utf-8") for p in self.out("clusters").glob("*.json")}, before)
+        self.assertEqual(reg.read_text(encoding="utf-8"), "{ corrompido")  # nada gravado por cima
+        with self.assertRaises(ValueError) as ctx:
+            review_cluster(self.root, "cluster-001", "APPROVED", "Millena", stream=io.StringIO(),
+                           signature=json.loads(before["cluster-001.json"])["signature"][:6])
+        self.assertIn("ilegível", str(ctx.exception))
+
+    def test_writes_are_atomic(self):
+        self.run_it()
+        self.assertEqual(list(self.out().rglob(".*.tmp")), [])
+
+    def test_review_requires_signature_of_the_composition_read(self):
+        # R2-02: o número sozinho não basta; a assinatura do relatório tem de bater
+        self.run_it()
+        app_sig = self.sig("cluster-002")
+        for bad in (None, "", app_sig[:5]):
+            with self.assertRaises(ValueError) as ctx:
+                review_cluster(self.root, "cluster-002", "APPROVED", "Millena", stream=io.StringIO(), signature=bad)
+            self.assertIn("--signature é obrigatório", str(ctx.exception))
+        # estado local perdido (clone novo, outra máquina, limpeza): os números recomeçam
+        self.put_normalized("apex-classes/normalized/rhbatch.json", "ApexClass", "RHBatch", {"apex": {"extends": "SAPOrderSync"}})
+        csv2 = self.write_csv(CSV.read_text(encoding="utf-8") + "ApexClass,RHBatch,true,\n")
+        self.run_it(csv=csv2)
+        shutil.rmtree(self.out("state"))
+        shutil.rmtree(self.out("clusters"))
+        self.run_it(csv=csv2)
+        self.assertNotIn("ConnectedApp:IntegracaoRH", self.members("cluster-002"))  # outro conjunto com o mesmo número
+        with self.assertRaises(ValueError) as ctx:  # o relatório antigo não aprova a composição errada
+            review_cluster(self.root, "cluster-002", "APPROVED", "Millena", stream=io.StringIO(), signature=app_sig)
+        self.assertIn("não é a de cluster-002", str(ctx.exception))
+        self.assertEqual(self.read_json("clusters", "cluster-002.json")["status"], "CANDIDATE")
+
+    def test_outputs_and_decisions_are_isolated_by_org(self):
+        # R2-03: decisão de uma org não vale para outra
+        self.run_it()
+        review_cluster(self.root, "cluster-002", "APPROVED", "Millena", stream=io.StringIO(), signature=self.sig("cluster-002"))
+        shutil.copytree(self.root / "inventory" / "org-dev", self.root / "inventory" / "org-prod")
+        self.run_it(alias="prod")
+        prod = self.root / "discovery" / "org-prod" / "api-v67" / "clusters" / "cluster-002.json"
+        self.assertEqual(json.loads(prod.read_text(encoding="utf-8"))["status"], "CANDIDATE")
+        self.assertEqual(self.read_json("clusters", "cluster-002.json")["status"], "APPROVED")  # dev intacta
+        with self.assertRaises(ValueError):  # o review também escolhe a org
+            review_cluster(self.root, "cluster-002", "APPROVED", "Millena", stream=io.StringIO(),
+                           signature=self.sig("cluster-002"), alias="hml")
+
+    def test_formula_mention_is_unverified(self):
+        # R2-04: em fórmula, `Empresa__c` é um campo do próprio objeto, não prova relação com o objeto Empresa__c
+        self.put_normalized("custom-objects/normalized/empresa-c.json", "CustomObject", "Empresa__c", {"label": "Empresa"})
+        self.put_normalized("custom-objects/normalized/validation-rule--colaborador-c-exige-empresa.json", "ValidationRule",
+                            "Colaborador__c.Exige_Empresa",
+                            {"fullName": "Exige_Empresa", "errorConditionFormula": "ISBLANK(Empresa__c)"}, "child")
+        self.run_it(csv=self.write_csv(CSV.read_text(encoding="utf-8") + "CustomObject,Empresa__c,true,\n"))
+        graph = self.read_json("graphs", "graph.json")
+        self.assertFalse([e for e in graph["edges"] if e["to"] == "CustomObject:Empresa__c"])
+        self.assertIn(("CustomObject:Empresa__c", "data.errorConditionFormula"),
+                      [(m["to"], m["jsonPath"]) for m in graph["unverifiedMentions"]])
+
     def test_fatal_csv_keeps_previous_outputs(self):
         self.run_it()
         before = self.out("clusters", "cluster-001.json").read_text(encoding="utf-8")
@@ -235,7 +302,9 @@ class DiscoveryPipelineTest(DiscoveryBase):
         self.assertEqual(cli_main(["--project-root", str(self.root), "--target-org", "dev", "--api-version", "67.0"]), 0)
         self.assertTrue(self.out("clusters", "cluster-001.json").is_file())
         self.assertEqual(cli_main(["review", "--project-root", str(self.root), "--cluster", "cluster-002",
-                                   "--decision", "rejected", "--by", "Millena"]), 0)
+                                   "--decision", "rejected", "--by", "Millena"]), 2)  # sem --signature: recusado
+        self.assertEqual(cli_main(["review", "--project-root", str(self.root), "--cluster", "cluster-002",
+                                   "--decision", "rejected", "--by", "Millena", "--signature", self.sig("cluster-002")]), 0)
         self.assertEqual(self.read_json("clusters", "cluster-002.json")["status"], "REJECTED")
 
 
@@ -257,7 +326,8 @@ class DiscoveryOnRealUtility1OutputTest(P3Base):
                        encoding="utf-8")
         code, summary = run_discovery(self.root, csv, stream=io.StringIO())
         self.assertEqual((code, summary["notFound"]), (0, 0))
-        graph = json.loads((self.root / "discovery" / "graphs" / "graph.json").read_text(encoding="utf-8"))
+        disc = self.root / "discovery" / "org-dev" / "api-v67"
+        graph = json.loads((disc / "graphs" / "graph.json").read_text(encoding="utf-8"))
         edges = {(e["from"], e["to"], e["relationship"]) for e in graph["edges"]}
         self.assertIn(("ApexTrigger:PedidoTrigger", "CustomObject:Pedido__c", "TRIGGERS_ON_OBJECT"), edges)
         self.assertIn(("ApexTrigger:PedidoTrigger", "ApexClass:PedidoService", "INVOKES_CLASS"), edges)
@@ -267,7 +337,7 @@ class DiscoveryOnRealUtility1OutputTest(P3Base):
         self.assertIn(("Flow:Meu_Flow", "FlowDefinition:Meu_Flow", "HAS_DEFINITION"), edges)
         self.assertIn(("Flow:Meu_Flow", "CustomObject:Pedido__c", "TRIGGERS_ON_OBJECT"), edges)
         self.assertIn(("ExternalClientApp:Minha_ECA", "PermissionSet:Integracao_API", "RELATED_COMPONENT"), edges)
-        status = json.loads((self.root / "discovery" / "report" / "component-status.json").read_text(encoding="utf-8"))
+        status = json.loads((disc / "report" / "component-status.json").read_text(encoding="utf-8"))
         rel = {c["componentName"]: [r["component"] for r in c["relatedSources"]] for c in status["components"]}
         self.assertIn("ExtlClntAppOauthConfigurablePolicies:Minha_ECA_oauthPlcy", rel["Minha_ECA"])
         self.assertIn("CustomField:Pedido__c.Status__c", rel["Pedido__c"])  # D22-07: filhos do objeto

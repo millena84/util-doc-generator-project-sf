@@ -59,21 +59,21 @@ PYTHONPATH=src python3 -m integration_discovery --csv discovery/input/componente
 
 - `--csv` relativo é resolvido a partir da **pasta atual**. Sem `--csv`, o padrão é `discovery/input/componentes-squad.csv` dentro da raiz do projeto.
 - `--target-org` e `--api-version` só escolhem a pasta do inventário (`inventory/org-<alias>/api-v<N>`). Padrões: `orgAlias` e `defaultApiVersion` do `config.json`.
-- **Retomada:** um componente cujo JSON normalizado (sha256), lista de componentes do CSV e regras não mudaram não é reprocessado; o cache fica em `discovery/state/`. `--no-cache` força tudo de novo.
+- **Retomada:** um componente cujo JSON normalizado (sha256), lista de componentes do CSV e regras não mudaram não é reprocessado; o cache fica em `discovery/org-<alias>/api-v<N>/state/`. `--no-cache` força tudo de novo.
 - Componente sem JSON vira `NORMALIZED_JSON_NOT_FOUND` e a execução continua. Outros status: `NORMALIZED_JSON_INVALID` (JSON malformado) e `NORMALIZED_JSON_MISMATCH` (o arquivo é de outro componente ou tipo).
 
 ## 4. Ver o resultado
 
 | Arquivo | Conteúdo |
 |---|---|
-| `discovery/report/discovery-report.md` | resumo, componentes sem JSON, clusters por número de evidências, relações com evidência, justificativa dos nomes, órfãos, menções não verificadas, erros do CSV, pendências |
-| `discovery/clusters/cluster-NNN.json` | membros, relações, confiança, nome proposto, revisão humana, `signature` (composição) |
-| `discovery/proposals/cluster-NNN.proposal.json` | 1 a 3 nomes, confiança e justificativa |
-| `discovery/graphs/graph.json` | nós, arestas confirmadas, menções não verificadas e referências a componentes sem JSON |
-| `discovery/orphans/orphans.json` | componentes sem relação confirmada (`ORPHAN`) |
-| `discovery/report/component-status.json` | status de cada linha do CSV |
+| `discovery/org-<alias>/api-v<N>/report/discovery-report.md` | resumo, componentes sem JSON, clusters por número de evidências, relações com evidência, justificativa dos nomes, órfãos, menções não verificadas, erros do CSV, pendências |
+| `discovery/org-<alias>/api-v<N>/clusters/cluster-NNN.json` | membros, relações, confiança, nome proposto, revisão humana, `signature` (composição) |
+| `discovery/org-<alias>/api-v<N>/proposals/cluster-NNN.proposal.json` | 1 a 3 nomes, confiança e justificativa |
+| `discovery/org-<alias>/api-v<N>/graphs/graph.json` | nós, arestas confirmadas, menções não verificadas e referências a componentes sem JSON |
+| `discovery/org-<alias>/api-v<N>/orphans/orphans.json` | componentes sem relação confirmada (`ORPHAN`) |
+| `discovery/org-<alias>/api-v<N>/report/component-status.json` | status de cada linha do CSV |
 
-Essas saídas são derivadas da org e ficam no `.gitignore`.
+As saídas ficam **separadas por org e versão de API** (`discovery/org-<alias>/api-v<N>/`): clusters, números e decisões de uma org nunca valem para outra. São derivadas da org e ficam no `.gitignore` (`discovery/org-*/`). Todos os arquivos são gravados de forma atômica (temporário + troca), para que uma interrupção não deixe nenhum pela metade.
 
 ### Como as relações são encontradas
 
@@ -90,7 +90,7 @@ Essas saídas são derivadas da org e ficam no `.gitignore`.
   - `CODE_REFERENCE`: fatos de código lidos pelo Utilitário 1 (`data.apex.*`) ou `codeBody`;
   - `CONFIGURATION_REFERENCE`: demais campos do XML;
   - `MANIFEST_REFERENCE`: vínculo pela estrutura do metadata (ver abaixo);
-  - `UNVERIFIED`: texto livre (`description`, `errorMessage`, `inlineHelpText`), ou o mesmo nome em dois tipos do CSV sem dica no caminho. `UNVERIFIED` **não entra no grafo**: aparece só no relatório.
+  - `UNVERIFIED`: texto livre (`description`, `errorMessage`, `inlineHelpText`) e fórmulas (`errorConditionFormula`, `formula`, onde `Empresa__c` é um campo do próprio objeto, não prova de relação com o objeto `Empresa__c`), ou o mesmo nome em dois tipos do CSV sem dica no caminho. `UNVERIFIED` **não entra no grafo**: aparece só no relatório.
 - **Relacionados lidos junto** (`discovery.relatedSources`, padrões em `settings.py`): JSONs que o Utilitário 1 grava ao lado do componente são lidos como parte dele. As referências achadas neles contam como do componente do CSV, com `relatedSource` indicando o arquivo de origem. Eles não viram nós do grafo e são listados no relatório ("Relacionados lidos junto") e em `component-status.json`.
   - **External Client App:** as políticas (`ExtlClntAppOauthSettings`, `ExtlClntAppConfigurablePolicies`, `ExtlClntAppOauthConfigurablePolicies`) cujo `externalClientApplication` é a ECA. Exemplo: `commaSeparatedPermissionSet` liga a ECA aos permission sets.
   - **CustomObject:** os filhos `<Objeto>.*` (CustomField, RecordType, ValidationRule, WebLink). Um lookup (`referenceTo`) liga a outro objeto do CSV.
@@ -112,15 +112,19 @@ Essas saídas são derivadas da org e ficam no `.gitignore`.
 ## 5. Aprovar ou rejeitar um cluster
 
 ```bash
-bin/integration-discovery.sh review --cluster cluster-001 --decision APPROVED --by "Millena" --name "Integração RH - Admissões" --notes "confirmado com o time do RH"
-bin/integration-discovery.sh review --cluster cluster-003 --decision REJECTED --by "Millena" --notes "permission set compartilhado"
-bin/integration-discovery.sh review --cluster cluster-002 --decision PENDING          # volta para CANDIDATE
+bin/integration-discovery.sh review --cluster cluster-001 --signature abf92e --decision APPROVED --by "Millena" --name "Integração RH - Admissões" --notes "confirmado com o time do RH"
+bin/integration-discovery.sh review --cluster cluster-003 --signature 19291b --decision REJECTED --by "Millena" --notes "permission set compartilhado"
+bin/integration-discovery.sh review --cluster cluster-002 --signature 6db1ad --decision PENDING          # volta para CANDIDATE
+# outra org/versão: --target-org prod --api-version 67.0 (padrão: config.json)
 ```
 
-Números estáveis e histórico (`discovery/state/cluster-registry.json`):
+Números estáveis e histórico (`discovery/org-<alias>/api-v<N>/state/cluster-registry.json`):
 - **O número segue a composição, não a ordem.** Cada composição de cluster (os seus membros, resumidos na `signature`) recebe um número uma única vez. Uma execução nova que reordena os clusters por evidência não muda os números: `cluster-002` continua sendo o mesmo conjunto de componentes.
 - **Composição nova recebe o próximo número livre.** Quando um cluster muda de membros, o número antigo é **aposentado** e nunca é reutilizado por outra composição. Se a mesma composição voltar, o número volta a valer.
-- **O `review` confere o número no registro antes de gravar.** Número aposentado é recusado com a indicação de onde os componentes estão agora (ex.: *"cluster-001 não existe mais (a composição mudou); os componentes dele agora estão em: cluster-004"*). Número inexistente também é recusado. `--signature <assinatura do relatório>` é uma confirmação opcional: se o cluster mudou desde o relatório lido, nada é gravado.
+- **O `review` faz duas conferências antes de gravar:**
+  - o número tem de estar ativo no registro. Número aposentado é recusado com a indicação de onde os componentes estão agora (ex.: *"cluster-001 não existe mais (a composição mudou); os componentes dele agora estão em: cluster-004"*). Número inexistente também é recusado;
+  - `--signature` é **obrigatório**: os 6 primeiros caracteres da assinatura mostrada ao lado do número no relatório (coluna "Assinatura"). Se o número hoje é outra composição, nada é gravado. Isso cobre o caso em que os números recomeçaram, por exemplo num clone novo, em outra máquina ou depois de limpar `discovery/`: o relatório que você leu só aprova a composição que mostrou.
+- **Registro ilegível para tudo.** Se `cluster-registry.json` existir mas não puder ser lido (corrompido, editado à mão com erro), a descoberta e o `review` param com uma mensagem e **não gravam nada**. Recomeçar a numeração em silêncio faria um número antigo apontar para outra composição. Restaure o arquivo ou, se aceitar perder os números e as decisões, apague-o conscientemente.
 - **As decisões ficam num histórico que só cresce.** A decisão vigente de uma composição é a última revisão dela, e é copiada para `cluster-NNN.json` e para a proposta em toda execução.
 - **Decisão de cluster aposentado continua no relatório** ("Revisões que não se aplicam mais"), com quem decidiu e a nota, até os clusters que receberam os componentes serem revisados.
 - **Saídas de antes deste registro:** na primeira execução, os arquivos de cluster existentes são migrados com o mesmo número e a mesma decisão.

@@ -1,4 +1,4 @@
-"""Relatório Markdown da descoberta (`discovery/report/discovery-report.md`).
+"""Relatório Markdown da descoberta (`discovery/org-<alias>/api-v<N>/report/discovery-report.md`).
 
 Só nomes de componentes, tipos, caminhos JSON e o texto casado (o próprio nome). Nenhum valor
 do normalizado é copiado para o relatório.
@@ -53,13 +53,15 @@ def generate_report(ctx):
     L += _table(["Componente", "Status", "Caminho esperado", "Detalhe"],
                 [[e["key"], e["status"], f"`{e['expectedPath']}`", e.get("error")] for e in missing])
     L += ["", "## 3. Clusters (ordenados por número de evidências)", ""]
-    L += _table(["Cluster", "Evidências", "Relações", "Confiança", "Componentes", "Nome proposto", "Revisão"],
-                [[c["clusterId"], c["evidenceCount"], c["relationCount"], c["confidence"],
+    L += ["Para revisar: `review --cluster <Cluster> --signature <Assinatura> ...` (a assinatura confere que o número "
+          "ainda é a composição mostrada aqui).", ""]
+    L += _table(["Cluster", "Assinatura", "Evidências", "Relações", "Confiança", "Componentes", "Nome proposto", "Revisão"],
+                [[c["clusterId"], f"`{c['signature'][:6]}`", c["evidenceCount"], c["relationCount"], c["confidence"],
                   ", ".join(x["id"] for x in c["components"]), c["proposedName"],
                   c["humanReview"]["decision"]] for c in clusters])
     for c in clusters:
         p = proposals.get(c["clusterId"]) or {}
-        L += ["", f"### {c['clusterId']} — {c['proposedName']} (PROPOSTA)", "",
+        L += ["", f"### {c['clusterId']} · `{c['signature'][:6]}` — {c['proposedName']} (PROPOSTA)", "",
               f"- Status: `{c['status']}` · confiança `{c['confidence']}` · assinatura `{c['signature']}`",
               f"- Alternativas: {', '.join(c['alternativeNames']) or '—'}",
               f"- Pontes (entram em mais de um cluster quando ligadas a vários): "

@@ -21,9 +21,5 @@ inventory/**/normalized/
 # Fase 2 (integration_discovery): saídas derivadas do inventário da org (nomes de componentes,
 # relações e decisões de revisão). O CSV de entrada é curado pela usuária: versionar ou não é
 # decisão dela (o exemplo é versionado).
-discovery/graphs/
-discovery/clusters/
-discovery/proposals/
-discovery/orphans/
-discovery/report/
-discovery/state/
+# Saídas por org e versão: discovery/org-<alias>/api-v<N>/{graphs,clusters,proposals,orphans,report,state}
+discovery/org-*/

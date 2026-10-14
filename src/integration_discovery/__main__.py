@@ -35,7 +35,11 @@ def build_parser():
     rv.add_argument("--by", help="Quem revisou (obrigatório para APPROVED/REJECTED)")
     rv.add_argument("--notes", help="Observações da revisão")
     rv.add_argument("--name", help="Nome escolhido (APPROVED; padrão: o nome proposto)")
-    rv.add_argument("--signature", help="Confirmação opcional: assinatura do cluster mostrada no relatório")
+    rv.add_argument("--signature",
+                    help="Obrigatório: ao menos os 6 primeiros caracteres da assinatura mostrada no relatório "
+                         "(validado pelo review, que explica o erro e não grava nada)")
+    rv.add_argument("--target-org", "-o", help="Alias da org da descoberta (padrão: config.json orgAlias)")
+    rv.add_argument("--api-version", help="Versão da API da descoberta (padrão: config.json defaultApiVersion)")
     return parser
 
 
@@ -48,7 +52,7 @@ def main(argv=None):
     if args.command == "review":
         try:
             review_cluster(root, args.cluster, args.decision, args.by, args.notes, args.name,
-                           signature=args.signature)
+                           signature=args.signature, alias=args.target_org, api_version=args.api_version)
         except ValueError as exc:
             print(f"ERRO: {exc}", file=sys.stderr)
             return 2

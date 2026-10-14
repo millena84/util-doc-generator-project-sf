@@ -31,7 +31,12 @@ class DiscoveryBase(unittest.TestCase):
         return p
 
     def out(self, *parts):
-        return self.root.joinpath("discovery", *parts)
+        """Saídas da descoberta da org de teste (`discovery/org-dev/api-v67/...`)."""
+        return self.root.joinpath("discovery", "org-dev", "api-v67", *parts)
+
+    def sig(self, cluster_id):
+        """Os 6 primeiros caracteres da assinatura do cluster, como mostrados no relatório."""
+        return self.read_json("clusters", f"{cluster_id}.json")["signature"][:6]
 
     def put_normalized(self, rel, metadata_type, full_name, data, role="primary"):
         """Grava um JSON normalizado no formato do Utilitário 1 dentro do inventário do teste."""

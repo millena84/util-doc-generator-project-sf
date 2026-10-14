@@ -104,5 +104,11 @@ class DiscoverySettings:
         major = str(api_version or self.api_version).split(".")[0]
         return self.inventory_root / f"org-{alias or self.org_alias}" / f"api-v{major}"
 
+    def output_root(self, alias=None, api_version=None) -> Path:
+        """Saídas por org e versão (`discovery/org-<alias>/api-v<N>/`): clusters, números e decisões de
+        uma org nunca valem para outra."""
+        major = str(api_version or self.api_version).split(".")[0]
+        return self.output_dir / f"org-{alias or self.org_alias}" / f"api-v{major}"
+
     def expected_metadata_types(self, csv_type):
         return self.normalized_types.get(csv_type) or [csv_type]
