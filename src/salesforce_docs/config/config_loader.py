@@ -41,6 +41,9 @@ class AppConfig:
         self.selection = ScopeConfig(data.get("selection"), legacy_scope=data.get("scope"))
         # Orgs aprovadas: nenhuma coleta (inventário/retrieve) sem identidade aprovada.
         self.approved_orgs = _parse_approved_orgs(data.get("approvedOrgs"))
+        # Modo pasta (run --source-dir): de-para pasta do repositório clonado -> nome da org.
+        # Só pastas listadas aqui são lidas (equivale ao approvedOrgs do modo com login).
+        self.source_repositories = _parse_source_repositories(data.get("sourceRepositories"))
         protection = data.get("dataProtection") or {}
         if not isinstance(protection, dict):
             raise ConfigError("config.json: dataProtection deve ser um objeto")
@@ -104,6 +107,49 @@ def _parse_approved_orgs(value):
         if not isinstance(org_id, str) or not _ORG_ID.match(org_id):
             raise ConfigError(f"{where}: orgId obrigatório no formato 00D... (15 ou 18 caracteres)")
         out.append({k: v for k, v in item.items() if k != "note"})
+    return out
+
+
+_SOURCE_REPO_KEYS = {"folder", "orgName", "alias", "metadataPath", "note"}
+_ALIAS = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]*$")
+
+
+def _parse_source_repositories(value):
+    if value is None:
+        return []
+    if not isinstance(value, list):
+        raise ConfigError("config.json: sourceRepositories deve ser uma lista")
+    out, folders, aliases = [], set(), set()
+    for i, item in enumerate(value):
+        where = f"config.json: sourceRepositories[{i}]"
+        if not isinstance(item, dict):
+            raise ConfigError(f"{where}: deve ser um objeto")
+        extra = set(item) - _SOURCE_REPO_KEYS
+        if extra:
+            raise ConfigError(f"{where}: chaves desconhecidas {sorted(extra)}")
+        folder, org_name = item.get("folder"), item.get("orgName")
+        if not isinstance(folder, str) or not folder.strip() or folder != folder.strip() \
+                or "/" in folder or "\\" in folder:
+            raise ConfigError(f"{where}: folder obrigatório: só o nome da pasta do repositório "
+                              "(sem caminho e sem espaço no início/fim)")
+        if not isinstance(org_name, str) or not org_name.strip():
+            raise ConfigError(f"{where}: orgName obrigatório (nome da org que o repositório representa)")
+        alias = item.get("alias")
+        if alias is not None and (not isinstance(alias, str) or not _ALIAS.match(alias)):
+            raise ConfigError(f"{where}: alias deve ter só letras, números, '_' ou '-'")
+        meta = item.get("metadataPath")
+        if meta is not None and (not isinstance(meta, str) or not meta.strip()
+                                 or Path(meta).is_absolute() or ".." in Path(meta).parts):
+            raise ConfigError(f"{where}: metadataPath deve ser um caminho relativo dentro do repositório")
+        if folder.lower() in folders:
+            raise ConfigError(f"{where}: pasta {folder!r} repetida")
+        folders.add(folder.lower())
+        entry = {k: v for k, v in item.items() if k != "note"}
+        if alias and alias.lower() in aliases:
+            raise ConfigError(f"{where}: alias {alias!r} repetido")
+        if alias:
+            aliases.add(alias.lower())
+        out.append(entry)
     return out
 
 

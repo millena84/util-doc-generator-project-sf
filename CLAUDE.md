@@ -41,9 +41,9 @@ Esses desvios devem ser declarados em `config/metadata-types-mvp.json`.
 
 ## Restrição atual: produção sem login
 
-- Por ora não é permitido login em org produtiva. O MVP exige login (`run`): use só em org de desenvolvimento ou sandbox autorizada.
-- Cenário produtivo previsto: metadata do diretório de clone do repositório **Flosum** e dados de objetos internos exportados pelo **Salesforce Inspector** para um diretório. O plano de ação ainda está em definição pela responsável.
-- **Não implemente esse modo** (nem altere o pipeline para ele) sem aprovação explícita. Referência: `documentation/como-testar-o-mvp.md`, seção 3.
+- Por ora não é permitido login em org produtiva. O `run` com login: só em org de desenvolvimento ou sandbox autorizada.
+- Produção: **modo pasta** (`run --source-dir <pasta>`), aprovado e implementado em 2026-10-28. Lê o repositório já clonado (ex.: **Flosum**), sem login e sem Salesforce CLI. O clone é feito fora do utilitário; o utilitário nunca clona nem altera o repositório. A pasta precisa estar no de-para `sourceRepositories` do `config/config.json` (pasta → nome da org).
+- No modo pasta, dados internos ficam "Não informado". Exportações do **Salesforce Inspector** como fonte de dados internos **não estão implementadas**: não implemente sem aprovação explícita. Referência: `documentation/como-testar-o-mvp.md`, seção 3.
 
 ## AWS
 

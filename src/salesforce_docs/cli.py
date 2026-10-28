@@ -31,11 +31,14 @@ def build_parser():
                         help="Em erro inesperado, mostra o traceback (sempre mascarado)")
     sub = parser.add_subparsers(dest="command", required=True)
 
-    # `run` exige org autenticada (Salesforce CLI). Por ora, login em org produtiva NÃO é permitido:
-    # use só desenvolvimento/sandbox. O modo sem login (clone do repositório Flosum + exportações do
-    # Salesforce Inspector) ainda não existe — ver documentation/como-testar-o-mvp.md, seção 3.
+    # `run` com login exige org autenticada (Salesforce CLI). Por ora, login em org produtiva NÃO é
+    # permitido: use só desenvolvimento/sandbox. Produção: `run --source-dir` (modo pasta), que lê o
+    # repositório já clonado (ex.: Flosum), sem login e sem Salesforce CLI.
     run = sub.add_parser("run", help="Executa o pipeline completo (passos 1–10)")
     run.add_argument("--target-org", "-o", help="Alias da org (padrão: config.json orgAlias)")
+    run.add_argument("--source-dir", metavar="PASTA",
+                     help="Modo pasta: lê os metadados do repositório já clonado nesta pasta, sem login e "
+                          "sem Salesforce CLI. A pasta precisa estar em config.json sourceRepositories")
     run.add_argument("--api-version", help="Sobrepõe a API version detectada em `sf org display`")
     run.add_argument("--group", action="append",
                      help="Restringe o escopo do config.json ao(s) grupo(s) informado(s) (ex.: --group Flow)")
@@ -86,7 +89,8 @@ def main(argv=None):
         if args.command == "run":
             api = normalize_api_version(args.api_version) if args.api_version else None
             code, _ = pipeline.run(org_alias=args.target_org, api_version=api, groups=args.group,
-                                   components=args.component, resume=args.resume)
+                                   components=args.component, resume=args.resume,
+                                   source_dir=args.source_dir)
             return code
         if args.command == "regenerate":
             code, _ = pipeline.regenerate(args.run)
@@ -119,6 +123,8 @@ def main(argv=None):
             from salesforce_docs.config.scope import describe_effective, resolve_scope
             effective = resolve_scope(pipeline.app.selection, pipeline.mvp)
             print(f"Org alias: {pipeline.app.org_alias} (config.json)")
+            for repo in pipeline.app.source_repositories:
+                print(f"Repositório (modo pasta): {repo['folder']} -> org {repo['orgName']}")
             if pipeline.app.approved_orgs:
                 ids = ", ".join(e["orgId"] for e in pipeline.app.approved_orgs)
                 print(f"Orgs aprovadas: {ids}")

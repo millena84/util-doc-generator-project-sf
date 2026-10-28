@@ -232,6 +232,68 @@
     ],
     "validationPending": "Flow.triggerOrder e a posição relativa das fases de exclusão (delete/undelete) não confirmados nesta adaptação; confirmar no piloto (documentation/piloto-org-real.md)."
   },
+  "sourceDirectory": {
+    "notes": "Modo pasta (`run --source-dir`): como cada metadata type aparece num projeto Salesforce já clonado (ex.: repositório do Flosum), sem login e sem Salesforce CLI. Aceita o formato source do SFDX (`<Nome>.<sufixo>-meta.xml`, objeto em subpastas) e o formato metadata da Metadata API (`<Nome>.<sufixo>`, campos dentro do `.object`). Pasta e sufixo de cada tipo: Metadata API Developer Guide, seção 'File Suffix and Directory Location' do tipo; formato source: Salesforce DX Developer Guide ('Salesforce DX Project Structure and Source Format'). `content`: arquivo de conteúdo `<Nome>.<sufixo>` + `<Nome>.<sufixo>-meta.xml` nos dois formatos. `bundle`: uma pasta por componente. `nested`: o componente tem pasta própria com os filhos (`children`); `inlineElement` é o elemento do `.object` (formato metadata) que vira o filho.",
+    "metadataPathCandidates": [".", "src", "force-app/main/default"],
+    "types": {
+      "ApexClass": { "folder": "classes", "suffix": "cls", "content": true },
+      "ApexTrigger": { "folder": "triggers", "suffix": "trigger", "content": true },
+      "AssignmentRules": { "folder": "assignmentRules", "suffix": "assignmentRules" },
+      "AutoResponseRules": { "folder": "autoResponseRules", "suffix": "autoResponseRules" },
+      "Certificate": { "folder": "certs", "suffix": "crt", "content": true },
+      "ConnectedApp": { "folder": "connectedApps", "suffix": "connectedApp" },
+      "CustomApplication": { "folder": "applications", "suffix": "app" },
+      "CustomMetadata": { "folder": "customMetadata", "suffix": "md" },
+      "CustomObject": {
+        "folder": "objects", "suffix": "object", "nested": true, "retrieveIncludesChildren": true,
+        "children": {
+          "fields": { "type": "CustomField", "suffix": "field", "inlineElement": "fields" },
+          "recordTypes": { "type": "RecordType", "suffix": "recordType", "inlineElement": "recordTypes" },
+          "validationRules": { "type": "ValidationRule", "suffix": "validationRule", "inlineElement": "validationRules" },
+          "webLinks": { "type": "WebLink", "suffix": "webLink", "inlineElement": "webLinks" },
+          "businessProcesses": { "type": "BusinessProcess", "suffix": "businessProcess", "inlineElement": "businessProcesses" }
+        }
+      },
+      "CustomSite": { "folder": "sites", "suffix": "site" },
+      "EscalationRules": { "folder": "escalationRules", "suffix": "escalationRules" },
+      "ExperienceBundle": { "folder": "experiences", "suffix": "site", "bundle": true },
+      "ExternalClientApplication": { "folder": "externalClientApps", "suffix": "eca" },
+      "ExternalCredential": { "folder": "externalCredentials", "suffix": "externalCredential" },
+      "ExtlClntAppConfigurablePolicies": { "folder": "extlClntAppPolicies", "suffix": "ecaPlcy" },
+      "ExtlClntAppOauthConfigurablePolicies": { "folder": "extlClntAppOauthPolicies", "suffix": "ecaOauthPlcy" },
+      "ExtlClntAppOauthSettings": { "folder": "extlClntAppOauthSettings", "suffix": "ecaOauth" },
+      "FlexiPage": { "folder": "flexipages", "suffix": "flexipage" },
+      "Flow": { "folder": "flows", "suffix": "flow" },
+      "FlowDefinition": { "folder": "flowDefinitions", "suffix": "flowDefinition" },
+      "Group": { "folder": "groups", "suffix": "group" },
+      "LeadConvertSettings": { "folder": "leadConvertSettings", "suffix": "LeadConvertSetting" },
+      "LightningComponentBundle": { "folder": "lwc", "bundle": true },
+      "NamedCredential": { "folder": "namedCredentials", "suffix": "namedCredential" },
+      "Network": { "folder": "networks", "suffix": "network" },
+      "OmniDataTransform": { "folder": "omniDataTransforms", "suffix": "rpt" },
+      "OmniIntegrationProcedure": { "folder": "omniIntegrationProcedures", "suffix": "oip" },
+      "OmniScript": { "folder": "omniScripts", "suffix": "os" },
+      "OmniUiCard": { "folder": "omniUiCards", "suffix": "ouc" },
+      "OpportunitySplitType": { "folder": "opportunitySplitTypes", "suffix": "opportunitySplitType" },
+      "PermissionSet": { "folder": "permissionsets", "suffix": "permissionset" },
+      "PermissionSetGroup": { "folder": "permissionsetgroups", "suffix": "permissionsetgroup" },
+      "PlatformEventChannelMember": { "folder": "platformEventChannelMembers", "suffix": "platformEventChannelMember" },
+      "PlatformEventSubscriberConfig": { "folder": "platformEventSubscriberConfigs", "suffix": "platformEventSubscriberConfig" },
+      "Profile": { "folder": "profiles", "suffix": "profile" },
+      "Queue": { "folder": "queues", "suffix": "queue" },
+      "RemoteSiteSetting": { "folder": "remoteSiteSettings", "suffix": "remoteSite" },
+      "Role": { "folder": "roles", "suffix": "role" },
+      "Settings": { "folder": "settings", "suffix": "settings" },
+      "SharingRules": { "folder": "sharingRules", "suffix": "sharingRules" },
+      "Territory2Model": {
+        "folder": "territory2Models", "suffix": "territory2Model", "nested": true,
+        "children": {
+          "territories": { "type": "Territory2", "suffix": "territory2" },
+          "rules": { "type": "Territory2Rule", "suffix": "territory2Rule" }
+        }
+      }
+    }
+  },
   "recordIndex": {
     "notes": "Campos do XML de outros componentes guardados no índice da execução: OWD por objeto (documento de segurança da org e de regras de compartilhamento), parentRole (hierarquia de papéis) e uso/ativação de páginas Lightning (pages).",
     "fields": {
@@ -332,6 +394,10 @@
       "relatedMetadataTypes": ["CustomField", "RecordType", "ValidationRule", "WebLink"],
       "documentStrategy": "SINGLE_DOCUMENT_PER_OBJECT_WITH_RELATED_COMPONENTS",
       "componentFilter": { "includeRegex": "__c$" },
+      "sourceDirectoryComponentFilter": {
+        "includeRegex": "^([A-Za-z0-9]+|[A-Za-z0-9_]+__c)$",
+        "notes": "Só no modo pasta: objetos padrão (ex.: Account) também entram, para o OWD deles (sharingModel do XML) aparecer nos documentos de segurança e de regras de compartilhamento. Na org, o OWD dos objetos padrão vem da consulta à Organization, que o modo pasta não faz. __e, __mdt e outros sufixos continuam fora."
+      },
       "relations": [
         { "metadataType": "CustomField", "match": "CHILD_OF_PRIMARY" },
         { "metadataType": "RecordType", "match": "CHILD_OF_PRIMARY" },

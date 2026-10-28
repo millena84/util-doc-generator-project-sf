@@ -2,13 +2,13 @@
 
 Este guia diz **o que testar, onde e com qual roteiro**, conforme o ambiente. Comece pelo nível 1 e só suba de nível quando o anterior passar.
 
-> ⚠️ **Restrição atual — ambientes produtivos:** por ora **não é permitido login** (`sf org login ...`) em org produtiva. O MVP atual **precisa** de login: todos os passos de coleta chamam a org pela Salesforce CLI. Portanto, **o MVP não deve ser executado contra produção**. O cenário produtivo previsto (nível 3) usa o projeto Salesforce de um **clone do repositório Flosum** e dados de objetos internos **exportados pelo Salesforce Inspector**. Esse modo **ainda não existe**: está descrito abaixo só como plano, para decisão. Nada no código foi alterado para ele.
+> ⚠️ **Restrição atual — ambientes produtivos:** por ora **não é permitido login** (`sf org login ...`) em org produtiva. Para produção, use o **modo pasta** (nível 3): o utilitário lê o repositório já clonado (ex.: Flosum), sem login e sem Salesforce CLI. Dados internos exportados pelo Salesforce Inspector ainda não são lidos.
 
 | Nível | Ambiente | Login na org | Roteiro | Situação |
 |---|---|---|---|---|
 | 1 | Máquina local, sem org | Não | Seção 1 deste guia | Pronto |
 | 2 | Org de desenvolvimento ou sandbox autorizada | Sim (não produtiva) | [`piloto-org-real.md`](piloto-org-real.md) | Pronto para o primeiro teste |
-| 3 | Produção | **Não permitido** | Seção 3 deste guia (plano) | **Não implementado** |
+| 3 | Produção (repositório clonado) | **Não** | Seção 3 deste guia e [`checklist-acessos-modo-pasta.md`](checklist-acessos-modo-pasta.md) | Pronto (sem dados internos) |
 
 ## 0. Escolher os metadados a documentar
 
@@ -138,54 +138,43 @@ Exceções:
 - **Sessão expirada** (`INVALID_SESSION_ID`) numa consulta **interrompe** a execução com `SESSION_EXPIRED`, como em qualquer outro passo. Retome com `run --resume latest` depois de novo login.
 - Hoje não há opção global para pular o passo 9. As consultas são tentadas, falham e ficam registradas, e cada uma custa uma chamada à CLI. Desligar por contrato (`internalData.enabled = false`) é possível, mas muda os contratos: só com aprovação.
 
-No cenário produtivo sem login (seção 3), essas consultas seriam substituídas por exportações do Salesforce Inspector. Até lá, a perda acima é o comportamento esperado.
+No modo pasta (seção 3) as consultas não são feitas e a perda acima é o comportamento esperado. Exportações do Salesforce Inspector poderão substituí-las no futuro (pendente de aprovação).
 
-## 3. Nível 3 — produção sem login (PLANO, não implementado)
+## 3. Nível 3 — produção sem login: modo pasta
 
-### Situação
+Implementado em 2026-10-28. O utilitário lê os metadados de um **repositório já clonado** (ex.: Flosum), sem login e sem Salesforce CLI. O clone é feito antes, fora do utilitário. Checklist passo a passo para documentar acessos: [`checklist-acessos-modo-pasta.md`](checklist-acessos-modo-pasta.md).
 
-- **Restrição:** não é permitido login em org produtiva por enquanto.
-- **Fonte de metadata disponível:** o projeto Salesforce estará num diretório de **clone de repositório do Flosum**.
-- **Dados de objetos internos** (as consultas do Apêndice A do piloto, como `Flow`, `ApexClass` e `EntityDefinition`): plano em elaboração para obtê-los pelo **Salesforce Inspector** e salvar os resultados num diretório.
-- **Decisão:** documentar a restrição e o plano; **não modificar o MVP ainda**.
+### Como funciona
 
-### O que o MVP atual faz e por que não serve para produção sem login
-
-| Passo do `run` | Chamada | Funciona sem login? |
+| Passo do `run` | Modo com login | Modo pasta (`--source-dir`) |
 |---|---|---|
-| 1–3 (`sf --version`, `org list`, `org display`, aprovação, token) | Salesforce CLI | Não (exige org autenticada) |
-| 4 (`org list metadata-types`) | CLI | Não |
-| 5 (describe dos tipos) | Metadata API (token) | Não |
-| 6 (`org list metadata`, inventário) | CLI | Não |
-| 6b (retrieve de acesso: Profile, PermissionSet...) | CLI | Não |
-| 7 (retrieve por componente) | CLI | Não |
-| 8 (normalização do XML) | Local | Sim |
-| 9 (dados internos, `sf data query`) | CLI | Não |
-| 10 (Markdown) | Local | Sim |
-| `regenerate` | Local (raws de uma execução anterior) | Sim, mas só a partir de uma execução feita com login |
+| 1–3c (CLI, org, aprovação, token) | Salesforce CLI | Não feitos. A pasta só é lida se estiver no de-para `sourceRepositories` (pasta → nome da org) |
+| 4 (tipos) | `sf org list metadata-types` | Tipos com pasta configurada em `sourceDirectory` |
+| 5 (`describeValueType`) | Metadata API | Não feito: sem ele, valor ausente fica "Não informado" (nunca "Não aplicável") |
+| 6 (inventário) | `sf org list metadata` | Arquivos do repositório |
+| 6b e 7 (retrieve) | `sf project retrieve start` | Cópia byte a byte dos arquivos do repositório para `inventory/.../components/` |
+| 8 e 10 (normalização e Markdown) | Local | **Iguais** (mesmos contratos, modelos e parsers) |
+| 9 (dados internos) | `sf data query` | Não feito: "Não informado" |
 
-Não use `regenerate` como atalho para produção: ele exige os raws de uma execução `run` anterior na mesma org.
+Regras do `CLAUDE.md` mantidas:
 
-### Esboço do modo futuro (para decisão; nada implementado)
+- **Raw preservado (regras 2–4):** o repositório nunca é alterado. `catalog/org-<alias>/api-v<N>/source-manifest.json` registra caminho e sha256 de cada arquivo lido. No formato metadata, o `.object` é copiado intacto em `components/_repositorio/` e separado em objeto + filhos (campos, record types...) como arquivos derivados (`derived: true`).
+- **Fonte identificada (regra 5):** a coluna "Fonte" continua `XML` (o dado é o XML do componente); a origem fica no topo de cada documento, logo abaixo do título ("**Origem:** repositório `Org01Repo` (org: **Nome da org**)..."). A retomada reprocessa tudo se o conteúdo do repositório mudou.
+- **Nada inventado (regra 1):** pasta e sufixo de cada tipo vêm do Metadata API Developer Guide (seção *File Suffix and Directory Location*) e estão em `config/metadata-types-mvp.json` → `sourceDirectory`.
 
-A ideia é um modo de execução **sem org**:
+Formatos aceitos (detectados sozinhos): **source** do SFDX (`profiles/Admin.profile-meta.xml`, `objects/Conta/fields/...`) e **metadata** da Metadata API (`profiles/Admin.profile`, campos dentro de `objects/Conta.object`). Não precisa de `sfdx-project.json` nem de `package.xml`. A pasta de metadados é procurada em `.`, `src` e `force-app/main/default`; em outro lugar, informe `metadataPath` no de-para.
 
-1. **Fonte de metadata:** o diretório do clone do Flosum, que substitui os passos 4, 6, 6b e 7. O inventário seria a lista de arquivos e o XML viria do clone.
-2. **Dados internos:** os arquivos exportados do Salesforce Inspector num diretório combinado, que substituem o passo 9. Cada consulta do Apêndice A do piloto teria um arquivo correspondente.
-3. **Passos 8 e 10:** inalterados. Contratos, modelos, parsers e builders continuam os mesmos.
+Só no modo pasta, o grupo CustomObject inclui **objetos padrão** (ex.: Account), para o OWD deles (`sharingModel` do XML) aparecer nos documentos de segurança da org e de regras de compartilhamento (`sourceDirectoryComponentFilter`). No modo com login continua só `__c`.
 
-Regras do `CLAUDE.md` que o modo terá de manter:
+### Limites
 
-- **Raw preservado (regras 2–4):** o clone e as exportações seriam o raw. O utilitário nunca os altera e registra caminho e sha256, como faz hoje com o retrieve.
-- **Fonte identificada (regra 5):** a coluna "Fonte" precisaria distinguir "XML do repositório (Flosum)" de "XML recuperado da org", e "Objeto interno (export Salesforce Inspector)" de "Objeto interno (consulta)". Hoje `ALLOWED_SOURCES` não tem essas fontes.
-- **Validação (regra 9):** o clone reflete o repositório, não necessariamente a org. Os documentos teriam de dizer de qual commit ou branch vieram.
+- O repositório reflete o que foi versionado, não necessariamente a org: perfis parciais no repositório geram documentos parciais.
+- Dados internos (versões de Flow, datas, `IsValid` do Apex, padrões da `Organization`...) ficam "Não informado". Ver a lista do que se perde na seção 2.1.
 
-### Perguntas em aberto para o plano
+### Pendente (não implementar sem aprovação)
 
-- [ ] Formato do clone Flosum: formato source do SFDX (`force-app/main/default/...`) ou formato metadata (`package.xml` + `src/`)? Qual branch ou commit representa produção?
-- [ ] O clone inclui Profile, PermissionSet, PermissionSetGroup, SharingRules, Queue e CustomApplication completos? Sem eles, as seções "Acesso e configuração" ficariam "Não informado". Hoje o XML de perfil vem de um retrieve feito junto com os componentes; no repositório, o perfil pode estar parcial.
-- [ ] Salesforce Inspector: quais consultas, em que formato de exportação (CSV ou JSON) e com que nome de arquivo por consulta? Quem executa e com qual perfil? Exportar a partir da produção é permitido?
-- [ ] Como identificar a org de origem sem `sf org display` (`orgId`), já que hoje a aprovação depende dele (`approvedOrgs`)?
-- [ ] Onde guardar o clone e as exportações (armazenamento aprovado, retenção, acesso)?
+Dados internos a partir de exportações do **Salesforce Inspector** num diretório (substituiriam o passo 9). Perguntas em aberto:
 
-Enquanto o plano não for aprovado, o comportamento do MVP não muda: **todo `run` exige uma org autenticada e aprovada, e só deve ser usado em ambientes não produtivos.**
+- [ ] Quais consultas (Apêndice A do piloto), em que formato (CSV ou JSON) e com que nome de arquivo por consulta?
+- [ ] Quem exporta e com qual perfil? Exportar a partir da produção é permitido?
+- [ ] Onde guardar as exportações (armazenamento aprovado, retenção, acesso)?
