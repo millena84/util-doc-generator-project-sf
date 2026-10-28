@@ -25,6 +25,9 @@ def validate_project(app_config, mvp_config, contracts, strict=False) -> list:
             if contracts.get_file(sub.get("contract")) is None:
                 warnings.append(f"Grupo {group.name}: contrato de subdocumento {sub.get('contract')} ausente")
     errors.extend(validate_automation_index(mvp_config.automation_index))
+    e, w = validate_source_directory(mvp_config)
+    errors.extend(e)
+    warnings.extend(w)
     for name, contract in contracts.all().items():
         for prop in contract.get("properties", []):
             if prop.get("source") not in st.ALLOWED_SOURCES:
@@ -56,6 +59,49 @@ def validate_project(app_config, mvp_config, contracts, strict=False) -> list:
     if errors:
         raise ConfigError("Contratos/modelos inválidos:\n- " + "\n- ".join(errors))
     return warnings
+
+
+def validate_source_directory(mvp_config):
+    """Modo pasta: todo tipo usado pelos grupos e pelo retrieve de acesso precisa de pasta/sufixo
+    em sourceDirectory.types (ou ser filho declarado em `children`). Sem o bloco, o modo pasta
+    fica indisponível e nada muda no modo com login."""
+    cfg = mvp_config.source_directory
+    if not cfg:
+        return [], []
+    errors, warnings = [], []
+    types = cfg.get("types")
+    if not isinstance(types, dict) or not types:
+        return ["sourceDirectory.types deve ser um objeto não vazio"], []
+    readable, folders = set(types), {}
+    for mtype, tcfg in types.items():
+        where = f"sourceDirectory.types.{mtype}"
+        if not isinstance(tcfg, dict) or not tcfg.get("folder"):
+            errors.append(f"{where}: folder obrigatório")
+            continue
+        if not tcfg.get("bundle") and not tcfg.get("suffix"):
+            errors.append(f"{where}: suffix obrigatório (exceto bundle)")
+        if tcfg["folder"] in folders:
+            errors.append(f"{where}: pasta {tcfg['folder']} também usada por {folders[tcfg['folder']]}")
+        folders[tcfg["folder"]] = mtype
+        for folder, child in (tcfg.get("children") or {}).items():
+            if not tcfg.get("nested"):
+                errors.append(f"{where}: children exige nested: true")
+            if not isinstance(child, dict) or not child.get("type") or not child.get("suffix"):
+                errors.append(f"{where}.children.{folder}: type e suffix obrigatórios")
+                continue
+            readable.add(child["type"])
+    needed = set(mvp_config.access_sources.get("retrieveTypes") or [])
+    for g in mvp_config.groups:
+        fixed = [c.get("retrieveType") or g.primary_type for c in g.data.get("fixedComponents") or []]
+        needed.update(t for t in g.all_types if not (fixed and t == g.primary_type))
+        needed.update(fixed)
+        needed.update(g.data.get("lookupInventories") or [])
+        if g.type_definition:
+            needed.add(g.type_definition["metadataType"])
+    for t in sorted(needed - readable):
+        warnings.append(f"sourceDirectory: {t} sem pasta configurada; no modo pasta (--source-dir) "
+                        "o tipo fica NOT_ENABLED")
+    return errors, warnings
 
 
 ACCESS_BUILDER = "access_rows"

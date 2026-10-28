@@ -17,6 +17,7 @@ from salesforce_docs.errors import ConfigError, GlobalFailure, SessionExpiredErr
 from salesforce_docs.extraction import (access_extractor, inventory_extractor, metadata_types_extractor,
                                         schema_extractor)
 from salesforce_docs.extraction.internal_data_extractor import developer_name, extract_internal_data
+from salesforce_docs.extraction.source_directory import SourceRepository, find_repository_entry
 from salesforce_docs.pipeline import deviation_handler, run_index
 from salesforce_docs.pipeline.component_pipeline import ComponentProcessor, normalize_record
 from salesforce_docs.rendering.context import RenderContext
@@ -70,6 +71,8 @@ class PipelineContext:
         self.contracts = ContractStore(app.contracts_dir, mvp)
         self.templates = None
         self.tooling = None
+        self.source = None             # modo pasta: SourceRepository (None = modo com login na org)
+        self.source_note = None        # modo pasta: origem exibida no topo de cada documento
 
     def bind_session(self, session):
         self.session = session
@@ -105,7 +108,18 @@ class DocumentPipeline:
         self.renderer = MarkdownRenderer()
 
     # ==================================================================
-    def run(self, org_alias=None, api_version=None, groups=None, components=None, resume=None):
+    def run(self, org_alias=None, api_version=None, groups=None, components=None, resume=None,
+            source_dir=None):
+        """source_dir: modo pasta — lê os metadados de um repositório já clonado (sem login e sem
+        Salesforce CLI); a pasta precisa estar em config.json sourceRepositories (de-para com a org)."""
+        repo = None
+        if source_dir:
+            if org_alias:
+                raise ConfigError("--source-dir e --target-org não podem ser usados juntos: o modo pasta "
+                                  "não acessa a org")
+            repo = find_repository_entry(self.app, source_dir)
+            org_alias = repo[1].get("alias") or slugify(repo[1]["folder"])
+        self.mvp.source_mode = repo is not None
         # Precedência do alias: --target-org > config.json (orgAlias).
         alias = org_alias or self.app.org_alias
         previous = None
@@ -130,21 +144,26 @@ class DocumentPipeline:
             self._git_guard(p)
             # RESTRIÇÃO ATUAL (2026-10-13): os passos 1–7 e 9 exigem org autenticada pela CLI. Login em
             # org PRODUTIVA não é permitido por ora; use só org de desenvolvimento ou sandbox aprovada.
-            # Cenário produtivo previsto (NÃO implementado; não implementar sem aprovação): metadata do
-            # diretório de clone do repositório Flosum (substituiria os passos 4, 6, 6b e 7) e dados de
-            # objetos internos exportados pelo Salesforce Inspector para um diretório (substituiria o
-            # passo 9). Plano e perguntas em aberto: documentation/como-testar-o-mvp.md, seção 3.
-            self._step1_cli(p)
-            self._step2_org_list(p, alias)
-            self._step3_org_display(p, alias, api_version)
-            self._check_org_approval(p, alias)  # nenhuma coleta antes de aprovar a org
-            self._acquire_token(p, alias)       # token só depois da aprovação; nunca gravado
+            # Produção: modo pasta (`--source-dir`), que lê o repositório já clonado (ex.: Flosum) e
+            # substitui os passos 1–7; dados internos (passo 9) ficam "Não informado".
+            if repo is None:
+                self._step1_cli(p)
+                self._step2_org_list(p, alias)
+                self._step3_org_display(p, alias, api_version)
+                self._check_org_approval(p, alias)  # nenhuma coleta antes de aprovar a org
+                self._acquire_token(p, alias)       # token só depois da aprovação; nunca gravado
+            else:
+                self._open_source(p, repo[0], repo[1], api_version)
             fingerprint = self._fingerprint(p, alias, effective)
             state.set("fingerprint", fingerprint)
             skip_units = self._carry_compatible(p, previous, fingerprint, effective) if previous else set()
-            enabled = self._step4_metadata_types(p, effective)
-            self._step5_schemas(p, enabled)
-            inventories = self._step6_inventories(p, enabled)
+            if repo is None:
+                enabled = self._step4_metadata_types(p, effective)
+                self._step5_schemas(p, enabled)
+                inventories = self._step6_inventories(p, enabled)
+            else:
+                enabled = self._source_step4(p, effective)
+                inventories = self._source_step6(p, enabled)
             self._step6b_access_sources(p, enabled, inventories, effective)
             self._steps7_to_10(p, enabled, inventories, skip_units, effective, current_unit)
         except SessionExpiredError as exc:
@@ -365,7 +384,9 @@ class DocumentPipeline:
         models = {f.name: sha256_file(f) for f in sorted(models_dir.glob("*.md"))} if models_dir.is_dir() else {}
         policy = {"sensitive": sorted(self.mvp.sensitive_elements),
                   "omit": sorted(self.mvp.omit_from_documentation)}
+        source = p.source.content_fingerprint() if p.source is not None else None
         return {"orgId": p.session.org_id, "orgAlias": alias, "apiVersion": p.session.api_version,
+                "sourceRepository": source,
                 "utilVersion": __version__, "selection": describe_effective(effective),
                 "contracts": contracts, "models": models,
                 "metadataTypesConfigSha256": sha256_file(self.metadata_types_file)
@@ -381,6 +402,7 @@ class DocumentPipeline:
             global_reasons.append("execução anterior sem fingerprint (formato antigo)")
         else:
             for key, label in (("orgId", "org"), ("apiVersion", "API version"),
+                               ("sourceRepository", "repositório de origem (pasta ou conteúdo)"),
                                ("policySha256", "política de dados sensíveis"),
                                ("utilVersion", "versão do utilitário"),
                                ("metadataTypesConfigSha256", "configuração de metadata types")):
@@ -571,9 +593,11 @@ class DocumentPipeline:
         p.run_state.set("selection", {
             "mode": self.app.selection.mode,
             "requested": self.app.selection.describe(),
-            "cli": {"targetOrg": cli_alias, "groups": groups or [], "components": components or []},
+            "cli": {"targetOrg": None if self.mvp.source_mode else cli_alias, "groups": groups or [],
+                    "components": components or []},
             "orgAlias": alias,
-            "orgAliasSource": "--target-org" if cli_alias else "config.json",
+            "orgAliasSource": ("sourceRepositories (modo pasta)" if self.mvp.source_mode
+                               else "--target-org" if cli_alias else "config.json"),
             "effective": describe_effective(effective),
             "notFound": [],
             "relatedNotResolved": [],
@@ -741,6 +765,109 @@ class DocumentPipeline:
         if "ApexClass" in inventories:
             p.class_inventory = [i["fullName"] for i in inventories["ApexClass"]]
 
+    # Modo pasta (run --source-dir) ---------------------------------------
+    def _open_source(self, p, path, entry, api_version_override):
+        """Substitui os passos 1–3c: sem CLI, sem login e sem token. A pasta só é lida se estiver no
+        de-para sourceRepositories (equivale ao approvedOrgs); o repositório nunca é alterado."""
+        repo = SourceRepository(path, entry, self.mvp.source_directory, self.root)
+        api = api_version_override or self.app.default_api_version or self.mvp.api_version
+        if not api:
+            raise ConfigError("Modo pasta: informe --api-version ou defaultApiVersion no config.json")
+        session = OrgSession(repo.alias, None, "", None, api)
+        session.api_version_source = "--api-version" if api_version_override else "config.json defaultApiVersion"
+        p.bind_session(session)
+        p.source = repo
+        manifest = repo.write_manifest(p.catalog_dir / "source-manifest.json")
+        info = dict(repo.describe(), manifest=rel(manifest, self.root))
+        p.source_note = source_note(info)
+        p.run_state.data["mode"] = "SOURCE_DIRECTORY"
+        p.run_state.data["apiVersion"] = session.api_version
+        p.run_state.set("session", session.describe())
+        p.run_state.set("source", info)
+        p.run_state.step("3-source-directory", st.SUCCESS, info["manifest"])
+        p.log.info(f"Modo pasta: repositório {repo.folder} (org: {repo.org_name}), formato {repo.format}, "
+                   f"{len(repo.files)} arquivo(s) de metadata em {info['metadataPath']}; sem login e sem "
+                   f"Salesforce CLI; API {session.api_version} ({session.api_version_source})")
+        p.log.info("Modo pasta: dados internos (passo 9) e describeValueType (passo 5) exigem a org e não "
+                   "são feitos; essas linhas ficam 'Não informado'")
+        if repo.unmapped_folders:
+            p.log.info(f"Modo pasta: pastas sem metadata type configurado (não documentadas): "
+                       f"{', '.join(repo.unmapped_folders)}")
+        for folder, count in sorted(repo.ignored.items()):
+            p.log.info(f"Modo pasta: {count} arquivo(s) de {folder}/ sem metadata type configurado "
+                       "(ex.: listViews de objetos); não usados")
+        for problem in repo.problems:
+            p.log.warn(f"Modo pasta: {problem}")
+
+    def _source_step4(self, p, effective):
+        """Passo 4 no modo pasta: o tipo é lido se tiver pasta configurada em sourceDirectory.
+        A habilitação na org não é verificável; o describeValueType (passo 5) não é feito."""
+        readable = p.source.readable_types()
+        p.discovered_types = p.source.found_types()
+        p.run_state.step("4-metadata-types", st.SUCCESS, "modo pasta: tipos com pasta em sourceDirectory")
+        enabled = {}
+        for group in self.mvp.groups:
+            if group.name not in effective:
+                p.run_state.type_status(group.primary_type, st.OUT_OF_SCOPE, group=group.name,
+                                        stage="scope", detail=f"selection.mode={self.app.selection.mode}")
+                continue
+            types = list(group.all_types)
+            if group.type_definition:
+                types.append(group.type_definition["metadataType"])
+            fixed = [c.get("retrieveType") or group.primary_type for c in group.data.get("fixedComponents") or []]
+            group_types = {}
+            for t in types:
+                ok = t in readable or (t == group.primary_type and fixed and all(r in readable for r in fixed))
+                status = st.ENABLED if ok else st.NOT_ENABLED
+                p.run_state.type_status(t, status, group=group.name, stage="enabled",
+                                        detail="modo pasta: lido do repositório" if ok
+                                        else "modo pasta: tipo sem pasta em sourceDirectory")
+                if ok:
+                    group_types[t] = {"status": st.ENABLED}
+                else:
+                    p.log.warn(f"Passo 4: {group.name}/{t} -> NOT_ENABLED (sem pasta em sourceDirectory)")
+            if group.primary_type in group_types:
+                enabled[group.name] = group_types
+        for t in sorted({t for types in enabled.values() for t in types}):
+            p.run_state.type_status(t, st.SCHEMA_UNAVAILABLE, group=None, stage="schema",
+                                    detail="modo pasta: describeValueType exige a org")
+        p.log.info(f"Passo 4: grupos lidos do repositório: {', '.join(enabled) or 'nenhum'}")
+        return enabled
+
+    def _source_step6(self, p, enabled):
+        """Passo 6 no modo pasta: inventário = componentes encontrados no repositório."""
+        inventories = {}
+        manifest = rel(p.source.manifest, self.root)
+
+        def list_type(t, label=""):
+            type_dir = p.inventory_dir / self.mvp.folder(t)
+            items = p.source.inventory(t)
+            index = inventory_extractor.build_inventory_index(t, items, manifest)
+            write_json(type_dir / "inventory.index.json", index)
+            inventories[t] = index["components"]
+            return index["components"]
+
+        for group_name, types in enabled.items():
+            group = self.mvp.group(group_name)
+            if group.data.get("fixedComponents"):
+                continue
+            for t in [t for t in group.all_types if t in types and not self.mvp.retrieved_with(t)]:
+                if t in inventories:
+                    continue
+                comps = list_type(t)
+                status = st.SUCCESS if comps else st.NO_COMPONENTS
+                p.run_state.type_status(t, status, group=None, stage="inventory", count=len(comps),
+                                        raw=manifest, detail="modo pasta: componentes do repositório")
+                p.log.info(f"Passo 6: {t} -> {len(comps)} componente(s) no repositório")
+        for group_name in enabled:
+            for t in self.mvp.group(group_name).data.get("lookupInventories") or []:
+                if t not in inventories and t in p.source.readable_types():
+                    p.log.info(f"Passo 6: {t} (conferência) -> {len(list_type(t))} componente(s) no repositório")
+        if "ApexClass" in inventories:
+            p.class_inventory = [i["fullName"] for i in inventories["ApexClass"]]
+        p.run_state.step("6-list-metadata", st.SUCCESS, f"{len(inventories)} tipo(s) (modo pasta)")
+        return inventories
+
     # Passo 6b -----------------------------------------------------------
     def _doc_specs(self, enabled, inventories, effective):
         """Componentes documentados que entram no retrieve de acesso.
@@ -769,7 +896,8 @@ class DocumentPipeline:
         if not cfg or not cfg.get("enabled", True):
             p.run_state.set("access", {"status": "DISABLED"})
             return
-        available = getattr(p, "discovered_types", None) or set()
+        available = (p.source.readable_types() if p.source is not None
+                     else getattr(p, "discovered_types", None) or set())
         specs, missing = access_extractor.access_specs(cfg, self._doc_specs(enabled, inventories, effective),
                                                        available)
         access_dir = p.inventory_dir / cfg.get("folder", "access")
@@ -780,8 +908,11 @@ class DocumentPipeline:
             info["status"] = st.NOT_ENABLED
             p.run_state.set("access", info)
             return
-        res = access_extractor.retrieve_access_sources(p.runner, p.session, specs, access_dir,
-                                                       p.errors_dir, self.root)
+        if p.source is not None:  # modo pasta: arquivos do repositório clonado
+            res = p.source.collect(specs, access_dir / "components")
+        else:
+            res = access_extractor.retrieve_access_sources(p.runner, p.session, specs, access_dir,
+                                                           p.errors_dir, self.root)
         if not res["ok"]:
             info.update(status=st.RETRIEVE_FAILED, error=self.masker(res["error"]))
             p.run_state.set("access", info)
@@ -1084,6 +1215,10 @@ class DocumentPipeline:
         cfg = (contract or {}).get("internalData") or {}
         if not cfg.get("enabled"):
             return {"status": None, "records": None, "raw": None}
+        if p.source is not None:  # modo pasta: sem consulta à org (aviso único em _open_source)
+            return {"status": st.INTERNAL_DATA_UNAVAILABLE, "records": None, "raw": None, "query": None,
+                    "error": "modo pasta: dados internos exigem consulta à org (não feita)",
+                    "namespaceWarning": None}
         type_dir = p.inventory_dir / self.mvp.folder(unit["metadataType"])
         slug = slugify(unit["fullName"])
         res = extract_internal_data(
@@ -1132,7 +1267,7 @@ class DocumentPipeline:
             return {"status": st.FAILED, "document": None, "warnings": result.warnings, "error": leak}
         ns_note = (internal or {}).get("namespaceWarning")
         doc_path = p.writer.write(f"doc-{slugify(unit['fullName'])}-{doc_slug}.md",
-                                  with_internal_note(result.text, ns_note),
+                                  with_source_note(with_internal_note(result.text, ns_note), p.source_note),
                                   f"{unit['documentType']}:{unit['fullName']}")
         subdocs = self._render_subdocuments(p, group, unit, primary, ctx)
         warnings = list(result.warnings) + [w for s in subdocs for w in s.pop("warnings", [])]
@@ -1191,7 +1326,8 @@ class DocumentPipeline:
                 out.append({"component": name, "status": st.FAILED, "error": leak})
                 continue
             path = p.writer.write(f"doc-{slugify(name)}-{suffix}.md",
-                                  with_internal_note(res.text, ctx.internal.get("namespaceWarning")),
+                                  with_source_note(with_internal_note(res.text, ctx.internal.get("namespaceWarning")),
+                                                   p.source_note),
                                   f"{unit['documentType']}:{name}:{suffix}")
             out.append({"component": name, "status": st.SUCCESS, "document": rel(path, self.root),
                         "template": p.templates.resolve_name(contract["template"])})
@@ -1222,6 +1358,11 @@ class DocumentPipeline:
         p = PipelineContext(self.root, self.app, self.mvp, self.runner, state, log, self.masker)
         p.bind_session(session)
         self._open_writer(p, session.alias, (source.data.get("session") or {}).get("orgId"), source)
+        origin = source.data.get("source")
+        self.mvp.source_mode = bool(origin)
+        if origin:  # execução de origem no modo pasta: a origem continua no topo dos documentos
+            p.source_note = source_note(origin)
+            state.set("source", dict(origin, regeneratedFrom=source.run_id))
         self._load_access_index(p, source)
         state.set("apiVersion", session.api_version)
         self._regenerate_differences(p, source)
@@ -1357,6 +1498,21 @@ def namespace_warning(internal_cfg, namespace_prefix, records):
         return None
     return (f"Componente do namespace '{namespace_prefix}': a consulta de dados internos não filtra "
             "namespace e pode incluir componente homônimo de outro namespace (DA-05, pendente de piloto).")
+
+
+def source_note(info):
+    """Origem do documento no modo pasta: pasta do repositório e org do de-para (sourceRepositories)."""
+    return (f"> **Origem:** repositório `{info['folder']}` (org: **{info['orgName']}**). XML lido da pasta "
+            "do repositório clonado, sem acesso à org; dados internos não consultados.")
+
+
+def with_source_note(text, note):
+    """Insere a origem logo após o título (primeira linha `# ...`)."""
+    if not note:
+        return text
+    lines = text.split("\n")
+    i = next((n for n, line in enumerate(lines) if line.startswith("# ")), -1)
+    return "\n".join(lines[:i + 1] + ["", note] + lines[i + 1:])
 
 
 def with_internal_note(text, note):

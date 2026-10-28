@@ -34,6 +34,9 @@ class MetadataTypeGroup:
         self.relations = list(data.get("relations") or [])
         self.sub_documents = list(data.get("subDocuments") or [])
         self.component_filter = data.get("componentFilter") or {}
+        # Modo pasta (run --source-dir): filtro próprio, se declarado (ex.: objetos padrão no CustomObject).
+        self.source_component_filter = data.get("sourceDirectoryComponentFilter")
+        self._catalog = catalog
         self.type_definition = data.get("typeDefinition")
         self.contract_file = data.get("contract") or catalog.contract_file(self.primary_type)
         if not self.name or not self.primary_type:
@@ -72,8 +75,11 @@ class MetadataTypeGroup:
         return None
 
     def accepts(self, full_name: str) -> bool:
-        inc = self.component_filter.get("includeRegex")
-        exc = self.component_filter.get("excludeRegex")
+        flt = self.component_filter
+        if self._catalog.source_mode and self.source_component_filter is not None:
+            flt = self.source_component_filter
+        inc = flt.get("includeRegex")
+        exc = flt.get("excludeRegex")
         if inc and not re.search(inc, full_name):
             return False
         if exc and re.search(exc, full_name):
@@ -99,6 +105,9 @@ class MetadataTypesConfig:
         # Campos de outros componentes guardados no índice da execução (ex.: OWD do CustomObject
         # para o documento de segurança da org; parentRole para a hierarquia de papéis).
         self.record_index = data.get("recordIndex") or {}
+        # Modo pasta: pasta e sufixo de cada tipo num projeto clonado (ver sourceDirectory).
+        self.source_directory = data.get("sourceDirectory") or {}
+        self.source_mode = False  # ligado pelo pipeline em `run --source-dir`
         if self.access_sources and not isinstance(self.access_sources.get("retrieveTypes"), list):
             raise ConfigError("metadata-types-mvp.json: accessSources.retrieveTypes deve ser uma lista")
         groups = data.get("metadataTypeGroups")

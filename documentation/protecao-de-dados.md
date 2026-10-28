@@ -18,6 +18,16 @@
 ]
 ```
 
+### Modo pasta (`run --source-dir`)
+
+Sem login, sem token e sem Salesforce CLI: os passos 1–3c não existem. O controle equivalente ao `approvedOrgs` é o de-para `sourceRepositories` do `config.json`: só uma pasta cadastrada (com o nome da org que ela representa) é lida; outra pasta para antes de qualquer leitura. O repositório nunca é alterado; links simbólicos e pastas ocultas (ex.: `.git`) são ignorados, e `metadataPath` não pode sair do repositório. Os arquivos usados são copiados para `inventory/` com as mesmas proteções do retrieve (0600, `components/` fora do Git), e as mesmas regras de mascaramento e a barreira final valem para os documentos.
+
+```json
+"sourceRepositories": [
+  { "folder": "Org01Repo", "orgName": "Nome da org 01", "alias": "org01", "note": "clone Flosum de produção" }
+]
+```
+
 ## Inventário de artefatos
 
 | Artefato | Local | Conteúdo / sensibilidade | Proteção | Git | Retenção recomendada |
@@ -37,6 +47,8 @@
 | Fontes de acesso | `inventory/.../access/components/` (Profile, PermissionSet, PermissionSetGroup, Queue, SharingRules) e `access/retrieve.raw.json` | permissões de perfis e permission sets; membros de filas (podem incluir usuários) | 0600 | **ignorado** (`components/`) | junto do XML |
 | Índice de acesso | `inventory/.../access/access-index.json` | nomes de perfis/permission sets/grupos/filas e o acesso concedido; **sem usuários** | 0600 | versionável após revisão | junto do XML |
 | Markdown | `saida/docs/doc-<alias>-MMDDAA/` (+ `.org.json` com o orgId dono da pasta) | só propriedades do contrato; nunca `sensitiveXmlElements` nem `omitFromDocumentation`; seção "Acesso e configuração" com perfis, permission sets e grupos (decisão de 2026-10-13); nunca usuários atribuídos nem membros de filas | padrão do sistema | revisar antes de publicar | conforme documentação do projeto |
+| Manifesto do repositório (modo pasta) | `catalog/org-<alias>/api-v<N>/source-manifest.json` | caminho, tamanho e sha256 de cada arquivo lido do repositório clonado, pasta e nome da org do de-para; sem conteúdo dos arquivos | 0600 | versionável após revisão | junto do XML |
+| Original do `.object` (modo pasta, formato metadata) | `inventory/.../components/_repositorio/` | cópia intacta do `.object` do repositório; o objeto e os filhos separados ao lado são derivados (`derived: true`) | 0600 | **ignorado** (`components/`) | junto do XML |
 | Versões substituídas | `saida/docs/.../_substituidos/<runId>/` | documento anterior quando outra execução gera conteúdo diferente | padrão | revisar | apagar após conferência |
 
 `dataProtection.privateFiles = true` (padrão) grava raws, cópias de XML, normalizados e run state com permissão `0600`.

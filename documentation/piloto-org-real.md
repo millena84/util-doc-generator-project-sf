@@ -6,7 +6,7 @@ Os testes automatizados usam uma Salesforce CLI **simulada**: provam o pipeline,
 2. As premissas marcadas *a confirmar* (nomes de elemento, consultas, formatos da CLI) valem na org?
 3. Nada que não deveria (token, segredo, usuário, e-mail, dado de exemplo) aparece nos documentos?
 
-> ⚠️ **Somente org não produtiva.** Por ora **não é permitido login em produção**, e o MVP precisa de login em todos os passos de coleta. O cenário produtivo (projeto do clone do repositório Flosum mais dados internos exportados pelo Salesforce Inspector) **ainda não é suportado**; o plano está em [`como-testar-o-mvp.md`](como-testar-o-mvp.md), seção 3.
+> ⚠️ **Somente org não produtiva.** Por ora **não é permitido login em produção**, e este roteiro usa login em todos os passos de coleta. Para produção, use o **modo pasta** (`run --source-dir`, repositório já clonado, sem login): [`como-testar-o-mvp.md`](como-testar-o-mvp.md), seção 3.
 
 > **Segurança:** use uma org de desenvolvimento ou sandbox com autorização do responsável. Nenhum comando abaixo imprime o access token. Ao relatar, **não cole** tokens, senhas, `consumerSecret`, o conteúdo de `inventory/**/components/`, usuários, e-mails, `propertySetConfig` nem dados de registros.
 

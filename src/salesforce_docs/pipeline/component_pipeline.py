@@ -65,6 +65,9 @@ class ComponentProcessor:
                        "xml": main["path"] if main else None, "error": None if main else
                        f"arquivo principal de {metadata_type}:{full_name} ausente no retrieve de acesso",
                        "retrieveRaw": getattr(self.p, "prefetched_raw", None)}
+        elif getattr(self.p, "source", None) is not None:
+            # Modo pasta: arquivos do repositório clonado (sem Salesforce CLI).
+            outcome = self.p.source.collect_component(metadata_type, full_name, type_dir / "components")
         else:
             outcome = retrieve_component(
                 self.p.runner, self.p.session, metadata_type, full_name,

@@ -56,18 +56,43 @@ def build_summary(pipeline, state) -> str:
                      + (f" (sugestão: {f.get('suggestion')})" if f.get("suggestion") else ""))
     if d.get("resumedFrom"):
         lines.append(f"- **Retomada de:** `{d['resumedFrom']}`")
+    source = d.get("source")
+    if source:  # modo pasta: nada é lido da org
+        lines += [
+            "",
+            "## Origem (modo pasta, sem login)",
+            "",
+            f"- Repositório: `{source.get('folder')}` → org **{source.get('orgName')}** "
+            "(de-para em config.json sourceRepositories)",
+            f"- Pasta lida: `{source.get('path')}` (metadata em `{source.get('metadataPath')}`); "
+            f"formato `{source.get('format')}`; {source.get('files')} arquivo(s) reconhecido(s)",
+            f"- Registro do que foi lido (caminho e sha256): `{source.get('manifest') or '—'}`",
+            f"- Alias das pastas de saída: `{sel.get('orgAlias') or d.get('orgAlias')}`",
+            f"- API version: `{d.get('apiVersion') or '—'}`",
+            "- Não feitos (exigem a org): dados internos (passo 9) e describeValueType (passo 5)",
+        ]
+        if source.get("unmappedFolders"):
+            lines.append(f"- Pastas sem metadata type configurado (não documentadas): "
+                         f"{_lst(source['unmappedFolders'])}")
+        for folder, count in sorted((source.get("ignoredFiles") or {}).items()):
+            lines.append(f"- Arquivos não reconhecidos em `{folder}/`: {count}")
+        for problem in source.get("problems") or []:
+            lines.append(f"- Aviso: {problem}")
+    else:
+        lines += [
+            "",
+            "## Org-alvo",
+            "",
+            f"- Alias: `{sel.get('orgAlias') or d.get('orgAlias')}` (origem: {sel.get('orgAliasSource', '—')})",
+            f"- Org ID: `{detected.get('orgId') or session.get('orgId') or '—'}`",
+            f"- Usuário: `{detected.get('username') or session.get('username') or '—'}`",
+            f"- Instance URL: `{detected.get('instanceUrl') or session.get('instanceUrl') or '—'}`",
+            f"- Aprovação: {'aprovada' if approval.get('approved') else 'NÃO aprovada'} "
+            f"({approval.get('method', '—')})",
+            f"- Token obtido via: {d.get('tokenSource', '—')} (nunca persistido)",
+            f"- API version: `{d.get('apiVersion') or '—'}`",
+        ]
     lines += [
-        "",
-        "## Org-alvo",
-        "",
-        f"- Alias: `{sel.get('orgAlias') or d.get('orgAlias')}` (origem: {sel.get('orgAliasSource', '—')})",
-        f"- Org ID: `{detected.get('orgId') or session.get('orgId') or '—'}`",
-        f"- Usuário: `{detected.get('username') or session.get('username') or '—'}`",
-        f"- Instance URL: `{detected.get('instanceUrl') or session.get('instanceUrl') or '—'}`",
-        f"- Aprovação: {'aprovada' if approval.get('approved') else 'NÃO aprovada'} "
-        f"({approval.get('method', '—')})",
-        f"- Token obtido via: {d.get('tokenSource', '—')} (nunca persistido)",
-        f"- API version: `{d.get('apiVersion') or '—'}`",
         "",
         "## Seleção",
         "",
@@ -83,7 +108,8 @@ def build_summary(pipeline, state) -> str:
     ]
     disc = types.get("discovered") or {}
     rows = [
-        ("Descobertos na org", disc.get("count") if disc.get("available") else "não listado", None),
+        ("Descobertos no repositório" if source else "Descobertos na org",
+         disc.get("count") if disc.get("available") else "não listado", None),
         ("Descobertos e não configurados", len(types.get("discoveredNotConfigured") or []),
          types.get("discoveredNotConfigured")),
         ("Configurados", len(types.get("configured") or []), types.get("configured")),

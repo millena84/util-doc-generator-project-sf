@@ -2,14 +2,14 @@
 
 Utilitário único para gerar documentação Markdown de componentes Salesforce, combinando dados da org, XMLs recuperados, objetos internos e modelos por metadata type.
 
-> ⚠️ **Restrição atual — produção sem login.** Por ora **não é permitido login** (`sf org login ...`) em org **produtiva**. O MVP **exige** login em todos os passos de coleta (CLI, Metadata API, consultas). Por isso ele só deve ser executado em org de desenvolvimento ou sandbox autorizada. O cenário produtivo previsto é diferente: metadata a partir do **diretório de clone do repositório Flosum** e dados de objetos internos **exportados pelo Salesforce Inspector** para um diretório. Esse modo **ainda não existe**; o plano de ação está em definição e o MVP **não foi modificado** para ele. Detalhes e perguntas em aberto: [`documentation/como-testar-o-mvp.md`](documentation/como-testar-o-mvp.md), seção 3.
+> ⚠️ **Restrição atual — produção sem login.** Por ora **não é permitido login** (`sf org login ...`) em org **produtiva**. O `run` com login só deve ser usado em org de desenvolvimento ou sandbox autorizada. Para produção, use o **modo pasta** (`run --source-dir`): o utilitário lê o **repositório já clonado** (ex.: Flosum), sem login e sem Salesforce CLI. Dados internos exportados pelo Salesforce Inspector ainda não são lidos. Ver a seção "Modo pasta" e [`documentation/checklist-acessos-modo-pasta.md`](documentation/checklist-acessos-modo-pasta.md).
 
 **Como testar o MVP** (sem org, org não produtiva e produção): [`documentation/como-testar-o-mvp.md`](documentation/como-testar-o-mvp.md).
 
 ## Requisitos
 
 - Python **3.8+** — somente biblioteca padrão. **Nenhum `pip install`** é necessário.
-- Salesforce CLI (`sf`) **2.0.0+** (mínima configurada em `config/config.json`).
+- Salesforce CLI (`sf`) **2.0.0+** (mínima configurada em `config/config.json`). Não é usada no modo pasta.
 - Bash (para o invólucro `bin/sf-docs.sh`; opcional — o módulo Python roda direto).
 - Org **não produtiva** autenticada: `sf org login web --alias dev` (produção: login não permitido por ora; ver a restrição acima).
 
@@ -46,11 +46,43 @@ bin/sf-docs.sh purge --older-than-days 90 [--apply [--delete-sensitive]]
 
 # Erro inesperado com traceback (mascarado)
 bin/sf-docs.sh --debug run
+
+# Modo pasta: repositório já clonado (ex.: Flosum), sem login e sem Salesforce CLI
+bin/sf-docs.sh run --source-dir /caminho/Org01Repo --group Profile --group Role
 ```
 
 Sem Bash (ex.: Windows): `PYTHONPATH=src python -m salesforce_docs run`.
 
 Códigos de saída: `0` sucesso (inclui `PARTIAL_SUCCESS` e `COMPLETED_WITH_GAPS`), `1` falha global ou erro inesperado (mensagem mascarada), `2` sessão expirada (estado salvo para retomada), `3` `COMPLETED_WITH_GAPS` com `execution.strictCoverage = true`. Toda execução grava `runs/<runId>/resumo.md`.
+
+## Modo pasta (`run --source-dir`) — repositório clonado, sem login
+
+Lê os metadados de um projeto Salesforce **já clonado** (ex.: repositório do Flosum). O utilitário não clona, não faz login, não usa a Salesforce CLI e nunca altera o repositório.
+
+1. Cadastre o de-para pasta → org em `config/config.json` (só pastas cadastradas são lidas):
+
+   ```json
+   "sourceRepositories": [
+     { "folder": "Org01Repo", "orgName": "Nome da org 01" },
+     { "folder": "Org02Repo", "orgName": "Nome da org 02", "alias": "org02", "metadataPath": "src" }
+   ]
+   ```
+
+   `folder` é só o nome da pasta. `alias` (opcional, padrão: nome da pasta em minúsculas) nomeia as pastas de saída. `metadataPath` (opcional) é a subpasta com `profiles/`, `objects/`...; sem ele, procura em `.`, `src` e `force-app/main/default`.
+2. `bin/sf-docs.sh run --source-dir /caminho/Org01Repo [--group ...] [--component ...]`.
+
+| Item | Comportamento |
+|---|---|
+| Passos | 1–3c não existem; 4, 6, 6b e 7 leem o repositório; 8 e 10 são os mesmos do modo com login; 5 e 9 (exigem a org) não são feitos |
+| Formatos | source do SFDX (`Admin.profile-meta.xml`, objeto em subpastas) e metadata da Metadata API (`Admin.profile`, campos dentro do `.object`); detectados sozinhos; não precisa de `sfdx-project.json` nem `package.xml` |
+| Pasta e sufixo por tipo | `config/metadata-types-mvp.json` → `sourceDirectory` (Metadata API Developer Guide, *File Suffix and Directory Location*) |
+| Raw | o repositório; `catalog/org-<alias>/api-v<N>/source-manifest.json` registra caminho e sha256 de cada arquivo lido; arquivos usados copiados byte a byte para `inventory/.../components/` (no formato metadata, o `.object` original fica em `components/_repositorio/` e objeto + filhos são derivados) |
+| Origem no documento | logo abaixo do título: "**Origem:** repositório `Org01Repo` (org: **Nome da org 01**)". A coluna "Fonte" continua `XML` |
+| Dados internos | "Não informado" (aviso `INTERNAL_DATA_UNAVAILABLE`; cobertura `COMPLETE_WITH_WARNINGS`) |
+| Valor ausente | "Não informado" (sem `describeValueType` não há como provar "Não aplicável") |
+| OWD de objetos padrão | só no modo pasta, o grupo CustomObject inclui objetos padrão (ex.: Account) que tenham arquivo no repositório (`sourceDirectoryComponentFilter`) |
+| Retomada | `--resume` reaproveita só se a pasta e o conteúdo do repositório não mudaram |
+| Ignorados | links simbólicos, pastas ocultas (ex.: `.git`), pastas sem tipo configurado e arquivos de filhos não configurados (ex.: `listViews`); listados no log e no `resumo.md` |
 
 ## Ordem de execução
 

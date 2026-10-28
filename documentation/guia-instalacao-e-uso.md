@@ -1,6 +1,6 @@
 # Guia de instalação e uso
 
-> ⚠️ **Produção:** por ora não é permitido login em org produtiva, e o utilitário exige login para executar `run`. Use só org de desenvolvimento ou sandbox autorizada. O cenário produtivo (clone do repositório Flosum mais exportações do Salesforce Inspector) ainda não é suportado: ver [`como-testar-o-mvp.md`](como-testar-o-mvp.md), seção 3.
+> ⚠️ **Produção:** por ora não é permitido login em org produtiva. Com login, use só org de desenvolvimento ou sandbox autorizada. Para produção, use o **modo pasta** (`run --source-dir`), que lê o repositório já clonado (ex.: Flosum) sem login: ver [`como-testar-o-mvp.md`](como-testar-o-mvp.md), seção 3, e o checklist [`checklist-acessos-modo-pasta.md`](checklist-acessos-modo-pasta.md).
 
 > **Status:** guia operacional da versão atual do repositório. Leia as ressalvas de segurança antes de conectar uma org real. A simulação com fixtures não valida o comportamento nem as permissões de uma org Salesforce real.
 
