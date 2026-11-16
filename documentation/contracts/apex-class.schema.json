@@ -135,6 +135,21 @@
       "notes": "Só argumentos literais; classe em variável sem declaração local fica 'Não informado'."
     },
     {
+      "markdownSection": "Callouts (Named Credentials e endpoints)",
+      "builder": "path_rows",
+      "source": "Código Apex",
+      "args": {
+        "path": "apex.callouts",
+        "columns": {
+          "callout_kind": "kind",
+          "named_credential": "namedCredential",
+          "callout_occurrences": "occurrences"
+        }
+      },
+      "emptyValue": "Não aplicável",
+      "notes": "Literais 'callout:Nome' (só o nome da Named Credential; caminho e parâmetros da URL nunca são registrados) e URLs fixas em setEndpoint(...) / endpoint_x (só a contagem, nunca o valor). Endpoint guardado em variável sem literal no argumento não é classificado."
+    },
+    {
       "markdownSection": "Dados internos",
       "builder": "internal_record_properties",
       "source": "Objeto interno",
@@ -168,6 +183,7 @@
   "evidence": [
     "Metadata API ApexClass: apiVersion, packageVersions, status (Active/Deleted) — developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_classes.htm",
     "Transaction Finalizers: System.attachFinalizer é chamado dentro do execute() do Queueable — developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_transaction_finalizers.htm",
-    "Batch Apex: Database.RaisesPlatformEvents publica BatchApexErrorEvent — developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_batch_platformevents.htm"
+    "Batch Apex: Database.RaisesPlatformEvents publica BatchApexErrorEvent — developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_batch_platformevents.htm",
+    "Named Credentials como endpoint de callout: req.setEndpoint('callout:Nome_NC/caminho') e, em classes WSDL2Apex, stub.endpoint_x = 'callout:Nome_NC/caminho' — developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_callouts_named_credentials.htm"
   ]
 }

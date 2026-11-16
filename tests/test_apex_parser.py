@@ -135,5 +135,49 @@ class PlainClassTest(unittest.TestCase):
         self.assertFalse(r["parsed"])
 
 
+class CalloutTest(unittest.TestCase):
+    SRC = """public class C {
+      private static final String NC = 'callout:Minha_NC'; // 'callout:Em_Comentario'
+      /* req.setEndpoint('callout:Em_Bloco'); */
+      public void a(String nome) {
+        HttpRequest req = new HttpRequest();
+        req.setEndpoint('callout:Minha_NC/v1/pedidos?token=SENTINELA_PATH');
+        req.setEndpoint('callout:ns__Outra_NC');
+        req.setEndpoint('callout:' + nome + '/x');
+        req.setEndpoint('https://api.exemplo.invalid/SENTINELA_URL');
+        req.setEndpoint(NC + '/x');
+        stub.endpoint_x = 'http://soap.exemplo.invalid';
+        String envelope = 'http://schemas.xmlsoap.org/soap/envelope/';
+      }
+    }"""
+
+    def setUp(self):
+        self.r = parse_apex_source(self.SRC)
+
+    def rows(self):
+        return [(c["kind"], c["namedCredential"], c["occurrences"]) for c in self.r["callouts"]]
+
+    def test_named_credentials_by_name_without_path(self):
+        self.assertEqual(self.rows()[:2], [("Named Credential", "Minha_NC", 2),
+                                           ("Named Credential", "ns__Outra_NC", 1)])
+
+    def test_comments_are_not_evidence(self):
+        self.assertNotIn("Em_Comentario", json.dumps(self.r))
+        self.assertNotIn("Em_Bloco", json.dumps(self.r))
+
+    def test_dynamic_name_and_literal_urls_are_counted_without_value(self):
+        rows = self.rows()
+        self.assertIn(("Named Credential (nome montado em tempo de execução)", None, 1), rows)
+        self.assertIn(("URL fixa no código (sem Named Credential; valor não registrado)", None, 2), rows)
+        out = json.dumps(self.r)
+        for leak in ("SENTINELA_PATH", "SENTINELA_URL", "exemplo.invalid", "v1/pedidos", "schemas.xmlsoap"):
+            self.assertNotIn(leak, out)
+
+    def test_variable_endpoint_is_not_inferred(self):
+        r = parse_apex_source("public class D { void a(String u) { req.setEndpoint(u); } }")
+        self.assertEqual(r["callouts"], [])
+        self.assertEqual(parse_apex_source("public interface I { void a(); }")["callouts"], [])
+
+
 if __name__ == "__main__":
     unittest.main()

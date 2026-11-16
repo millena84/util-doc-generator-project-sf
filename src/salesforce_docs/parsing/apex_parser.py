@@ -382,6 +382,50 @@ SECURITY_PATTERNS = (
 )
 
 
+CALLOUT_PREFIX_RE = re.compile(r"callout:", re.I)
+CALLOUT_NAME_RE = re.compile(rf"({IDENT})(?![A-Za-z0-9_])")
+URL_RE = re.compile(r"\s*https?://", re.I)
+ENDPOINT_FIELD_RE = re.compile(r"\bendpoint_x\s*=([^;]+);", re.I)
+NAMED_CREDENTIAL = "Named Credential"
+DYNAMIC_NAMED_CREDENTIAL = "Named Credential (nome montado em tempo de execução)"
+URL_LITERAL = "URL fixa no código (sem Named Credential; valor não registrado)"
+
+
+def callouts(code: str, literals):
+    """Endpoints de callout no código: Named Credentials (`'callout:Nome/...'`) e URLs fixas.
+
+    - Named Credential: literal de string que começa com `callout:`; registra só o nome
+      (o caminho e os parâmetros da URL nunca vão para a saída). `'callout:' + variavel`
+      (nome montado em tempo de execução) vira entrada dinâmica, sem nome.
+    - URL fixa: argumento literal `http(s)://` de `setEndpoint(...)` ou de `endpoint_x = ...`
+      (WSDL2Apex). Só a contagem é registrada, nunca o valor.
+    - Endpoint em variável sem literal no próprio argumento não é classificado (não se infere).
+    """
+    counts = {}
+
+    def add(kind, name=None):
+        counts[(kind, name)] = counts.get((kind, name), 0) + 1
+
+    for m in STRING_TOKEN_RE.finditer(code):
+        text = literals[int(m.group(1))]
+        if not CALLOUT_PREFIX_RE.match(text):
+            continue
+        name = CALLOUT_NAME_RE.match(text, len("callout:"))
+        if name:
+            add(NAMED_CREDENTIAL, name.group(1))
+        else:
+            add(DYNAMIC_NAMED_CREDENTIAL)
+    args = [a[0] for a in _calls_named(code, r"\.\s*setEndpoint\s*\(") if a]
+    args += [m.group(1) for m in ENDPOINT_FIELD_RE.finditer(code)]
+    for arg in args:
+        first = STRING_TOKEN_RE.search(arg)
+        if first and URL_RE.match(literals[int(first.group(1))]):
+            add(URL_LITERAL)
+    order = {NAMED_CREDENTIAL: 0, DYNAMIC_NAMED_CREDENTIAL: 1, URL_LITERAL: 2}
+    return [{"kind": k, "namedCredential": n, "occurrences": c}
+            for (k, n), c in sorted(counts.items(), key=lambda kv: (order[kv[0][0]], (kv[0][1] or "").lower()))]
+
+
 EVENT_NEW_RE = re.compile(rf"\bnew\s+({IDENT}__e)\s*\(", re.I)
 EVENTBUS_PUBLISH_RE = re.compile(r"\bEventBus\s*\.\s*publish\s*\(", re.I)
 
@@ -423,7 +467,7 @@ def parse_apex_source(text: str) -> dict:
                 "className": other.group(2), "implements": [], "implementsDeclared": [],
                 "methods": [], "futureMethods": [], "asyncInvocations": [],
                 "batch": None, "queueable": None, "schedulable": None,
-                "configReads": [], "securityPatterns": [],
+                "configReads": [], "securityPatterns": [], "callouts": [],
                 "platformEvents": {"publishCall": False, "eventTypes": []}}
     if not m:
         return {"parser": PARSER_ID, "parsed": False, "error": "declaração de classe não encontrada"}
@@ -493,6 +537,7 @@ def parse_apex_source(text: str) -> dict:
         "configReads": config_reads(body, literals),
         "securityPatterns": security_patterns(body),
         "platformEvents": platform_event_refs(body),
+        "callouts": callouts(body, literals),
     }
     for info in methods:
         fut = next((a for a in info["annotations"] if a["name"].lower() == "future"), None)

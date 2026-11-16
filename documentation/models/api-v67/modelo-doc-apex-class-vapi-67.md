@@ -32,6 +32,12 @@
 |---|---|---|---|---|---|---|---|
 | {{ caller }} | {{ call_kind }} | {{ target_class }} | {{ batch_size }} | {{ delay_minutes }} | {{ job_name }} | {{ cron_expression }} | Código Apex |
 
+## Callouts (Named Credentials e endpoints)
+
+| Tipo de endpoint | Named Credential | Ocorrências | Fonte |
+|---|---|---|---|
+| {{ callout_kind }} | {{ named_credential }} | {{ callout_occurrences }} | Código Apex |
+
 ## Dados internos
 
 | Propriedade | Valor | Fonte |
