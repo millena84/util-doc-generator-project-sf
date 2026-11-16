@@ -6,6 +6,8 @@ Utilitário único para gerar documentação Markdown de componentes Salesforce,
 
 **Como testar o MVP** (sem org, org não produtiva e produção): [`documentation/como-testar-o-mvp.md`](documentation/como-testar-o-mvp.md).
 
+**Fase 2 — descoberta de integrações** (`src/integration_discovery/`, `bin/integration-discovery.sh`): a partir de um CSV curado (`discovery/input/componentes-squad.csv`), lê **só** os JSONs normalizados do Utilitário 1 e propõe clusters candidatos de integração, com evidência por relação e revisão humana. Não acessa a org nem altera o Utilitário 1. Guia: [`documentation/fase-2-integration-discovery.md`](documentation/fase-2-integration-discovery.md).
+
 ## Requisitos
 
 - Python **3.8+** — somente biblioteca padrão. **Nenhum `pip install`** é necessário.

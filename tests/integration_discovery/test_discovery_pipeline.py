@@ -1,0 +1,346 @@
+import io
+import json
+import shutil
+
+from tests.integration_discovery.base import CSV, DiscoveryBase, INV
+from tests.test_prioridade3 import P3Base
+from integration_discovery import reference_extractor
+from integration_discovery.__main__ import main as cli_main
+from integration_discovery.discovery_pipeline import review_cluster, run_discovery
+
+SENTINELS = ("sentinela", "SENTINELA", "CONSUMER_KEY", "example.invalid")
+
+
+class DiscoveryPipelineTest(DiscoveryBase):
+    def run_it(self, csv=CSV, **kw):
+        return run_discovery(self.root, csv, stream=io.StringIO(), **kw)
+
+    def all_outputs(self):
+        return "\n".join(p.read_text(encoding="utf-8") for p in self.out().rglob("*") if p.is_file())
+
+    def test_full_flow_with_fixtures(self):
+        code, summary = self.run_it()
+        self.assertEqual(code, 0)
+        self.assertEqual((summary["found"], summary["notFound"], summary["clusters"], summary["orphans"]), (10, 1, 3, 1))
+        graph = self.read_json("graphs", "graph.json")
+        self.assertEqual(set(graph), {"generatedAt", "nodes", "edges", "unverifiedMentions",
+                                      "referencesToComponentsWithoutJson"})
+        c1 = self.read_json("clusters", "cluster-001.json")
+        self.assertEqual((c1["status"], c1["confidence"], c1["proposedName"]), ("CANDIDATE", "HIGH", "Integração RH - Colaborador"))
+        self.assertIn("NamedCredential:RH_Endpoint", [x["id"] for x in c1["components"]])
+        # o permission set (ponte) aparece em mais de um cluster, sem fundir as integrações
+        with_ps = [p.name for p in sorted(self.out("clusters").glob("*.json"))
+                   if "PermissionSet:IntegracaoRH_User" in p.read_text(encoding="utf-8")]
+        self.assertEqual(len(with_ps), 3)
+        proposal = self.read_json("proposals", "cluster-001.proposal.json")
+        self.assertEqual((proposal["status"], proposal["clusterId"]), ("CANDIDATE", "cluster-001"))
+        self.assertEqual(self.read_json("orphans", "orphans.json")["orphans"][0]["id"], "RemoteSiteSetting:RH_Remote_Site")
+        report = self.out("report", "discovery-report.md").read_text(encoding="utf-8")
+        for section in ("## 1. Resumo", "## 2. Componentes sem JSON", "## 3. Clusters", "## 4. Órfãos",
+                        "## 7. Erros e avisos de validação do CSV", "## 8. Pendências e dúvidas"):
+            self.assertIn(section, report)
+        for s in SENTINELS:  # nenhum valor sensível do normalizado nas saídas
+            self.assertNotIn(s, self.all_outputs(), s)
+
+    def test_missing_json_does_not_break_pipeline(self):
+        (self.root / INV / "apex-triggers" / "normalized" / "colaboradortrigger.json").unlink()
+        code, summary = self.run_it()
+        self.assertEqual((code, summary["notFound"]), (0, 2))
+        status = {c["componentName"]: c for c in self.read_json("report", "component-status.json")["components"]}
+        self.assertEqual(status["ColaboradorTrigger"]["status"], "NORMALIZED_JSON_NOT_FOUND")
+        self.assertEqual(status["ColaboradorTrigger"]["expectedPath"], f"{INV}/apex-triggers/normalized/colaboradortrigger.json")
+        self.assertGreaterEqual(summary["clusters"], 1)
+
+    def test_resume_does_not_reprocess_unchanged_components(self):
+        self.run_it()
+        calls = []
+
+        def spy(entry, targets, rules):
+            calls.append(entry["key"])
+            return reference_extractor.extract_references(entry, targets, rules)
+
+        _, summary = self.run_it(extractor=spy)
+        self.assertEqual((calls, summary["cacheHits"]), ([], 10))
+        p = self.root / INV / "certificates" / "normalized" / "integracaorh-cert.json"
+        p.write_text(p.read_text(encoding="utf-8").replace('"2048"', '"4096"'), encoding="utf-8")
+        _, summary = self.run_it(extractor=spy)
+        self.assertEqual((calls, summary["cacheHits"]), (["Certificate:IntegracaoRH_Cert"], 9))
+        calls.clear()
+        self.run_it(extractor=spy, use_cache=False)
+        self.assertEqual(len(calls), 10)
+
+    def members(self, cluster_id):
+        return [x["id"] for x in self.read_json("clusters", f"{cluster_id}.json")["components"]]
+
+    def test_review_is_kept_across_runs_while_composition_is_the_same(self):
+        self.run_it()
+        review_cluster(self.root, "cluster-001", "APPROVED", "Millena", "ok", "Integração RH - Admissões", stream=io.StringIO(), signature=self.sig("cluster-001"))
+        c = self.read_json("clusters", "cluster-001.json")
+        self.assertEqual((c["status"], c["approvedName"], c["humanReview"]["reviewedBy"]),
+                         ("APPROVED", "Integração RH - Admissões", "Millena"))
+        self.assertEqual(self.read_json("proposals", "cluster-001.proposal.json")["status"], "APPROVED")
+        self.run_it()
+        c = self.read_json("clusters", "cluster-001.json")
+        self.assertEqual((c["status"], c["approvedName"]), ("APPROVED", "Integração RH - Admissões"))
+        with self.assertRaises(ValueError):
+            review_cluster(self.root, "cluster-001", "APPROVED", None, stream=io.StringIO(), signature=self.sig("cluster-001"))
+
+    def test_cluster_numbers_are_stable_when_order_changes(self):
+        # D22-01: nova evidência reordena os clusters; o número continua apontando para a mesma composição
+        self.run_it()
+        app = self.members("cluster-002")
+        self.assertIn("ConnectedApp:IntegracaoRH", app)
+        p = self.root / INV / "permission-sets" / "normalized" / "integracaorh-user.json"
+        d = json.loads(p.read_text(encoding="utf-8"))
+        d["data"]["fieldPermissions"] = [{"field": "x", "note": "SAPOrderSync"}, {"field": "y", "note": "SAPOrderSync"}]
+        p.write_text(json.dumps(d), encoding="utf-8")
+        self.run_it()
+        report = self.out("report", "discovery-report.md").read_text(encoding="utf-8")
+        self.assertLess(report.index("| cluster-003 |"), report.index("| cluster-002 |"))  # SAP passou à frente
+        review_cluster(self.root, "cluster-002", "APPROVED", "Millena", stream=io.StringIO(), signature=self.sig("cluster-002"))
+        self.assertEqual(self.members("cluster-002"), app)
+        self.assertEqual(self.read_json("clusters", "cluster-002.json")["status"], "APPROVED")
+
+    def test_retired_number_is_refused_and_never_reused(self):
+        self.run_it()
+        review_cluster(self.root, "cluster-001", "REJECTED", "Millena", "não é integração", stream=io.StringIO(), signature=self.sig("cluster-001"))
+        (self.root / INV / "custom-metadata" / "normalized" / "endpoint-config-producao.json").unlink()
+        self.run_it()
+        self.assertFalse(self.out("clusters", "cluster-001.json").exists())
+        new_ids = sorted(p.stem for p in self.out("clusters").glob("*.json"))
+        self.assertNotIn("cluster-001", new_ids)
+        self.assertIn("cluster-004", new_ids)  # composição nova: próximo número livre
+        with self.assertRaises(ValueError) as ctx:
+            review_cluster(self.root, "cluster-001", "APPROVED", "Millena", stream=io.StringIO(), signature="aaaaaa")
+        self.assertIn("não existe mais", str(ctx.exception))
+        self.assertIn("cluster-004", str(ctx.exception))
+        with self.assertRaises(ValueError):
+            review_cluster(self.root, "cluster-999", "APPROVED", "Millena", stream=io.StringIO(), signature="aaaaaa")
+
+    def test_decision_history_survives_several_runs(self):
+        # D22-02: a decisão de um cluster aposentado continua no histórico e no relatório
+        self.run_it()
+        review_cluster(self.root, "cluster-001", "REJECTED", "Millena", "não é integração", stream=io.StringIO(), signature=self.sig("cluster-001"))
+        (self.root / INV / "custom-metadata" / "normalized" / "endpoint-config-producao.json").unlink()
+        for _ in range(2):
+            self.run_it()
+            report = self.out("report", "discovery-report.md").read_text(encoding="utf-8")
+            self.assertIn("## 9. Revisões que não se aplicam mais", report)
+            self.assertRegex(report, r"cluster-001 · `[0-9a-f]{6}` \(decisão anterior: REJECTED por Millena; "
+                                     r"nota: não é integração\)")
+        registry = self.read_json("state", "cluster-registry.json")
+        self.assertEqual(registry["reviews"][0]["notes"], "não é integração")
+        # revisar o sucessor encerra o aviso
+        succ = [x for x in registry["clusters"].values() if x["clusterId"] == "cluster-001"][0]["successors"]
+        for cid in succ:
+            review_cluster(self.root, cid, "APPROVED", "Millena", stream=io.StringIO(), signature=self.sig(cid))
+        self.run_it()
+        self.assertNotIn("## 9.", self.out("report", "discovery-report.md").read_text(encoding="utf-8"))
+
+    def test_signature_confirmation(self):
+        self.run_it()
+        sig = self.read_json("clusters", "cluster-001.json")["signature"]
+        with self.assertRaises(ValueError):
+            review_cluster(self.root, "cluster-001", "APPROVED", "Millena", signature="0" * 16, stream=io.StringIO())
+        review_cluster(self.root, "cluster-001", "APPROVED", "Millena", signature=sig, stream=io.StringIO())
+        self.assertEqual(self.read_json("clusters", "cluster-001.json")["status"], "APPROVED")
+
+    def test_migration_from_outputs_without_registry(self):
+        self.run_it()
+        review_cluster(self.root, "cluster-002", "APPROVED", "Millena", stream=io.StringIO(), signature=self.sig("cluster-002"))
+        app = self.members("cluster-002")
+        self.out("state", "cluster-registry.json").unlink()  # como saídas geradas antes do registro
+        self.run_it()
+        self.assertEqual(self.members("cluster-002"), app)
+        self.assertEqual(self.read_json("clusters", "cluster-002.json")["status"], "APPROVED")
+
+    def test_external_client_app_joins_through_its_policy(self):
+        # D22-04: a ECA deixa de ser órfã quando a política dela cita um componente do CSV
+        self.put_normalized("external-client-apps/normalized/integracaorh-eca.json", "ExternalClientApplication",
+                            "IntegracaoRH_ECA", {"label": "ECA RH"})
+        self.put_normalized("extl-clnt-app-oauth-configurable-policies/normalized/integracaorh-eca-oauthplcy.json",
+                            "ExtlClntAppOauthConfigurablePolicies", "IntegracaoRH_ECA_oauthPlcy",
+                            {"externalClientApplication": "IntegracaoRH_ECA",
+                             "commaSeparatedPermissionSet": "Outro_PS,IntegracaoRH_User"}, role="related")
+        _, summary = self.run_it()
+        self.assertEqual(summary["notFound"], 0)
+        edges = self.read_json("graphs", "graph.json")["edges"]
+        eca = [e for e in edges if e["from"] == "ExternalClientApp:IntegracaoRH_ECA"]
+        self.assertEqual([(e["to"], e["relationship"], e["jsonPath"], e["relatedSource"]) for e in eca],
+                         [("PermissionSet:IntegracaoRH_User", "RELATED_COMPONENT", "data.commaSeparatedPermissionSet",
+                           "ExtlClntAppOauthConfigurablePolicies:IntegracaoRH_ECA_oauthPlcy")])
+        report = self.out("report", "discovery-report.md").read_text(encoding="utf-8")
+        self.assertIn("em ExtlClntAppOauthConfigurablePolicies:IntegracaoRH_ECA_oauthPlcy", report)
+        self.assertIn("data.externalClientApplication = IntegracaoRH_ECA", report)  # seção de relacionados lidos
+
+    def test_flow_and_flow_definition_are_linked(self):
+        # D22-05
+        self.put_normalized("flows/normalized/admissao-flow.json", "Flow", "Admissao_Flow",
+                            {"label": "Admissão", "start": {"object": "Colaborador__c", "triggerType": "RecordAfterSave"}})
+        self.put_normalized("flow-definitions/normalized/admissao-flow.json", "FlowDefinition", "Admissao_Flow",
+                            {"activeVersionNumber": "1", "masterLabel": "Admissão"})
+        text = CSV.read_text(encoding="utf-8") + "Flow,Admissao_Flow,true,\nFlowDefinition,Admissao_Flow,true,\n"
+        self.run_it(csv=self.write_csv(text))
+        edges = {(e["from"], e["to"], e["relationship"], e["evidence"]) for e in self.read_json("graphs", "graph.json")["edges"]}
+        self.assertIn(("Flow:Admissao_Flow", "FlowDefinition:Admissao_Flow", "HAS_DEFINITION", "MANIFEST_REFERENCE"), edges)
+        self.assertIn(("Flow:Admissao_Flow", "CustomObject:Colaborador__c", "TRIGGERS_ON_OBJECT", "CONFIGURATION_REFERENCE"), edges)
+        orphans = [o["id"] for o in self.read_json("orphans", "orphans.json")["orphans"]]
+        self.assertNotIn("FlowDefinition:Admissao_Flow", orphans)
+
+    def test_custom_object_lookup_from_child_field(self):
+        # D22-07
+        self.put_normalized("custom-objects/normalized/empresa-c.json", "CustomObject", "Empresa__c", {"label": "Empresa"})
+        self.put_normalized("custom-objects/normalized/custom-field--colaborador-c-empresa-c.json", "CustomField",
+                            "Colaborador__c.Empresa__c", {"fullName": "Empresa__c", "referenceTo": "Empresa__c",
+                                                          "type": "Lookup"}, "child")
+        self.run_it(csv=self.write_csv(CSV.read_text(encoding="utf-8") + "CustomObject,Empresa__c,true,\n"))
+        edges = [e for e in self.read_json("graphs", "graph.json")["edges"] if e["to"] == "CustomObject:Empresa__c"]
+        self.assertEqual([(e["from"], e["relationship"], e["relatedSource"]) for e in edges],
+                         [("CustomObject:Colaborador__c", "LOOKUP_TO_OBJECT", "CustomField:Colaborador__c.Empresa__c")])
+        c1 = self.read_json("clusters", "cluster-001.json")
+        self.assertIn("CustomObject:Empresa__c", [x["id"] for x in c1["components"]])
+
+    def test_corrupted_registry_stops_without_writing(self):
+        # R2-01: registro ilegível não é descartado em silêncio (renumeraria clusters)
+        self.run_it()
+        before = {p.name: p.read_text(encoding="utf-8") for p in self.out("clusters").glob("*.json")}
+        reg = self.out("state", "cluster-registry.json")
+        reg.write_text("{ corrompido", encoding="utf-8")
+        code, summary = self.run_it()
+        self.assertEqual(code, 2)
+        self.assertIn("registro de clusters ilegível", summary["fatal"])
+        self.assertEqual({p.name: p.read_text(encoding="utf-8") for p in self.out("clusters").glob("*.json")}, before)
+        self.assertEqual(reg.read_text(encoding="utf-8"), "{ corrompido")  # nada gravado por cima
+        with self.assertRaises(ValueError) as ctx:
+            review_cluster(self.root, "cluster-001", "APPROVED", "Millena", stream=io.StringIO(),
+                           signature=json.loads(before["cluster-001.json"])["signature"][:6])
+        self.assertIn("ilegível", str(ctx.exception))
+
+    def test_writes_are_atomic(self):
+        self.run_it()
+        self.assertEqual(list(self.out().rglob(".*.tmp")), [])
+
+    def test_review_requires_signature_of_the_composition_read(self):
+        # R2-02: o número sozinho não basta; a assinatura do relatório tem de bater
+        self.run_it()
+        app_sig = self.sig("cluster-002")
+        for bad in (None, "", app_sig[:5]):
+            with self.assertRaises(ValueError) as ctx:
+                review_cluster(self.root, "cluster-002", "APPROVED", "Millena", stream=io.StringIO(), signature=bad)
+            self.assertIn("--signature é obrigatório", str(ctx.exception))
+        # estado local perdido (clone novo, outra máquina, limpeza): os números recomeçam
+        self.put_normalized("apex-classes/normalized/rhbatch.json", "ApexClass", "RHBatch", {"apex": {"extends": "SAPOrderSync"}})
+        csv2 = self.write_csv(CSV.read_text(encoding="utf-8") + "ApexClass,RHBatch,true,\n")
+        self.run_it(csv=csv2)
+        shutil.rmtree(self.out("state"))
+        shutil.rmtree(self.out("clusters"))
+        self.run_it(csv=csv2)
+        self.assertNotIn("ConnectedApp:IntegracaoRH", self.members("cluster-002"))  # outro conjunto com o mesmo número
+        with self.assertRaises(ValueError) as ctx:  # o relatório antigo não aprova a composição errada
+            review_cluster(self.root, "cluster-002", "APPROVED", "Millena", stream=io.StringIO(), signature=app_sig)
+        self.assertIn("não é a de cluster-002", str(ctx.exception))
+        self.assertEqual(self.read_json("clusters", "cluster-002.json")["status"], "CANDIDATE")
+
+    def test_outputs_and_decisions_are_isolated_by_org(self):
+        # R2-03: decisão de uma org não vale para outra
+        self.run_it()
+        review_cluster(self.root, "cluster-002", "APPROVED", "Millena", stream=io.StringIO(), signature=self.sig("cluster-002"))
+        shutil.copytree(self.root / "inventory" / "org-dev", self.root / "inventory" / "org-prod")
+        self.run_it(alias="prod")
+        prod = self.root / "discovery" / "org-prod" / "api-v67" / "clusters" / "cluster-002.json"
+        self.assertEqual(json.loads(prod.read_text(encoding="utf-8"))["status"], "CANDIDATE")
+        self.assertEqual(self.read_json("clusters", "cluster-002.json")["status"], "APPROVED")  # dev intacta
+        with self.assertRaises(ValueError):  # o review também escolhe a org
+            review_cluster(self.root, "cluster-002", "APPROVED", "Millena", stream=io.StringIO(),
+                           signature=self.sig("cluster-002"), alias="hml")
+
+    def test_formula_mention_is_unverified(self):
+        # R2-04: em fórmula, `Empresa__c` é um campo do próprio objeto, não prova relação com o objeto Empresa__c
+        self.put_normalized("custom-objects/normalized/empresa-c.json", "CustomObject", "Empresa__c", {"label": "Empresa"})
+        self.put_normalized("custom-objects/normalized/validation-rule--colaborador-c-exige-empresa.json", "ValidationRule",
+                            "Colaborador__c.Exige_Empresa",
+                            {"fullName": "Exige_Empresa", "errorConditionFormula": "ISBLANK(Empresa__c)"}, "child")
+        self.run_it(csv=self.write_csv(CSV.read_text(encoding="utf-8") + "CustomObject,Empresa__c,true,\n"))
+        graph = self.read_json("graphs", "graph.json")
+        self.assertFalse([e for e in graph["edges"] if e["to"] == "CustomObject:Empresa__c"])
+        self.assertIn(("CustomObject:Empresa__c", "data.errorConditionFormula"),
+                      [(m["to"], m["jsonPath"]) for m in graph["unverifiedMentions"]])
+
+    def test_fatal_csv_keeps_previous_outputs(self):
+        self.run_it()
+        before = self.out("clusters", "cluster-001.json").read_text(encoding="utf-8")
+        code, summary = self.run_it(csv=self.write_csv("errado\n"))
+        self.assertEqual(code, 2)
+        self.assertIn("cabeçalho", summary["fatal"])
+        self.assertEqual(self.out("clusters", "cluster-001.json").read_text(encoding="utf-8"), before)
+
+    def test_invalid_csv_lines_are_reported_and_valid_ones_processed(self):
+        text = CSV.read_text(encoding="utf-8") + "ApexPage,Pagina,true,\nApexClass,SAPOrderSync,false,duplicada\n"
+        code, summary = self.run_it(csv=self.write_csv(text))
+        self.assertEqual((code, summary["csvErrors"], summary["found"]), (0, 1, 10))
+        report = self.out("report", "discovery-report.md").read_text(encoding="utf-8")
+        self.assertIn("component_type inválido: 'ApexPage'", report)
+        self.assertIn("duplicada da linha 12", report)
+
+    def test_cli_relative_csv_is_resolved_from_current_directory(self):
+        import os
+        work = self.root / "minha-pasta"
+        work.mkdir()
+        shutil.copy(CSV, work / "squad.csv")
+        cwd = os.getcwd()
+        os.chdir(work)
+        try:
+            self.assertEqual(cli_main(["--project-root", str(self.root), "--csv", "squad.csv"]), 0)
+        finally:
+            os.chdir(cwd)
+        self.assertTrue(self.out("clusters", "cluster-001.json").is_file())
+
+    def test_cli_run_without_subcommand_and_review(self):
+        csv_copy = self.root / "discovery" / "input" / "componentes-squad.csv"
+        csv_copy.parent.mkdir(parents=True)
+        shutil.copy(CSV, csv_copy)
+        self.assertEqual(cli_main(["--project-root", str(self.root), "--target-org", "dev", "--api-version", "67.0"]), 0)
+        self.assertTrue(self.out("clusters", "cluster-001.json").is_file())
+        self.assertEqual(cli_main(["review", "--project-root", str(self.root), "--cluster", "cluster-002",
+                                   "--decision", "rejected", "--by", "Millena"]), 2)  # sem --signature: recusado
+        self.assertEqual(cli_main(["review", "--project-root", str(self.root), "--cluster", "cluster-002",
+                                   "--decision", "rejected", "--by", "Millena", "--signature", self.sig("cluster-002")]), 0)
+        self.assertEqual(self.read_json("clusters", "cluster-002.json")["status"], "REJECTED")
+
+
+class DiscoveryOnRealUtility1OutputTest(P3Base):
+    """Ponta a ponta sobre JSONs normalizados gerados DE VERDADE pelo Utilitário 1 (CLI simulada)."""
+
+    def test_clusters_from_utility1_inventory(self):
+        # mvp_complete: cenário em que a External Client App tem as políticas no inventário
+        code, _ = self.run_pipeline("mvp_complete", groups=["ApexTrigger", "ApexClass", "CustomObject", "PermissionSet",
+                                            "NamedCredential", "ExternalCredential", "ConnectedApp", "Flow",
+                                            "ExternalClientApp"])
+        self.assertEqual(code, 0, self.log.getvalue())
+        csv = self.root / "squad.csv"
+        csv.write_text("component_type,component_name,squad_suspect,notes\n"
+                       "ApexTrigger,PedidoTrigger,true,\nApexClass,PedidoTriggerHandler,true,\nApexClass,PedidoService,true,\n"
+                       "CustomObject,Pedido__c,true,\nNamedCredential,Minha_NC,true,\nExternalCredential,Minha_EC,true,\n"
+                       "ConnectedApp,Meu_App,true,\nPermissionSet,Integracao_API,true,\n"
+                       "Flow,Meu_Flow,true,\nFlowDefinition,Meu_Flow,true,\nExternalClientApp,Minha_ECA,true,\n",
+                       encoding="utf-8")
+        code, summary = run_discovery(self.root, csv, stream=io.StringIO())
+        self.assertEqual((code, summary["notFound"]), (0, 0))
+        disc = self.root / "discovery" / "org-dev" / "api-v67"
+        graph = json.loads((disc / "graphs" / "graph.json").read_text(encoding="utf-8"))
+        edges = {(e["from"], e["to"], e["relationship"]) for e in graph["edges"]}
+        self.assertIn(("ApexTrigger:PedidoTrigger", "CustomObject:Pedido__c", "TRIGGERS_ON_OBJECT"), edges)
+        self.assertIn(("ApexTrigger:PedidoTrigger", "ApexClass:PedidoService", "INVOKES_CLASS"), edges)
+        self.assertIn(("NamedCredential:Minha_NC", "ExternalCredential:Minha_EC", "USES_CREDENTIAL"), edges)
+        self.assertIn(("ConnectedApp:Meu_App", "PermissionSet:Integracao_API", "REFERENCES"), edges)
+        # D22-05 / D22-04 sobre a saída real do Utilitário 1
+        self.assertIn(("Flow:Meu_Flow", "FlowDefinition:Meu_Flow", "HAS_DEFINITION"), edges)
+        self.assertIn(("Flow:Meu_Flow", "CustomObject:Pedido__c", "TRIGGERS_ON_OBJECT"), edges)
+        self.assertIn(("ExternalClientApp:Minha_ECA", "PermissionSet:Integracao_API", "RELATED_COMPONENT"), edges)
+        status = json.loads((disc / "report" / "component-status.json").read_text(encoding="utf-8"))
+        rel = {c["componentName"]: [r["component"] for r in c["relatedSources"]] for c in status["components"]}
+        self.assertIn("ExtlClntAppOauthConfigurablePolicies:Minha_ECA_oauthPlcy", rel["Minha_ECA"])
+        self.assertIn("CustomField:Pedido__c.Status__c", rel["Pedido__c"])  # D22-07: filhos do objeto
+        out = "\n".join(p.read_text(encoding="utf-8") for p in (self.root / "discovery").rglob("*.*") if p.is_file())
+        for s in ("SENTINELA", "sentinela", "CHAVE_SIMULADA"):
+            self.assertNotIn(s, out)

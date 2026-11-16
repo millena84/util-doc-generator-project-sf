@@ -1,0 +1,42 @@
+{
+ "metadataType": "Certificate",
+ "fullName": "IntegracaoRH_Cert",
+ "role": "primary",
+ "source": {
+  "xml": "inventory/org-dev/api-v67/certificates/components/certs/IntegracaoRH_Cert.crt-meta.xml",
+  "xmlSha256": "cf10123fb29dd40972f2e508f6faa50b87defca984a10b08aa5deadcf639c9a4",
+  "rootElement": "Certificate",
+  "retrieveRaw": "inventory/org-dev/api-v67/certificates/retrieve/x.raw.json"
+ },
+ "schema": {
+  "available": true,
+  "fieldNames": [
+   "caSigned",
+   "encryptedWithPlatformEncryption",
+   "expirationDate",
+   "keySize",
+   "masterLabel",
+   "privateKeyExportable"
+  ]
+ },
+ "fields": {
+  "present": [
+   "caSigned",
+   "encryptedWithPlatformEncryption",
+   "expirationDate",
+   "keySize",
+   "masterLabel",
+   "privateKeyExportable"
+  ],
+  "absent": [],
+  "redacted": []
+ },
+ "data": {
+  "caSigned": "false",
+  "encryptedWithPlatformEncryption": "false",
+  "expirationDate": "2027-01-01T00:00:00.000Z",
+  "keySize": "2048",
+  "masterLabel": "IntegracaoRH_Cert",
+  "privateKeyExportable": "false"
+ }
+}

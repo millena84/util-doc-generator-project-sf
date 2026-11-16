@@ -1,0 +1,82 @@
+{
+ "metadataType": "ApexTrigger",
+ "fullName": "ColaboradorTrigger",
+ "role": "primary",
+ "source": {
+  "xml": "inventory/org-dev/api-v67/apex-triggers/components/triggers/ColaboradorTrigger.trigger-meta.xml",
+  "xmlSha256": "7f5afe107c099beb10fa0f07c420c947f517990e8d0f42960db1c0c7f9d64dec",
+  "rootElement": "ApexTrigger",
+  "retrieveRaw": "inventory/org-dev/api-v67/apex-triggers/retrieve/x.raw.json",
+  "code": "inventory/org-dev/api-v67/apex-triggers/components/triggers/ColaboradorTrigger.trigger",
+  "codeSha256": "aeebcd7d9c27b6cdeb1e3f7b94532128713c4c918c25a7afe906d1cb238b8622",
+  "codeParser": "apex-trigger-lexical/v1"
+ },
+ "schema": {
+  "available": true,
+  "fieldNames": [
+   "apiVersion",
+   "label",
+   "status"
+  ]
+ },
+ "fields": {
+  "present": [
+   "apiVersion",
+   "status"
+  ],
+  "absent": [],
+  "redacted": []
+ },
+ "data": {
+  "apiVersion": "67.0",
+  "status": "Active",
+  "label": null,
+  "apex": {
+   "parser": "apex-trigger-lexical/v1",
+   "parsed": true,
+   "kind": "trigger",
+   "triggerName": "ColaboradorTrigger",
+   "sObject": "Colaborador__c",
+   "description": "Trigger do Colaborador: delega ao serviço de integração.",
+   "events": [
+    "after insert"
+   ],
+   "unknownEvents": [],
+   "eventRows": [
+    {
+     "event": "after insert",
+     "timing": "after",
+     "operation": "insert"
+    }
+   ],
+   "contextVariables": [
+    "Trigger.new"
+   ],
+   "referencedClasses": [
+    {
+     "className": "IntegracaoRHService",
+     "references": [
+      "chamada estática"
+     ],
+     "members": [
+      "enviar"
+     ]
+    }
+   ],
+   "configReads": [
+    {
+     "mechanism": "Custom Metadata Type",
+     "component": "Endpoint_Config__mdt",
+     "call": "Endpoint_Config__mdt.getInstance",
+     "record": "Producao",
+     "dynamic": false
+    }
+   ],
+   "securityPatterns": [],
+   "platformEvents": {
+    "publishCall": false,
+    "eventTypes": []
+   }
+  }
+ }
+}

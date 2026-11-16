@@ -1,0 +1,12 @@
+component_type,component_name,squad_suspect,notes
+ConnectedApp,IntegracaoRH,true,App usado pelo RH
+ExternalClientApp,IntegracaoRH_ECA,true,App moderno do RH
+NamedCredential,RH_Endpoint,true,Endpoint do RH
+ApexClass,IntegracaoRHService,true,Serviço de integração
+ApexTrigger,ColaboradorTrigger,true,Trigger do objeto Colaborador
+CustomObject,Colaborador__c,true,Objeto de colaborador
+CustomMetadata,Endpoint_Config__mdt,true,Configuração de endpoint por ambiente
+PermissionSet,IntegracaoRH_User,true,Usuário de integração
+RemoteSiteSetting,RH_Remote_Site,true,Endpoint liberado
+Certificate,IntegracaoRH_Cert,true,Certificado do RH
+ApexClass,SAPOrderSync,false,"Outra squad? liberada pelo mesmo permission set"

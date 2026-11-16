@@ -1,0 +1,51 @@
+{
+ "metadataType": "NamedCredential",
+ "fullName": "RH_Endpoint",
+ "role": "primary",
+ "source": {
+  "xml": "inventory/org-dev/api-v67/named-credentials/components/namedCredentials/RH_Endpoint.namedCredential-meta.xml",
+  "xmlSha256": "e59fa5bfd9c811e6ef80cb5279ff208b1dfcc812fb30616567845860ed963575",
+  "rootElement": "NamedCredential",
+  "retrieveRaw": "inventory/org-dev/api-v67/named-credentials/retrieve/x.raw.json"
+ },
+ "schema": {
+  "available": true,
+  "fieldNames": [
+   "description",
+   "endpoint",
+   "generateAuthorizationHeader",
+   "label",
+   "namedCredentialParameters",
+   "namedCredentialType"
+  ]
+ },
+ "fields": {
+  "present": [
+   "generateAuthorizationHeader",
+   "label",
+   "namedCredentialParameters",
+   "namedCredentialType"
+  ],
+  "absent": [],
+  "redacted": []
+ },
+ "data": {
+  "label": "Endpoint do RH",
+  "description": null,
+  "namedCredentialType": "SecuredEndpoint",
+  "endpoint": null,
+  "generateAuthorizationHeader": "true",
+  "namedCredentialParameters": [
+   {
+    "parameterName": "Url",
+    "parameterType": "Url",
+    "parameterValue": "https://sentinela-rh.example.invalid/api"
+   },
+   {
+    "parameterName": "x-api-key",
+    "parameterType": "HttpHeader",
+    "parameterValue": "SENTINELA_HEADER"
+   }
+  ]
+ }
+}

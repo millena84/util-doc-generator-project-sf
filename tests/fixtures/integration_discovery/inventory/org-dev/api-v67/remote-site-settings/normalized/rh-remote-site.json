@@ -1,0 +1,35 @@
+{
+ "metadataType": "RemoteSiteSetting",
+ "fullName": "RH_Remote_Site",
+ "role": "primary",
+ "source": {
+  "xml": "inventory/org-dev/api-v67/remote-site-settings/components/remoteSiteSettings/RH_Remote_Site.remoteSite-meta.xml",
+  "xmlSha256": "18ef34767ed966c2a0c7220d4a1d7207f72b9c0774eb9f28c52a240f557d9332",
+  "rootElement": "RemoteSiteSetting",
+  "retrieveRaw": "inventory/org-dev/api-v67/remote-site-settings/retrieve/x.raw.json"
+ },
+ "schema": {
+  "available": true,
+  "fieldNames": [
+   "description",
+   "disableProtocolSecurity",
+   "isActive",
+   "url"
+  ]
+ },
+ "fields": {
+  "present": [
+   "disableProtocolSecurity",
+   "isActive",
+   "url"
+  ],
+  "absent": [],
+  "redacted": []
+ },
+ "data": {
+  "description": null,
+  "disableProtocolSecurity": "false",
+  "isActive": "true",
+  "url": "https://sentinela-rh.example.invalid"
+ }
+}

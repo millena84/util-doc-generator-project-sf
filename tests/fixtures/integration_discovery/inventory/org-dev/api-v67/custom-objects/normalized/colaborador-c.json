@@ -1,0 +1,40 @@
+{
+ "metadataType": "CustomObject",
+ "fullName": "Colaborador__c",
+ "role": "primary",
+ "source": {
+  "xml": "inventory/org-dev/api-v67/custom-objects/components/objects/Colaborador__c/Colaborador__c.object-meta.xml",
+  "xmlSha256": "5776f0dc4d222e31d47c17c784a399a7b14dc8939114c8a5c6eb3a8438a82b66",
+  "rootElement": "CustomObject",
+  "retrieveRaw": "inventory/org-dev/api-v67/custom-objects/retrieve/x.raw.json"
+ },
+ "schema": {
+  "available": true,
+  "fieldNames": [
+   "deploymentStatus",
+   "description",
+   "label",
+   "pluralLabel",
+   "sharingModel",
+   "visibility"
+  ]
+ },
+ "fields": {
+  "present": [
+   "deploymentStatus",
+   "label",
+   "pluralLabel",
+   "sharingModel"
+  ],
+  "absent": [],
+  "redacted": []
+ },
+ "data": {
+  "deploymentStatus": "Deployed",
+  "label": "Colaborador",
+  "pluralLabel": "Colaboradores",
+  "sharingModel": "Private",
+  "description": null,
+  "visibility": null
+ }
+}
